@@ -2,6 +2,9 @@ import { app, BrowserWindow } from "electron";
 import * as path from "path";
 import * as url from "url";
 
+const remote = require("@electron/remote/main");
+
+remote.initialize();
 let mainWindow: Electron.BrowserWindow | null;
 
 function createWindow() {
@@ -16,8 +19,11 @@ function createWindow() {
     },
   });
 
+  remote.enable(mainWindow.webContents);
+
   if (process.env.NODE_ENV === "development") {
     mainWindow.loadURL("http://localhost:4000");
+    mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadURL(
       url.format({

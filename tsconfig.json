@@ -9,8 +9,8 @@
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
     "strictNullChecks": true,
     "allowSyntheticDefaultImports": true
   }

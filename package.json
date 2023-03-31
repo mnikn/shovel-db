@@ -1,8 +1,8 @@
 {
-  "name": "electron-typescript-react-mui",
-  "version": "1.0.0",
+  "name": "shovel-db",
+  "version": "0.1.0",
   "private": true,
-  "description": "Lightweight, modern boilerplate built with electron, typescript, and react.",
+  "description": "Lightweight game database",
   "main": "./dist/main.js",
   "scripts": {
     "dev": "npm-run-all -p dev:react electron:serve",
@@ -18,13 +18,18 @@
     "package:dist": "electron-builder --dir"
   },
   "keywords": [],
-  "author": "HelloSoftware",
-  "license": "MIT",
+  "author": "mnikn",
+  "license": "GPL",
   "dependencies": {
+    "@electron/remote": "^2.0.9",
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
+    "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.9.1",
+    "hox": "^2.1.0",
     "react": "^18.2.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
@@ -52,10 +57,10 @@
     "webpack-dev-server": "^4.9.3"
   },
   "build": {
-    "appId": "com.company.app",
-    "productName": "App Name",
+    "appId": "com.mnikn.shoveldb",
+    "productName": "Shovel DB",
     "mac": {
-      "category": "public.app-category.video"
+      "category": "public.app-category.software"
     },
     "directories": {
       "output": "packages"

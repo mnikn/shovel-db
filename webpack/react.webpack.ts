@@ -13,6 +13,10 @@ const config: Configuration = {
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
     mainFields: ["main", "module", "browser"],
+    alias: {
+      main: path.join(__dirname, "../src/main"),
+      renderer: path.join(__dirname, "../src/renderer"),
+    },
   },
   entry: path.resolve(rootPath, "src/renderer", "index.tsx"),
   target: "electron-renderer",
