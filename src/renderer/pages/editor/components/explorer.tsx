@@ -1,16 +1,17 @@
-import * as remote from "@electron/remote";
-import ArticleIcon from "@mui/icons-material/Article";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import FolderIcon from "@mui/icons-material/Folder";
-import FolderOpenIcon from "@mui/icons-material/FolderOpen";
-import { Box, Stack, TextField } from "@mui/material";
-import React, { useState } from "react";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { grey } from "@mui/material/colors";
-import { File, Folder } from "../../../models/explorer";
-import { useExplorerStore } from "../../../store";
+import * as remote from '@electron/remote';
+import ArticleIcon from '@mui/icons-material/Article';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import FolderIcon from '@mui/icons-material/Folder';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import { Box, Stack, TextField } from '@mui/material';
+import React, { useState } from 'react';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { grey } from '@mui/material/colors';
+import { File, Folder } from '../../../models/explorer';
+import { useExplorerStore } from '../../../store';
+import { animation, borderRadius } from '../../../theme';
 
 export default function Explorer() {
   const [uncollapsedFolders, setUncollapsedFolders] = useState<string[]>([]);
@@ -23,20 +24,20 @@ export default function Explorer() {
 
   const fileContextMenu = [
     {
-      label: "Rename",
+      label: 'Rename',
       click: (file: File) => {
         setEditingName(file.name);
         setEditingItem(file.id);
       },
     },
     {
-      label: "Copy",
+      label: 'Copy',
       click: () => {
-        console.log("Copy");
+        console.log('Copy');
       },
     },
     {
-      label: "Delete",
+      label: 'Delete',
       click: (file: File) => {
         deleteItem(file.id);
       },
@@ -52,7 +53,7 @@ export default function Explorer() {
   }) => {
     const [{ isDragging }, dragRef] = useDrag(
       () => ({
-        type: data instanceof File ? "file" : "folder",
+        type: data instanceof File ? 'file' : 'folder',
         item: data,
         collect: (monitor) => ({
           isDragging: monitor.isDragging(),
@@ -63,13 +64,13 @@ export default function Explorer() {
 
     const [{ isOver, canDrop }, drop] = useDrop(
       () => ({
-        accept: "all",
+        accept: 'all',
         canDrop: () => {
-          console.log("dsds: ");
+          console.log('dsds: ');
           return true;
         },
         drop: () => {
-          console.log("drop");
+          console.log('drop');
         },
         collect: (monitor) => ({
           isOver: !!monitor.isOver(),
@@ -85,15 +86,19 @@ export default function Explorer() {
         <>
           <Stack
             key={data.id}
-            direction="row"
+            direction='row'
             spacing={0.5}
             sx={{
               p: 0.5,
-              "&:hover": {
-                cursor: "pointer",
-                backgroundColor: "secondary.light",
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                cursor: 'pointer',
+                ...borderRadius.large,
+                ...animation.autoFade,
+                backgroundColor: 'primary.500',
+                color: 'common.white',
               },
-              userSelect: "none",
+              userSelect: 'none',
               /* backgroundColor: !isOver && canDrop ? grey[500] : "inherit", */
             }}
             onClick={() => {
@@ -111,26 +116,26 @@ export default function Explorer() {
 
               const folderContextMenu = [
                 {
-                  label: "New File",
+                  label: 'New File',
                   click: () => {
-                    console.log("New File");
+                    console.log('New File');
                   },
                 },
                 {
-                  label: "New Folder",
+                  label: 'New Folder',
                   click: () => {
-                    console.log("New Folder");
+                    console.log('New Folder');
                   },
                 },
                 {
-                  label: "Rename",
+                  label: 'Rename',
                   click: (folder: Folder) => {
                     setEditingName(folder.name);
                     setEditingItem(folder.id);
                   },
                 },
                 {
-                  label: "Delete",
+                  label: 'Delete',
                   click: (folder: Folder) => {
                     deleteItem(folder.id);
                   },
@@ -147,7 +152,7 @@ export default function Explorer() {
               menu.popup({ window: remote.getCurrentWindow() });
             }}
           >
-            <Stack direction="row" spacing={0}>
+            <Stack direction='row' spacing={0}>
               {!isCollapsed ? (
                 <>
                   <ExpandMoreIcon />
@@ -162,26 +167,26 @@ export default function Explorer() {
             </Stack>
             {editingItem === data.id && (
               <TextField
-                variant="standard"
+                variant='standard'
                 inputProps={{
                   style: {
-                    color: "#fff",
+                    color: '#fff',
                   },
                 }}
                 value={editingName}
-                autoFocus
+                // autoFocus
                 onChange={(e) => {
                   setEditingName(e.target.value);
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    data.name = editingName || "";
+                  if (e.key === 'Enter') {
+                    data.name = editingName || '';
                     updateItem(data.id, data);
                     setEditingItem(null);
                     setEditingName(null);
                   }
 
-                  if (e.key === "Escape") {
+                  if (e.key === 'Escape') {
                     setEditingItem(null);
                     setEditingName(null);
                   }
@@ -208,17 +213,22 @@ export default function Explorer() {
     return (
       <Stack
         key={data.id}
-        direction="row"
+        direction='row'
         spacing={0.5}
         sx={{
-          px: 0.5,
+          p: 0.5,
           backgroundColor:
-            currentOpenFile === data ? "secondary.light" : "inherit",
-          "&:hover": {
-            cursor: "pointer",
-            backgroundColor: "secondary.light",
+            currentOpenFile?.id === data.id ? 'primary.500' : 'inherit',
+          color:
+            currentOpenFile?.id === data.id ? 'common.white' : 'common.black',
+          '&:hover': {
+            cursor: 'pointer',
+            backgroundColor: 'primary.500',
+            color: 'common.white',
           },
-          userSelect: "none",
+          ...borderRadius.large,
+          ...animation.autoFade,
+          userSelect: 'none',
         }}
         onClick={() => {
           openFile(data);
@@ -244,10 +254,10 @@ export default function Explorer() {
         <ArticleIcon />
         {editingItem === data.id && (
           <TextField
-            variant="standard"
+            variant='standard'
             inputProps={{
               style: {
-                color: "#fff",
+                color: '#fff',
               },
             }}
             value={editingName}
@@ -256,13 +266,13 @@ export default function Explorer() {
               setEditingName(e.target.value);
             }}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                data.name = editingName || "";
+              if (e.key === 'Enter') {
+                data.name = editingName || '';
                 updateItem(data.id, data);
                 setEditingItem(null);
                 setEditingName(null);
               }
-              if (e.key === "Escape") {
+              if (e.key === 'Escape') {
                 setEditingItem(null);
                 setEditingName(null);
               }
@@ -280,12 +290,13 @@ export default function Explorer() {
 
   return (
     <Box
+      // className='bg-gray-50 w-72 flex flex-col items-center p-5'
       sx={{
-        height: "100%",
-        width: "300px",
-        backgroundColor: "secondary.main",
-        color: "secondary.contrastText",
-        overflowY: "overlay",
+        height: '100%',
+        width: '300px',
+        backgroundColor: 'primary.main',
+        color: 'primary.contrastText',
+        overflowY: 'overlay',
         p: 2,
       }}
     >

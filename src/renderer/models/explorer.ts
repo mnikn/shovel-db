@@ -1,3 +1,4 @@
+import { RawJson } from "../../type";
 import { UUID } from "../../utils/uuid";
 
 function getFullPath(item: Folder | File | null): string | null {
@@ -50,9 +51,48 @@ export class Folder {
       children: this.children.map((item) => item.id),
     };
   }
+
+  public getRootPartent(): Folder | null {
+    if (!this.parent) {
+      return null;
+    }
+    if (!this.parent.parent) {
+      return this.parent;
+    }
+    return this.parent.getRootPartent();
+  }
+
+  public addChild(child: File | Folder) {
+    child.parent = this;
+    this.children.push(child);
+  }
+
+  public removeChild(id: string) {
+    this.children = this.children.filter((item) => item.id !== id);
+  }
+
+  public findChildRecursive(id: string): File | Folder | null {
+    let match = this.children.find((item) => item.id === id) || null;
+    if (match) {
+      return match;
+    }
+    if (this.children.length <= 0) {
+      return null;
+    }
+    this.children.forEach((item) => {
+      if (item instanceof File) {
+        return
+      }
+      const item2 = item.findChildRecursive(id);
+      if (item2) {
+        match = item2;
+      }
+    });
+    return match;
+  }
 }
 
-export function buildFileTree(data: any[]): Array<File | Folder> {
+export function buildFileTree(data: RawJson[]): Array<File | Folder> {
   const dataMap = new Map<string, any>();
   data.forEach((item) => {
     dataMap.set(item.id, item);
@@ -65,7 +105,7 @@ export function buildFileTree(data: any[]): Array<File | Folder> {
   return values.filter((val: File | Folder) => val.parent === null);
 }
 
-function buildFileTreeItem(item: any, dataMap: Map<string, any>) {
+export function buildFileTreeItem(item: RawJson, dataMap: Map<string, any> = new Map()) {
   if (item.type === "folder") {
     const folder = new Folder();
     folder.id = item.id;
