@@ -21,6 +21,11 @@ export interface StoryletNodeData {
   enableCheck?: Code;
   beforeJumpProcess?: Code;
   afterJumpProcess?: Code;
+  option?: {
+    name: string;
+    controlType: 'disable' | 'visible';
+    controlCheck?: Code;
+  };
 }
 export class StoryletNode<D extends StoryletNodeData> extends Node<D> {
   get idPrefix() {

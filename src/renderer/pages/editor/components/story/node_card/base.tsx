@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import React, { useCallback, useRef, useLayoutEffect } from 'react';
 import {
+  StoryletBranchNode,
   StoryletNode,
   StoryletNodeData,
   StoryletRootNode,
@@ -28,6 +29,8 @@ export default function BaseNodeCard({
     insertSiblingNode,
     moveSelection,
     deleteNode,
+    updateTranslateKeyAll,
+    getTranslationsForKey,
   } = useStoryStore();
   const viewRef = useRef<HTMLElement>();
   if (!currentStorylet) {
@@ -55,21 +58,40 @@ export default function BaseNodeCard({
 
       e.preventDefault();
 
-      // Tab
-      if (e.keyCode === 9) {
-        if (e.shiftKey && !(node instanceof StoryletRootNode)) {
-          const newNode = node.clone();
-          insertChildNode(newNode, node);
-        } else {
-          const sentenceNode = new StoryletSentenceNode();
-          insertChildNode(sentenceNode, node);
+      const duplicateNode = () => {
+        const newNode = node.clone();
+        if (
+          (newNode instanceof StoryletSentenceNode ||
+            newNode instanceof StoryletBranchNode) &&
+          (node instanceof StoryletSentenceNode ||
+            node instanceof StoryletBranchNode)
+        ) {
+          updateTranslateKeyAll(
+            newNode.data.content,
+            getTranslationsForKey(node.data.content)
+          );
         }
-      }
+        return newNode;
+      };
 
+      let insertFn: Function | null = null;
       // Enter
       if (e.keyCode === 13) {
-        const sentenceNode = new StoryletSentenceNode();
-        insertSiblingNode(sentenceNode, node);
+        insertFn = insertSiblingNode;
+      }
+      // Tab
+      if (e.keyCode === 9) {
+        insertFn = insertChildNode;
+      }
+      if (insertFn) {
+        // duplicate
+        if (e.shiftKey && !(node instanceof StoryletRootNode)) {
+          const newNode = duplicateNode();
+          insertFn(newNode, node);
+        } else {
+          const sentenceNode = new StoryletSentenceNode();
+          insertFn(sentenceNode, node);
+        }
       }
 
       // Esc
@@ -79,7 +101,15 @@ export default function BaseNodeCard({
 
       moveSelection(e.key);
     },
-    [isSelecting, insertChildNode, insertSiblingNode, moveSelection, deleteNode]
+    [
+      isSelecting,
+      insertChildNode,
+      insertSiblingNode,
+      moveSelection,
+      deleteNode,
+      updateTranslateKeyAll,
+      getTranslationsForKey,
+    ]
   );
 
   return (
@@ -113,7 +143,6 @@ export default function BaseNodeCard({
       }}
       onClick={onSelect}
       onKeyDown={onKeyDown}
-      //   onBlur={onBlur}
     >
       {children}
     </Box>

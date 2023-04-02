@@ -1,11 +1,19 @@
-import { useEffect, useCallback, useState, useRef } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useState,
+  useRef,
+} from 'react';
 import { createStore } from 'hox';
 import {
   Storylet,
+  StoryletBranchNode,
   StoryletNode,
   StoryletNodeData,
   StoryletSentenceNode,
 } from '../../models/story/storylet';
+import useTranslation from './translation';
 
 interface NodeSelection {
   nodeId: string;
@@ -17,14 +25,19 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
 
-  useEffect(() => {
+  const translationModule = useTranslation();
+
+  useLayoutEffect(() => {
     const storylet = new Storylet();
     const sentenceNode = new StoryletSentenceNode();
     const sentenceNode2 = new StoryletSentenceNode();
     const sentenceNode3 = new StoryletSentenceNode();
-    sentenceNode.data.content = 'asdas';
-    sentenceNode2.data.content = 'ds';
-    sentenceNode3.data.content = 'reer';
+    // sentenceNode.data.content = 'asdas';
+    translationModule.updateTranslateKey(sentenceNode.data.content, 'asds');
+    translationModule.updateTranslateKey(sentenceNode2.data.content, 'ff');
+    translationModule.updateTranslateKey(sentenceNode3.data.content, 'sdf');
+    // sentenceNode2.data.content = 'ds';
+    // sentenceNode3.data.content = 'reer';
     storylet.name = 'asdsad';
     storylet.upsertNode(sentenceNode);
     storylet.upsertNode(sentenceNode2);
@@ -34,7 +47,6 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
       storylet.upsertLink(storylet.root.id, sentenceNode2.id);
       storylet.upsertLink(storylet.root.id, sentenceNode3.id);
     }
-    console.log(storylet);
     setCurrentStorylet(storylet);
   }, []);
 
@@ -47,10 +59,21 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
         return;
       }
       currentStorylet.upsertNode(child);
+      if (
+        (child instanceof StoryletSentenceNode ||
+          child instanceof StoryletBranchNode) &&
+        !translationModule.hasTranslateKey(child.data.content)
+      ) {
+        translationModule.updateTranslateKey(child.data.content, '');
+      }
       currentStorylet.upsertLink(parent.id, child.id);
       setCurrentStorylet(currentStorylet.clone());
     },
-    [currentStorylet]
+    [
+      currentStorylet,
+      translationModule.updateTranslateKey,
+      translationModule.hasTranslateKey,
+    ]
   );
 
   const insertSiblingNode = useCallback(
@@ -73,9 +96,16 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
           node.order += 1;
         }
       });
+      if (
+        (needInsert instanceof StoryletSentenceNode ||
+          needInsert instanceof StoryletBranchNode) &&
+        !translationModule.hasTranslateKey(needInsert.data.content)
+      ) {
+        translationModule.updateTranslateKey(needInsert.data.content, '');
+      }
       setCurrentStorylet(currentStorylet.clone());
     },
-    [currentStorylet]
+    [currentStorylet, translationModule.updateTranslateKey]
   );
 
   const selectNode = useCallback((nodeId: string | null) => {
@@ -92,7 +122,8 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
     const nodeView = document.querySelector(`#${nodeId}`) as HTMLElement;
     nodeView.onblur = () => {
       if (selectionRef.current?.nodeId === nodeId) {
-        setSelection(null);
+        // setSelection(null);
+        nodeView.focus();
         nodeView.onblur = null;
       }
     };
@@ -139,6 +170,9 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
       }
 
       const selectingNode = currentStorylet.nodes[selectionRef.current.nodeId];
+      if (!selectingNode) {
+        return false;
+      }
       const parent = currentStorylet.getNodeSingleParent(selectingNode.id);
       const siblingNodes = parent
         ? currentStorylet
@@ -204,5 +238,6 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
     insertSiblingNode,
     deleteNode,
     moveSelection,
+    ...translationModule,
   };
 });

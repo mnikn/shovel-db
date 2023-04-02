@@ -10,7 +10,7 @@ export default function SentenceNodeCard({
   node: StoryletSentenceNode;
   pos: { x: number; y: number };
 }) {
-  const { currentStorylet } = useStoryStore();
+  const { currentStorylet, tr } = useStoryStore();
   if (!currentStorylet) {
     return null;
   }
@@ -21,7 +21,7 @@ export default function SentenceNodeCard({
       node={node}
       color={{ hover: 'rgb(187 247 208)', normal: 'rgb(74 222 128)' }}
     >
-      {node.data.content}
+      {tr(node.data.content)}
     </BaseNodeCard>
   );
 }
