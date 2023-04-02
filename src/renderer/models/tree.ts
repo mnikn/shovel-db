@@ -1,5 +1,6 @@
-import { UUID } from '../../utils/uuid';
 import { cloneDeep } from 'lodash';
+import { RawJson } from '../../type';
+import { UUID } from '../../utils/uuid';
 
 export function formatNodeLinkId(from: string, target: string) {
   return `${from}-${target}`;
@@ -45,7 +46,7 @@ export interface NodeJsonData {
 
 export class Node<T> {
   public id = `${this.idPrefix}_${UUID()}`;
-
+  public order = -1;
   public data: T;
 
   constructor() {
@@ -67,7 +68,13 @@ export class Node<T> {
   }
 
   get idPrefix() {
-    return "node";
+    return 'node';
+  }
+
+  public clone(): Node<T> {
+    const instance = new Node<T>();
+    instance.data = cloneDeep(this.data);
+    return instance;
   }
 }
 
@@ -104,6 +111,11 @@ export class Tree<T> {
       );
       this.links[linkId].data = linkData || this.links[linkId].data;
     }
+
+    this.nodes[targetNodeId].order =
+      this.nodes[targetNodeId].order !== -1
+        ? this.nodes[targetNodeId].order
+        : this.getNodeChildren(fromNodeId).length;
   }
 
   public upsertLinks(fromNodeId: string, targetNodeIds: string[]) {
@@ -113,6 +125,14 @@ export class Tree<T> {
   }
 
   public unlink(linkId: string) {
+    const parent = this.links[linkId].target;
+    const unlinkNodeOrder = this.links[linkId].source.data.order;
+    delete this.links[linkId];
+    this.getNodeChildren(parent.id).forEach((item) => {
+      if (item.order >= unlinkNodeOrder) {
+        item.order -= 1;
+      }
+    });
     delete this.links[linkId];
   }
 
@@ -164,16 +184,22 @@ export class Tree<T> {
     };
   }
 
-  public toHierarchyJson(): any[] {
-    const rootNodes = Object.values(this.nodes).filter((item) => {
-      const isSource =
-        Object.values(this.links).length === 0 ||
-        Object.values(this.links).find((item2) => item2.source.id === item.id);
-      const notTarget = !Object.values(this.links).find(
-        (item2) => item2.target.id === item.id
-      );
-      return isSource && notTarget;
-    });
+  public toHierarchyJson(): RawJson[] {
+    const rootNodes = Object.values(this.nodes)
+      .sort((a, b) => {
+        return a.order - b.order;
+      })
+      .filter((item) => {
+        const isSource =
+          Object.values(this.links).length === 0 ||
+          Object.values(this.links).find(
+            (item2) => item2.source.id === item.id
+          );
+        const notTarget = !Object.values(this.links).find(
+          (item2) => item2.target.id === item.id
+        );
+        return isSource && notTarget;
+      });
 
     const json = rootNodes.map((item) => {
       return this.buildHierarchy(item, Object.values(this.links));
@@ -181,13 +207,13 @@ export class Tree<T> {
     return json;
   }
 
-  private buildHierarchy(node: any, links: any[]) {
-    const children: any[] = Object.values(links)
+  private buildHierarchy(node: RawJson, links: RawJson[]) {
+    const children: RawJson[] = Object.values(links)
       .filter((item) => item.source.id === node.id)
       .map((item) => {
         return {
           id: item.target.id,
-          children: [] as any[],
+          children: [] as RawJson[],
         };
       })
       .map((child) => {
@@ -195,7 +221,9 @@ export class Tree<T> {
       });
     return {
       id: node.id,
-      children,
+      children: children.sort((a, b) => {
+        return this.nodes[a.id].order - this.nodes[b.id].order;
+      }),
     };
   }
 

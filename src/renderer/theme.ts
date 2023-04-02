@@ -5,6 +5,8 @@ export const borderRadius = {
   slightly: { borderRadius: '2px' },
   normal: { borderRadius: '4px' },
   large: { borderRadius: '12px' },
+  larger: { borderRadius: '24px' },
+  round: { borderRadius: '50%' },
 };
 
 export const animation = {

@@ -1,0 +1,208 @@
+import { useEffect, useCallback, useState, useRef } from 'react';
+import { createStore } from 'hox';
+import {
+  Storylet,
+  StoryletNode,
+  StoryletNodeData,
+  StoryletSentenceNode,
+} from '../../models/story/storylet';
+
+interface NodeSelection {
+  nodeId: string;
+}
+
+export const [useStoryStore, StoryStoreProvider] = createStore(() => {
+  const [currentStorylet, setCurrentStorylet] = useState<Storylet | null>(null);
+  const [selection, setSelection] = useState<NodeSelection | null>(null);
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
+
+  useEffect(() => {
+    const storylet = new Storylet();
+    const sentenceNode = new StoryletSentenceNode();
+    const sentenceNode2 = new StoryletSentenceNode();
+    const sentenceNode3 = new StoryletSentenceNode();
+    sentenceNode.data.content = 'asdas';
+    sentenceNode2.data.content = 'ds';
+    sentenceNode3.data.content = 'reer';
+    storylet.name = 'asdsad';
+    storylet.upsertNode(sentenceNode);
+    storylet.upsertNode(sentenceNode2);
+    storylet.upsertNode(sentenceNode3);
+    if (storylet.root) {
+      storylet.upsertLink(storylet.root.id, sentenceNode.id);
+      storylet.upsertLink(storylet.root.id, sentenceNode2.id);
+      storylet.upsertLink(storylet.root.id, sentenceNode3.id);
+    }
+    console.log(storylet);
+    setCurrentStorylet(storylet);
+  }, []);
+
+  const insertChildNode = useCallback(
+    (
+      child: StoryletNode<StoryletNodeData>,
+      parent: StoryletNode<StoryletNodeData>
+    ) => {
+      if (!currentStorylet) {
+        return;
+      }
+      currentStorylet.upsertNode(child);
+      currentStorylet.upsertLink(parent.id, child.id);
+      setCurrentStorylet(currentStorylet.clone());
+    },
+    [currentStorylet]
+  );
+
+  const insertSiblingNode = useCallback(
+    (
+      needInsert: StoryletNode<StoryletNodeData>,
+      source: StoryletNode<StoryletNodeData>
+    ) => {
+      if (!currentStorylet) {
+        return;
+      }
+      var parent = currentStorylet.getNodeSingleParent(source.id);
+      if (!parent) {
+        return;
+      }
+      needInsert.order = source.order;
+      currentStorylet.upsertNode(needInsert);
+      currentStorylet.upsertLink(parent.id, needInsert.id);
+      currentStorylet.getNodeChildren(parent.id).forEach((node) => {
+        if (node.order >= source.order && source.id !== node.id) {
+          node.order += 1;
+        }
+      });
+      setCurrentStorylet(currentStorylet.clone());
+    },
+    [currentStorylet]
+  );
+
+  const selectNode = useCallback((nodeId: string | null) => {
+    if (selectionRef.current?.nodeId === nodeId || nodeId === null) {
+      setSelection(null);
+      return;
+    }
+
+    setSelection({
+      nodeId,
+    });
+    selectionRef.current = { nodeId };
+
+    const nodeView = document.querySelector(`#${nodeId}`) as HTMLElement;
+    nodeView.onblur = () => {
+      if (selectionRef.current?.nodeId === nodeId) {
+        setSelection(null);
+        nodeView.onblur = null;
+      }
+    };
+    nodeView.focus();
+  }, []);
+
+  const deleteNode = useCallback(
+    (id: string) => {
+      if (!currentStorylet) {
+        return;
+      }
+      const currentNode = currentStorylet.nodes[id];
+      if (!currentNode) {
+        return;
+      }
+
+      moveSelection('ArrowDown') ||
+        moveSelection('ArrowUp') ||
+        moveSelection('ArrowLeft');
+
+      currentStorylet.getNodeChildren(id).forEach((child) => {
+        deleteNode(child.id);
+        if (currentStorylet) {
+          delete currentStorylet.nodes[child.id];
+        }
+      });
+
+      Object.keys(currentStorylet.links).forEach((item) => {
+        if (item.includes(id) && currentStorylet) {
+          delete currentStorylet.links[item];
+        }
+      });
+      delete currentStorylet.nodes[id];
+
+      setCurrentStorylet(currentStorylet.clone());
+    },
+    [currentStorylet]
+  );
+
+  const moveSelection = useCallback(
+    (direction: string) => {
+      if (!selectionRef.current || !currentStorylet) {
+        return false;
+      }
+
+      const selectingNode = currentStorylet.nodes[selectionRef.current.nodeId];
+      const parent = currentStorylet.getNodeSingleParent(selectingNode.id);
+      const siblingNodes = parent
+        ? currentStorylet
+            .getNodeChildren(parent.id)
+            .filter((item) => item.id !== selectingNode.id)
+        : [];
+      switch (direction) {
+        case 'ArrowUp': {
+          const targetNode = siblingNodes
+            .filter((item) => item.order <= selectingNode.order)
+            .sort((a, b) => {
+              return b.order - a.order;
+            })[0];
+          if (targetNode) {
+            selectNode(targetNode.id);
+            return true;
+          }
+          break;
+        }
+        case 'ArrowDown': {
+          console.log('sdds');
+          const targetNode = siblingNodes
+            .filter((item) => item.order >= selectingNode.order)
+            .sort((a, b) => {
+              return a.order - b.order;
+            })[0];
+          if (targetNode) {
+            selectNode(targetNode.id);
+            return true;
+          }
+          break;
+        }
+        case 'ArrowLeft': {
+          if (parent) {
+            selectNode(parent.id);
+            return true;
+          }
+          break;
+        }
+        case 'ArrowRight': {
+          const children = currentStorylet.getNodeChildren(selectingNode.id);
+          if (children.length > 0) {
+            selectNode(
+              children.sort((a, b) => {
+                return a.order - b.order;
+              })[0].id
+            );
+            return true;
+          }
+          break;
+        }
+      }
+      return false;
+    },
+    [currentStorylet]
+  );
+
+  return {
+    currentStorylet,
+    selection,
+    selectNode,
+    insertChildNode,
+    insertSiblingNode,
+    deleteNode,
+    moveSelection,
+  };
+});

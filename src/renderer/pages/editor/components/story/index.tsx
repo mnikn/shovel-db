@@ -1,7 +1,8 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 import { useStoryStore } from '../../../../store';
 import useLayout from './use_layout';
+import NodeCard from './node_card';
 
 export default function Story() {
   const [zoomDom, setZoomDom] = useState<HTMLDivElement | null>(null);
@@ -23,10 +24,13 @@ export default function Story() {
     }
   }, []);
 
+  if (!currentStorylet) {
+    return null;
+  }
+
   return (
     <Box
       id='main-content'
-      style={{ overflow: 'hidden' }}
       sx={{
         overflow: 'hidden',
         height: '100%',
@@ -52,42 +56,32 @@ export default function Story() {
           }}
         >
           {treeData.map((item) => {
+            const nodeData = currentStorylet.nodes[item.id];
             return (
               <div key={item.id}>
-                <>
-                  {dragingNode && item !== dragingNode && (
-                    <div
-                      className='w-32 h-32 bg-pink-500 opacity-80 absolute hover:opacity-100 rounded-full cursor-pointer'
-                      style={{
-                        left: item.y + 700,
-                        top: item.x + 20,
-                        zIndex: 3,
-                      }}
-                      onMouseEnter={() => {
-                        if (!currentStorylet) {
-                          return;
-                        }
-                        const currentNode = currentStorylet.nodes[item.id];
-                        dragTargetRef.current = {
-                          node: currentNode,
-                          type: 'child',
-                        };
-                      }}
-                      onMouseLeave={() => {
-                        dragTargetRef.current = null;
-                      }}
-                    />
-                  )}
-                  {/* <NodeCard
-                    key={item.id}
-                    nodeId={item.id}
-                    pos={{
-                      x: item.x0,
-                      y: item.y0,
+                {dragingNode && item !== dragingNode && (
+                  <div
+                    className='w-32 h-32 bg-pink-500 opacity-80 absolute hover:opacity-100 rounded-full cursor-pointer'
+                    style={{
+                      left: item.y + 700,
+                      top: item.x + 20,
+                      zIndex: 3,
                     }}
-                    data={item}
-                  /> */}
-                </>
+                    onMouseEnter={() => {
+                      if (!currentStorylet) {
+                        return;
+                      }
+                      dragTargetRef.current = {
+                        node: nodeData,
+                        type: 'child',
+                      };
+                    }}
+                    onMouseLeave={() => {
+                      dragTargetRef.current = null;
+                    }}
+                  />
+                )}
+                {<NodeCard pos={{ x: item.x0, y: item.y0 }} node={nodeData} />}
               </div>
             );
           })}
@@ -101,25 +95,6 @@ export default function Story() {
             pointerEvents: 'none',
           }}
         />
-
-        <div
-          id='connections'
-          className='absolute w-full h-full'
-          style={{
-            overflow: 'inherit',
-          }}
-        >
-          {linkData.map((item) => {
-            return (
-              <></>
-              // <Link
-              //   key={item.from.data.id + '-' + item.target.data.id}
-              //   from={item.from}
-              //   target={item.target}
-              // />
-            );
-          })}
-        </div>
       </Box>
     </Box>
   );

@@ -1,5 +1,6 @@
 import { RawJson } from '../../../type';
 import { UUID } from '../../../utils/uuid';
+import { cloneDeep } from 'lodash';
 import { Node, NodeLink, Tree } from '../tree';
 
 export enum NodeType {
@@ -7,7 +8,7 @@ export enum NodeType {
   Sentence = 'sentence',
   Branch = 'branch',
   Action = 'action',
-  Custom = 'custom'
+  Custom = 'custom',
 }
 
 type Code = string;
@@ -20,12 +21,11 @@ export interface StoryletNodeData {
   enableCheck?: Code;
   beforeJumpProcess?: Code;
   afterJumpProcess?: Code;
-  order: number; 
 }
 export class StoryletNode<D extends StoryletNodeData> extends Node<D> {
-    get idPrefix(){
-        return "storylet_node"
-    }
+  get idPrefix() {
+    return 'storylet_node';
+  }
 }
 
 // init node
@@ -38,12 +38,11 @@ export class StoryletRootNode extends StoryletNode<StoryletRootNodeData> {
       extraData: {},
       beforeJumpProcess: '',
       afterJumpProcess: '',
-      order: 1
     };
   }
 
-  get idPrefix(){
-    return "root"
+  get idPrefix() {
+    return 'root';
   }
 
   static fromJson(json: any): Node<any> {
@@ -76,12 +75,11 @@ export class StoryletSentenceNode extends StoryletNode<StoryletSentenceNodeData>
       extraData: {},
       actor: null,
       actorPortrait: null,
-      order: 1
     };
   }
 
-  get idPrefix(){
-    return "sentence"
+  get idPrefix() {
+    return 'sentence';
   }
 
   static fromJson(json: RawJson): StoryletSentenceNode {
@@ -96,6 +94,13 @@ export class StoryletSentenceNode extends StoryletNode<StoryletSentenceNodeData>
     instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
     instance.data.afterJumpProcess = json.data.afterJumpProcess;
     instance.data.enableCheck = json.data.enableCheck;
+    return instance;
+  }
+
+  public clone(): StoryletSentenceNode {
+    const instance = new StoryletSentenceNode();
+    instance.data = cloneDeep(this.data);
+    instance.data.content = `content_${UUID()}`;
     return instance;
   }
 }
@@ -118,12 +123,11 @@ export class StoryletBranchNode extends StoryletNode<StoryletBranchNodeData> {
       extraData: {},
       actor: null,
       actorPortrait: null,
-      order: 1
     };
   }
 
-  get idPrefix(){
-    return "branch"
+  get idPrefix() {
+    return 'branch';
   }
 
   static fromJson(json: any): StoryletBranchNode {
@@ -140,6 +144,13 @@ export class StoryletBranchNode extends StoryletNode<StoryletBranchNodeData> {
     instance.data.enableCheck = json.data.enableCheck;
     return instance;
   }
+
+  public clone(): StoryletBranchNode {
+    const instance = new StoryletBranchNode();
+    instance.data = cloneDeep(this.data);
+    instance.data.content = `content_${UUID()}`;
+    return instance;
+  }
 }
 
 // action node
@@ -154,7 +165,6 @@ export class StoryletCustomNode extends StoryletNode<StoryletCustomNodeData> {
       beforeJumpProcess: '',
       customType: '',
       extraData: {},
-      order: 1
     };
   }
 
@@ -185,9 +195,11 @@ export class Storylet extends Tree<StoryletNodeData> {
   }
 
   get root(): StoryletRootNode | null {
-    return Object.values(this.nodes).find((node) => {
-      return node.data.type === NodeType.Root
-    }) || null
+    return (
+      Object.values(this.nodes).find((node) => {
+        return node.data.type === NodeType.Root;
+      }) || null
+    );
   }
 
   public findParent(
@@ -226,22 +238,29 @@ export class Storylet extends Tree<StoryletNodeData> {
     return data;
   }
 
-  public upsertLink(fromNodeId: string, targetNodeId: string, linkData?: RawJson) {
-    super.upsertLink(fromNodeId, targetNodeId, linkData)
-    this.nodes[targetNodeId].data.order = this.getNodeChildren(fromNodeId).length
-  }
+  // public upsertLink(
+  //   fromNodeId: string,
+  //   targetNodeId: string,
+  //   linkData?: RawJson
+  // ) {
+  //   super.upsertLink(fromNodeId, targetNodeId, linkData);
+  //   this.nodes[targetNodeId].data.order =
+  //     this.nodes[targetNodeId].data.order !== -1
+  //       ? this.nodes[targetNodeId].data.order
+  //       : this.getNodeChildren(fromNodeId).length;
+  // }
 
-  public unlink(linkId: string) {
-    const parent = this.links[linkId].target
-    const unlinkNodeOrder = this.links[linkId].source.data.order
-    super.unlink(linkId)
-    this.getNodeChildren(parent.id).forEach((item) => {
-      if (item.data.order >= unlinkNodeOrder) {
-        item.data.order -= 1
-      }
-    })
-    delete this.links[linkId];
-  }
+  // public unlink(linkId: string) {
+  //   const parent = this.links[linkId].target;
+  //   const unlinkNodeOrder = this.links[linkId].source.data.order;
+  //   super.unlink(linkId);
+  //   this.getNodeChildren(parent.id).forEach((item) => {
+  //     if (item.data.order >= unlinkNodeOrder) {
+  //       item.data.order -= 1;
+  //     }
+  //   });
+  //   delete this.links[linkId];
+  // }
 
   public getNodeChildrenLinks(id: string): NodeLink[] {
     return Object.values(this.links).filter((item) => item.source.id === id);
@@ -250,24 +269,27 @@ export class Storylet extends Tree<StoryletNodeData> {
   public static fromJson(json: RawJson): Storylet {
     const instance = new Storylet();
 
-    instance.nodes = Object.keys(json.nodes).reduce((res: RawJson, k: string) => {
-      const nodeType = json.nodes[k].data.type;
-      const nodeData = json.nodes[k];
-      let instance: RawJson | null = null;
-      if (nodeType === NodeType.Sentence) {
-        instance = StoryletSentenceNode.fromJson(nodeData);
-      } else if (nodeType === NodeType.Branch) {
-        instance = StoryletBranchNode.fromJson(nodeData);
-      } else if (nodeType === NodeType.Custom) {
-        instance = StoryletCustomNode.fromJson(nodeData);
-      } else if (nodeType === NodeType.Root) {
-        instance = StoryletRootNode.fromJson(nodeData);
-      }
-      if (instance) {
-        res[k] = instance;
-      }
-      return res;
-    }, {});
+    instance.nodes = Object.keys(json.nodes).reduce(
+      (res: RawJson, k: string) => {
+        const nodeType = json.nodes[k].data.type;
+        const nodeData = json.nodes[k];
+        let instance: RawJson | null = null;
+        if (nodeType === NodeType.Sentence) {
+          instance = StoryletSentenceNode.fromJson(nodeData);
+        } else if (nodeType === NodeType.Branch) {
+          instance = StoryletBranchNode.fromJson(nodeData);
+        } else if (nodeType === NodeType.Custom) {
+          instance = StoryletCustomNode.fromJson(nodeData);
+        } else if (nodeType === NodeType.Root) {
+          instance = StoryletRootNode.fromJson(nodeData);
+        }
+        if (instance) {
+          res[k] = instance;
+        }
+        return res;
+      },
+      {}
+    );
 
     instance.links = Object.keys(json.links).reduce((res: any, k: string) => {
       const data = json.links[k];
