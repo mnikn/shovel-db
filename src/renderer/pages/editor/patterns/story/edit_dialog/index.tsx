@@ -69,7 +69,11 @@ schemaObj.fields.push(
   {
     id: 'name6',
     name: 'name',
-    data: new SchemaFieldString(),
+    data: new SchemaFieldString({
+      colSpan: 12,
+      type: 'code',
+      codeLang: 'python',
+    }),
   },
   {
     id: 'obj',
@@ -108,6 +112,15 @@ function generateSchema(node: StoryletNode<StoryletNodeData>) {
             colSpan: 12,
             autoFocus: true,
             needI18n: true,
+          }),
+        },
+        {
+          name: 'Enable check',
+          id: 'enableCheck',
+          data: new SchemaFieldString({
+            type: 'code',
+            colSpan: 12,
+            codeLang: 'python',
           }),
         }
       );

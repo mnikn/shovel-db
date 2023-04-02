@@ -1,9 +1,11 @@
 import { Box, CssBaseline, ThemeProvider } from '@mui/material';
 import React from 'react';
-import theme from '../theme';
 import Editor from '../pages/editor';
 import { ExplorerStoreProvider, StoryStoreProvider } from '../store';
 import { ProjectStoreProvider } from '../store/project';
+import theme from '../theme';
+
+import 'monaco-editor/esm/vs/editor/editor.main.js';
 
 export default function App(): JSX.Element {
   return (

@@ -30,10 +30,12 @@
     "d3": "^7.8.4",
     "hox": "^2.1.0",
     "lodash": "^4.17.21",
+    "monaco-editor": "^0.36.1",
     "react": "^18.2.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-monaco-editor": "^0.52.0"
   },
   "devDependencies": {
     "@types/d3": "^7.4.0",

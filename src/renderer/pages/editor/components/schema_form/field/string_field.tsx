@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { SchemaFieldString } from '../../../../../models/schema';
 // import MonacoEditor from 'react-monaco-editor';
 import { get, uniq } from 'lodash';
-import { Box, TextField } from '@mui/material';
-import { useStoryStore } from '../../../../../store';
+import { Box, Container, TextField } from '@mui/material';
 import { LANG } from '../../../../../../constants/i18n';
 import { Translation } from '../../../../../store/story/translation';
+import MonacoEditor from 'react-monaco-editor/lib/editor';
+
 // import classNames from 'classnames';
 
 const CodeFieldSchema = new SchemaFieldString();
@@ -171,37 +172,65 @@ function FieldString({
         flexGrow: 1,
       }}
     >
-      <TextField
-        sx={{
-          width: '100%',
-          height: '100%',
-        }}
-        required={schema.config.required}
-        label={label}
-        size='small'
-        multiline={schema.config.type === 'multiline'}
-        rows={schema.config.type === 'multiline' ? 4 : undefined}
-        value={contentValue || schema.config.defaultValue}
-        onChange={onTextChange}
-        autoFocus={schema.config.autoFocus}
-      />
-      {/* {schema.config.type === 'code' && (
-        <Editor
-          schema={schema}
-          contentValue={contentValue}
-          onValueChange={(v) => {
-            setContentValue(v);
-            if (onValueChange) {
-              onValueChange(v);
-            }
+      {schema.config.type !== 'code' && (
+        <TextField
+          sx={{
+            width: '100%',
+            height: '100%',
           }}
+          required={schema.config.required}
+          label={label}
+          size='small'
+          multiline={schema.config.type === 'multiline'}
+          rows={schema.config.type === 'multiline' ? 4 : undefined}
+          value={contentValue || schema.config.defaultValue}
+          onChange={onTextChange}
+          autoFocus={schema.config.autoFocus}
         />
-      )} */}
-      {/* <div className='absoulte bottom-0'>
-        {errorText && (
-          <div className='error text-rose-500 text-sm'>{errorText}</div>
-        )}
-      </div> */}
+      )}
+
+      {schema.config.type === 'code' && (
+        <Container
+          sx={{
+            width: '100%',
+            height: schema.config.height || '300px',
+            position: 'relative',
+            p: 4,
+            px: '0!important',
+          }}
+        >
+          {label && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: '0px',
+              }}
+            >
+              {label}
+            </Box>
+          )}
+          <MonacoEditor
+            width='100%'
+            height='100%'
+            language={schema.config.codeLang}
+            theme='vs-dark'
+            value={contentValue}
+            options={{
+              insertSpaces: true,
+              autoIndent: 'full',
+              scrollbar: {
+                horizontal: 'auto',
+                vertical: 'auto',
+              },
+            }}
+            onChange={(v) => {
+              if (onValueChange) {
+                onValueChange(v);
+              }
+            }}
+          />
+        </Container>
+      )}
     </Box>
   );
 }

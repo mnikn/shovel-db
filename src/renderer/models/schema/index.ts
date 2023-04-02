@@ -114,37 +114,38 @@ export function validateValue(
       return 'extra_field_' + UUID();
     }
 
-    if (schema.config.type === 'code') {
-      if (!!schema.config.template) {
-        const fields = uniq(
-          (schema.config.template || '')
-            .match(/(\{{2}\w*\}{2})/g)
-            ?.map((item2) => item2.substring(2, item2.length - 2)) || []
-        );
+    // if (schema.config.type === 'code') {
+    //   if (!!schema.config.template) {
+    //     const fields = uniq(
+    //       (schema.config.template || '')
+    //         .match(/(\{{2}\w*\}{2})/g)
+    //         ?.map((item2) => item2.substring(2, item2.length - 2)) || []
+    //     );
 
-        if (!value) {
-          value = {
-            fields: {},
-            value: '',
-          };
-        }
+    //     if (!value) {
+    //       value = {
+    //         fields: {},
+    //         value: '',
+    //       };
+    //     }
 
-        value.fields = fields.reduce((res: any, k) => {
-          res[k] = value?.fields[k] || null;
-          return res;
-        }, {});
-        let finalValue = schema.config.template;
-        fields.forEach((f) => {
-          finalValue = finalValue.replaceAll(`{{${f}}}`, value.fields[f]);
-        });
-        return { value: finalValue, fields: value.fields };
-      }
-      if (typeof value !== 'object' || !value) {
-        return { value: null, fields: {} };
-      } else {
-        return value;
-      }
-    }
+    //     value.fields = fields.reduce((res: any, k) => {
+    //       res[k] = value?.fields[k] || null;
+    //       return res;
+    //     }, {});
+    //     let finalValue = schema.config.template;
+    //     fields.forEach((f) => {
+    //       finalValue = finalValue.replaceAll(`{{${f}}}`, value.fields[f]);
+    //     });
+    //     return { value: finalValue, fields: value.fields };
+    //   }
+    //   if (typeof value !== 'object' || !value) {
+    //     return { value: null, fields: {} };
+    //   } else {
+    //     return value;
+    //   }
+    // }
+
     if (typeof value === 'string') {
       return value;
     } else {
