@@ -1,8 +1,8 @@
 import { Box } from '@mui/material';
 import React from 'react';
 import { useExplorerStore } from '../../store';
-import StaticData from './components/static_data';
-import Story from './components/story';
+import StaticData from './patterns/static_data';
+import Story from './patterns/story';
 
 export default function Main() {
   const { currentOpenFile } = useExplorerStore();

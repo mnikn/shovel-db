@@ -1,7 +1,5 @@
-import { Box, Container, Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import React from 'react';
-import { UUID } from '../../../utils/uuid';
-import { buildFileTree } from '../../models/explorer';
 import Explorer from './components/explorer';
 import Main from './main';
 

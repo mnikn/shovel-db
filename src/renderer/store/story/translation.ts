@@ -84,6 +84,7 @@ export default function useTranslation() {
   );
 
   return {
+    currentLang,
     translations,
     getTranslationsForKey,
     hasTranslateKey,
