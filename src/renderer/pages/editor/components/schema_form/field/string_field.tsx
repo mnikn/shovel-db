@@ -1,93 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { SchemaFieldString } from '../../../../../models/schema';
-// import MonacoEditor from 'react-monaco-editor';
-import { get, uniq } from 'lodash';
 import { Box, Container, TextField } from '@mui/material';
-import { LANG } from '../../../../../../constants/i18n';
-import { Translation } from '../../../../../store/story/translation';
+import React, { useEffect, useState } from 'react';
 import MonacoEditor from 'react-monaco-editor/lib/editor';
-
-// import classNames from 'classnames';
-
-const CodeFieldSchema = new SchemaFieldString();
-
-const Editor = ({
-  schema,
-  contentValue,
-  onValueChange,
-}: {
-  schema: SchemaFieldString;
-  contentValue: any;
-  onValueChange?: (value: any) => void;
-}) => {
-  const fields = uniq(
-    (schema.config.template || '')
-      .match(/(\{{2}\w*\}{2})/g)
-      ?.map((item) => item.substring(2, item.length - 2)) || []
-  );
-
-  let finalValue = !schema.config.template
-    ? contentValue?.value
-    : schema.config.template || '';
-  if (schema.config.template) {
-    fields.forEach((f) => {
-      finalValue = finalValue.replaceAll(
-        `{{${f}}}`,
-        contentValue.fields[f] || `{{${f}}}`
-      );
-    });
-  }
-
-  return null;
-
-  //   return (
-  //     <div className='flex w-full'>
-  //       <MonacoEditor
-  //         width='100%'
-  //         height={schema.config.height}
-  //         language={schema.config.codeLang}
-  //         theme='vs-dark'
-  //         value={finalValue}
-  //         options={{
-  //           readOnly: !!schema.config.template,
-  //           insertSpaces: true,
-  //         }}
-  //         onChange={(v) => {
-  //           if (onValueChange) {
-  //             onValueChange({
-  //               fields: [],
-  //               value: v,
-  //             });
-  //           }
-  //         }}
-  //       />
-  //       {fields.length > 0 && (
-  //         <div className='flex flex-col ml-2'>
-  //           {fields.map((f) => {
-  //             return (
-  //               <FieldString
-  //                 label={f}
-  //                 schema={CodeFieldSchema}
-  //                 value={contentValue.fields[f] || ''}
-  //                 onValueChange={(v) => {
-  //                   if (onValueChange) {
-  //                     onValueChange({
-  //                       fields: { ...contentValue.fields, [f]: v },
-  //                       value: (schema.config.template || '').replaceAll(
-  //                         `{{${f}}}`,
-  //                         v
-  //                       ),
-  //                     });
-  //                   }
-  //                 }}
-  //               />
-  //             );
-  //           })}
-  //         </div>
-  //       )}
-  //     </div>
-  //   );
-};
+import { LANG } from '../../../../../../constants/i18n';
+import { SchemaFieldString } from '../../../../../models/schema';
+import { Translation } from '../../../../../store/story/translation';
 
 function FieldString({
   label,

@@ -23,6 +23,7 @@ import { UUID } from '../../../../../../utils/uuid';
 import FieldString from './string_field';
 import {
   Box,
+  Button,
   Container,
   FormControl,
   FormLabel,
@@ -33,6 +34,8 @@ import { RawJson } from '../../../../../../type';
 import { borderRadius } from '../../../../../theme';
 import { Translation } from '../../../../../store/story/translation';
 import { LANG } from '../../../../../../constants/i18n';
+import { grey } from '@mui/material/colors';
+import FieldFile from './file_field';
 
 export function FieldContainer({
   schema,
@@ -92,20 +95,35 @@ export function FieldContainer({
           />
         </Grid>
       )}
+      {schema instanceof SchemaFieldFile && (
+        <Grid item xs={schema.config.colSpan} key={schema.config.fieldId}>
+          <FieldFile
+            label={obj?.name || obj?.id}
+            schema={schema}
+            value={val}
+            onValueChange={(v) => handleValueChange(v, obj)}
+          />
+        </Grid>
+      )}
       {schema instanceof SchemaFieldObject && (
         <Grid
           item
           xs={schema.config.colSpan}
-          className='border border-gray-300 rounded-md p-2'
           key={schema.config.fieldId}
+          sx={{
+            border: `1px solid ${grey[400]}`,
+            ...borderRadius.normal,
+            alignItems: 'center',
+            m: 2,
+            pr: 2,
+            pb: 2,
+          }}
         >
-          <FormControl
+          <Container
             sx={{
               maxHeight: '500px',
               width: '100%',
-              border: '1px solid rgb(192, 192, 192)',
-              ...borderRadius.normal,
-              p: 1,
+              //   p: 1,
             }}
           >
             {obj && (
@@ -113,18 +131,29 @@ export function FieldContainer({
                 {obj?.name || obj?.id}
               </FormLabel>
             )}
-            <FieldContainer
-              translations={translations}
-              currentLang={currentLang}
-              key={schema.config.fieldId}
-              aria-labelledby={schema.config.fieldId}
-              schema={schema}
-              value={val}
-              onValueChange={(v) => handleValueChange(v, obj)}
-              isRoot={false}
-            />
-          </FormControl>
+
+            {schema.fields.map((item, i) => {
+              if (item.data.config.enableWhen) {
+                const fn = eval(item.data.config.enableWhen);
+                if (!fn(value)) {
+                  return null;
+                }
+              }
+              return renderContent(item.data, get(value, item.id), item);
+            })}
+          </Container>
         </Grid>
+      )}
+      {schema instanceof SchemaFieldArray && (
+        <FieldArray
+          label={obj?.name || obj?.id}
+          schema={schema}
+          translations={translations}
+          currentLang={currentLang}
+          value={val}
+          onValueChange={(v) => handleValueChange(v, obj)}
+          isRoot={isRoot}
+        />
       )}
     </>
   );
@@ -133,8 +162,13 @@ export function FieldContainer({
       <Grid
         container
         spacing={2}
+        rowGap={2}
         sx={{
-          p: isRoot ? 0 : 2,
+          //   p: isRoot ? 0 : 1,
+          // m: isRoot ? 0 : 1,
+          alignItems: 'center',
+          border: isRoot ? undefined : `1px solid ${grey[400]}`,
+          ...borderRadius.normal,
         }}
       >
         {schema.fields.map((item, i) => {
@@ -144,245 +178,12 @@ export function FieldContainer({
               return null;
             }
           }
-          //   if (item.data.type === SchemaFieldType.Number) {
-          //     return (
-          //       <div
-          //         style={{
-          //           gridColumn: `span ${item.data.config.colSpan} / span ${item.data.config.colSpan}`,
-          //         }}
-          //         key={item.id}
-          //       >
-          //         <FieldNumber
-          //           label={item.name || item.id}
-          //           schema={item.data as SchemaFieldNumber}
-          //           value={value[item.id]}
-          //           onValueChange={(v) => objectValueChange(v, item.id)}
-          //         />
-          //       </div>
-          //     );
-          //   }
-
-          //   if (item.data.type === SchemaFieldType.Select) {
-          //     return (
-          //       <div
-          //         style={{
-          //           gridColumn: `span ${item.data.config.colSpan} / span ${item.data.config.colSpan}`,
-          //         }}
-          //         key={item.id}
-          //       >
-          //         <FieldSelect
-          //           label={item.name || item.id}
-          //           schema={item.data as SchemaFieldSelect}
-          //           value={value[item.id]}
-          //           onValueChange={(v) => objectValueChange(v, item.id)}
-          //         />
-          //       </div>
-          //     );
-          //   }
-
-          //   if (item.data.type === SchemaFieldType.ActorSelect) {
-          //     return (
-          //       <div
-          //         style={{
-          //           gridColumn: `span ${item.data.config.colSpan} / span ${item.data.config.colSpan}`,
-          //         }}
-          //         key={item.id}
-          //       >
-          //         <FieldActorSelect
-          //           label={item.name || item.id}
-          //           schema={item.data as SchemaFieldActorSelect}
-          //           value={value[item.id]}
-          //           onValueChange={(v) => objectValueChange(v, item.id)}
-          //         />
-          //       </div>
-          //     );
-          //   }
-
-          //   if (item.data.type === SchemaFieldType.File) {
-          //     return (
-          //       <div
-          //         style={{
-          //           gridColumn: `span ${item.data.config.colSpan} / span ${item.data.config.colSpan}`,
-          //         }}
-          //         key={item.id}
-          //       >
-          //         <FieldFile
-          //           label={item.name || item.id}
-          //           schema={item.data as SchemaFieldFile}
-          //           value={value[item.id]}
-          //           onValueChange={(v) => objectValueChange(v, item.id)}
-          //         />
-          //       </div>
-          //     );
-          //   }
-
-          //   if (item.data.type === SchemaFieldType.Boolean) {
-          //     return (
-          //       <div
-          //         style={{
-          //           gridColumn: `span ${item.data.config.colSpan} / span ${item.data.config.colSpan}`,
-          //         }}
-          //         key={item.id}
-          //       >
-          //         <FieldBoolean
-          //           label={item.name || item.id}
-          //           schema={item.data as SchemaFieldBoolean}
-          //           value={value[item.id]}
-          //           onValueChange={(v) => objectValueChange(v, item.id)}
-          //         />
-          //       </div>
-          //     );
-          //   }
-
-          //   if (item.data.type === SchemaFieldType.Object) {
-          //     return (
-          //       <Grid
-          //         item
-          //         xs={item.data.config.colSpan}
-          //         className='border border-gray-300 rounded-md p-2'
-          //         key={item.data.config.fieldId}
-          //       >
-          //         <FormControl
-          //           sx={{
-          //             maxHeight: '500px',
-          //             width: '100%',
-          //             border: '1px solid rgb(192, 192, 192)',
-          //             ...borderRadius.normal,
-          //             p: 1,
-          //           }}
-          //         >
-          //           <FormLabel id={item.data.config.fieldId}>
-          //             {item.name}
-          //           </FormLabel>
-          //           <FieldContainer
-          //             key={item.data.config.fieldId}
-          //             aria-labelledby={item.data.config.fieldId}
-          //             schema={item.data}
-          //             value={get(value, item.id)}
-          //             onValueChange={(v) => objectValueChange(v, item.id)}
-          //           />
-          //         </FormControl>
-          //       </Grid>
-          //     );
-          //   }
-
-          if (item.data.type === SchemaFieldType.Array) {
-            return (
-              <FieldArray
-                key={item.id}
-                label={item.name || item.id}
-                schema={item.data as SchemaFieldArray}
-                translations={translations}
-                currentLang={currentLang}
-                value={get(value, item.id)}
-                onValueChange={(v) => objectValueChange(v, item.id)}
-              />
-            );
-          }
-
           return renderContent(item.data, get(value, item.id), item);
         })}
       </Grid>
     );
   }
   return renderContent(schema, value);
-  //   else if (schema.type === SchemaFieldType.Number) {
-  //     return (
-  //       <div
-  //         className={className}
-  //         style={{
-  //           gridColumn: `span ${schema.config.colSpan} / span ${schema.config.colSpan}`,
-  //         }}
-  //       >
-  //         <FieldNumber
-  //           schema={schema as SchemaFieldNumber}
-  //           value={value}
-  //           onValueChange={(v) => {
-  //             if (onValueChange) {
-  //               onValueChange(v);
-  //             }
-  //           }}
-  //         />
-  //       </div>
-  //     );
-  //   } else if (schema.type === SchemaFieldType.Select) {
-  //     return (
-  //       <div
-  //         className={className}
-  //         style={{
-  //           gridColumn: `span ${schema.config.colSpan} / span ${schema.config.colSpan}`,
-  //         }}
-  //       >
-  //         <FieldSelect
-  //           schema={schema as SchemaFieldSelect}
-  //           value={value}
-  //           onValueChange={(v) => {
-  //             if (onValueChange) {
-  //               onValueChange(v);
-  //             }
-  //           }}
-  //         />
-  //       </div>
-  //     );
-  //   }
-  //   else if (schema.type === SchemaFieldType.ActorSelect) {
-  //     return (
-  //       <div
-  //         className={className}
-  //         style={{
-  //           gridColumn: `span ${schema.config.colSpan} / span ${schema.config.colSpan}`,
-  //         }}
-  //       >
-  //         <FieldActorSelect
-  //           schema={schema as SchemaFieldActorSelect}
-  //           value={value}
-  //           onValueChange={(v) => {
-  //             if (onValueChange) {
-  //               onValueChange(v);
-  //             }
-  //           }}
-  //         />
-  //       </div>
-  //     );
-  //   } else if (schema.type === SchemaFieldType.File) {
-  //     return (
-  //       <div
-  //         className={className}
-  //         style={{
-  //           gridColumn: `span ${schema.config.colSpan} / span ${schema.config.colSpan}`,
-  //         }}
-  //       >
-  //         <FieldFile
-  //           schema={schema as SchemaFieldFile}
-  //           value={value}
-  //           onValueChange={(v) => {
-  //             if (onValueChange) {
-  //               onValueChange(v);
-  //             }
-  //           }}
-  //         />
-  //       </div>
-  //     );
-  //   } else if (schema.type === SchemaFieldType.Boolean) {
-  //     return (
-  //       <div
-  //         className={className}
-  //         style={{
-  //           gridColumn: `span ${schema.config.colSpan} / span ${schema.config.colSpan}`,
-  //         }}
-  //       >
-  //         <FieldBoolean
-  //           schema={schema as SchemaFieldBoolean}
-  //           value={value}
-  //           onValueChange={(v) => {
-  //             if (onValueChange) {
-  //               onValueChange(v);
-  //             }
-  //           }}
-  //         />
-  //       </div>
-  //     );
-  //   }
 }
 
 export function FieldArray({
@@ -392,6 +193,7 @@ export function FieldArray({
   translations,
   currentLang,
   onValueChange,
+  isRoot,
 }: {
   label?: string;
   schema: SchemaFieldArray;
@@ -399,6 +201,7 @@ export function FieldArray({
   translations: Translation;
   currentLang: LANG;
   onValueChange?: (value: any) => void;
+  isRoot: boolean;
 }) {
   const [list, setList] = useState<RawJson[]>(
     (value || []).map((item) => {
@@ -468,33 +271,74 @@ export function FieldArray({
   };
 
   return (
-    <div
-      className='border border-gray-300 rounded-md p-2 flex flex-col'
-      style={{
-        gridColumn: `span ${schema.config.colSpan} / span ${schema.config.colSpan}`,
+    <Grid
+      item
+      xs={schema.config.colSpan}
+      spacing={2}
+      rowGap={2}
+      sx={{
+        p: 2,
+        m: 2,
+        ml: 3,
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: schema.config.fitRestHeight ? 1 : 0,
+        overflow: 'auto',
+        border: isRoot ? undefined : `1px solid ${grey[400]}`,
+        ...borderRadius.normal,
       }}
     >
-      <div className='font-bold self-center mb-2'>{label}</div>
-      <div className='flex flex-col w-full'>
-        <div
-          className='flex flex-col w-full overflow-auto'
-          style={{
-            height: '200px',
+      <Stack
+        spacing={1}
+        sx={{
+          flexGrow: 1,
+          overflow: 'auto',
+        }}
+      >
+        {label && <FormLabel>{label}</FormLabel>}
+        <Stack
+          sx={{
+            width: '100%',
+            flexGrow: 1,
+            overflow: 'auto',
+            maxHeight: schema.config.height,
           }}
+          spacing={1}
         >
-          {list.map((item, i) => {
-            return (
-              <div key={item.id} className='flex w-full items-center'>
-                <div className='flex flex-grow w-full mb-2 items-center'>
-                  <FieldContainer
-                    translations={translations}
-                    currentLang={currentLang}
-                    schema={schema.fieldSchema as SchemaField}
-                    value={item.value}
-                    onValueChange={(v) => onItemChange(v, i)}
-                    isRoot={false}
-                  />
-                  {/* <CgArrowUp
+          <Stack
+            sx={{
+              flexGrow: 1,
+              width: '100%',
+              overflow: 'auto',
+            }}
+            spacing={1}
+          >
+            {list.map((item, i) => {
+              return (
+                <Stack
+                  key={item.id}
+                  direction={'row'}
+                  sx={{
+                    alignItems: 'center',
+                  }}
+                >
+                  <Stack
+                    direction='row'
+                    sx={{
+                      flexGrow: 1,
+                      alignItems: 'center',
+                    }}
+                    spacing={4}
+                  >
+                    <FieldContainer
+                      translations={translations}
+                      currentLang={currentLang}
+                      schema={schema.fieldSchema as SchemaField}
+                      value={item.value}
+                      onValueChange={(v) => onItemChange(v, i)}
+                      isRoot={false}
+                    />
+                    {/* <CgArrowUp
                     className='cursor-pointer ml-2 mr-2 text-gray-800 hover:text-gray-500 transition-all flex-shrink-0'
                     onClick={() => moveUpItem(i)}
                   />
@@ -506,19 +350,25 @@ export function FieldArray({
                     className='cursor-pointer mr-2 text-gray-800 hover:text-gray-500 transition-all flex-shrink-0'
                     onClick={() => deleteItem(i)}
                   /> */}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <button
-          className='w-full border border-gray-300 hover:text-gray-400 p-2 border-dashed transition-all flex items-center justify-center'
-          onClick={addItem}
-        >
-          {/* <CgMathPlus className='mr-2' />  */}
-          Add Item
-        </button>
-      </div>
-    </div>
+                  </Stack>
+                </Stack>
+              );
+            })}
+          </Stack>
+          <Button
+            variant='outlined'
+            sx={{
+              width: '100%',
+              marginTop: 'auto',
+            }}
+            // className='w-full border border-gray-300 hover:text-gray-400 p-2 border-dashed transition-all flex items-center justify-center'
+            onClick={addItem}
+          >
+            {/* <CgMathPlus className='mr-2' />  */}
+            Add Item
+          </Button>
+        </Stack>
+      </Stack>
+    </Grid>
   );
 }

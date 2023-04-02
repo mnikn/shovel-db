@@ -1,5 +1,5 @@
 import { Box, Stack } from '@mui/material';
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import Explorer from './components/explorer';
 import Main from './main';
 

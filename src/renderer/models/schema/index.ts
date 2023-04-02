@@ -397,8 +397,8 @@ export class SchemaFieldArray extends SchemaField {
 
   public fieldSchema: SchemaField;
 
-  constructor(fieldSchema: SchemaField) {
-    super();
+  constructor(fieldSchema: SchemaField, extraConfig?: RawJson) {
+    super(extraConfig);
     this.fieldSchema = fieldSchema;
     this.fieldSchema.config.colSpan = 12;
   }
