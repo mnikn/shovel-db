@@ -94,14 +94,14 @@ function generateSchema(node: StoryletNode<StoryletNodeData>) {
     case 'sentence': {
       schema.fields.push(
         {
-          name: 'user id',
-          id: 'userId',
+          name: 'Custom node id',
+          id: 'customNodeId',
           data: new SchemaFieldString({
             colSpan: 4,
           }),
         },
         {
-          name: 'content',
+          name: 'Content',
           id: 'content',
           data: new SchemaFieldString({
             type: 'multiline',
@@ -126,7 +126,8 @@ export default function EditDialog({
   close: () => void;
 }) {
   const [currentTab, setCurrentTab] = useState<TAB>(TAB.BASIC);
-  const { translations, currentLang, updateTranslations } = useStoryStore();
+  const { translations, currentLang, updateTranslations, updateNode } =
+    useStoryStore();
   const [formNodeData, setFormNodeData] = useState(cloneDeep(node.data));
 
   const formTranslations = useMemo(() => {
@@ -171,6 +172,8 @@ export default function EditDialog({
           variant='contained'
           onClick={() => {
             updateTranslations(formTranslations);
+            node.data = formNodeData;
+            updateNode(node);
             close();
           }}
         >

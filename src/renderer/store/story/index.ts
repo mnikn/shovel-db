@@ -130,6 +130,17 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
     nodeView.focus();
   }, []);
 
+  const updateNode = useCallback(
+    (data: StoryletNode<StoryletNodeData>) => {
+      if (!currentStorylet) {
+        return;
+      }
+      currentStorylet.upsertNode(data);
+      setCurrentStorylet(currentStorylet.clone());
+    },
+    [currentStorylet]
+  );
+
   const deleteNode = useCallback(
     (id: string) => {
       if (!currentStorylet) {
@@ -236,6 +247,7 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
     insertChildNode,
     insertSiblingNode,
     deleteNode,
+    updateNode,
     moveSelection,
     ...translationModule,
   };

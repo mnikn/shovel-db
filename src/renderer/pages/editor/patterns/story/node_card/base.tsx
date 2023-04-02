@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import React, { useCallback, useRef, useLayoutEffect, useState } from 'react';
 import {
   StoryletBranchNode,
@@ -162,6 +162,22 @@ export default function BaseNodeCard({
       onKeyDown={onKeyDown}
     >
       {children}
+      {node.data.customNodeId && (
+        <Container
+          sx={{
+            position: 'absolute',
+            top: '-80px',
+            left: '50%',
+            fontSize: '2.5rem',
+            textAlign: 'center',
+            color: 'common.white',
+            fontWeight: 'bold',
+            transform: 'translateX(-50%)',
+          }}
+        >
+          {node.data.customNodeId}
+        </Container>
+      )}
       <EditDialog
         node={node}
         open={editOpen}

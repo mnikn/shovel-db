@@ -15,7 +15,7 @@ type Code = string;
 
 // base node
 export interface StoryletNodeData {
-  userId?: string;
+  customNodeId?: string;
   type: NodeType;
   extraData: RawJson;
   enableCheck?: Code;
@@ -54,7 +54,7 @@ export class StoryletRootNode extends StoryletNode<StoryletRootNodeData> {
     const instance = new StoryletRootNode();
     instance.id = json.id;
     instance.data.extraData = json.data.extraData || {};
-    instance.data.userId = json.data.userId;
+    instance.data.customNodeId = json.data.customNodeId;
     instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
     instance.data.afterJumpProcess = json.data.afterJumpProcess;
     instance.data.enableCheck = json.data.enableCheck;
@@ -95,7 +95,7 @@ export class StoryletSentenceNode extends StoryletNode<StoryletSentenceNodeData>
     instance.data.extraData = json.data.extraData || {};
     instance.data.actor = json.data.actor;
     instance.data.actorPortrait = json.data.actorPortrait;
-    instance.data.userId = json.data.userId;
+    instance.data.customNodeId = json.data.customNodeId;
     instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
     instance.data.afterJumpProcess = json.data.afterJumpProcess;
     instance.data.enableCheck = json.data.enableCheck;
@@ -143,7 +143,7 @@ export class StoryletBranchNode extends StoryletNode<StoryletBranchNodeData> {
     instance.data.extraData = json.data.extraData || {};
     instance.data.actor = json.data.actor;
     instance.data.actorPortrait = json.data.actorPortrait;
-    instance.data.userId = json.data.userId;
+    instance.data.customNodeId = json.data.customNodeId;
     instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
     instance.data.afterJumpProcess = json.data.afterJumpProcess;
     instance.data.enableCheck = json.data.enableCheck;
@@ -173,12 +173,12 @@ export class StoryletCustomNode extends StoryletNode<StoryletCustomNodeData> {
     };
   }
 
-  static fromJson(json: any): StoryletCustomNode {
+  static fromJson(json: RawJson): StoryletCustomNode {
     const instance = new StoryletCustomNode();
     instance.id = json.id;
     instance.data.customType = json.data.customType;
     instance.data.extraData = json.data.extraData;
-    instance.data.userId = json.data.userId;
+    instance.data.customNodeId = json.data.customNodeId;
     instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
     instance.data.afterJumpProcess = json.data.afterJumpProcess;
     instance.data.enableCheck = json.data.enableCheck;
@@ -188,7 +188,7 @@ export class StoryletCustomNode extends StoryletNode<StoryletCustomNodeData> {
 
 export class Storylet extends Tree<StoryletNodeData> {
   public id: string = 'storylet_' + UUID();
-  public userId: string = '';
+  public customNodeId: string = '';
   public name: string = '';
 
   constructor(newRoot = true) {
@@ -229,7 +229,7 @@ export class Storylet extends Tree<StoryletNodeData> {
     const instance = new Storylet();
     instance.id = this.id;
     instance.name = this.name;
-    instance.userId = this.userId;
+    instance.customNodeId = this.customNodeId;
     instance.nodes = { ...this.nodes };
     instance.links = { ...this.links };
     return instance;
@@ -239,7 +239,7 @@ export class Storylet extends Tree<StoryletNodeData> {
     const data = super.toJson();
     data.name = this.name;
     data.id = this.id;
-    data.userId = this.userId;
+    data.customNodeId = this.customNodeId;
     return data;
   }
 
@@ -308,7 +308,7 @@ export class Storylet extends Tree<StoryletNodeData> {
 
     instance.id = json.id;
     instance.name = json.name;
-    instance.userId = json.st;
+    instance.customNodeId = json.st;
     return instance;
   }
 }
