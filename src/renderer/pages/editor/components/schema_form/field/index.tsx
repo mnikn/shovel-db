@@ -31,15 +31,23 @@ import {
 } from '@mui/material';
 import { RawJson } from '../../../../../../type';
 import { borderRadius } from '../../../../../theme';
+import { Translation } from '../../../../../store/story/translation';
+import { LANG } from '../../../../../../constants/i18n';
 
 export function FieldContainer({
   schema,
   value,
   onValueChange,
+  translations,
+  currentLang,
+  isRoot,
 }: {
   schema: SchemaField;
   value: any;
+  translations: Translation;
+  currentLang: LANG;
   onValueChange?: (value: any) => void;
+  isRoot: boolean;
 }) {
   const objectValueChange = useCallback(
     (v: any, id: string) => {
@@ -78,6 +86,8 @@ export function FieldContainer({
             label={obj?.name || obj?.id}
             schema={schema}
             value={val}
+            translations={translations}
+            currentLang={currentLang}
             onValueChange={(v) => handleValueChange(v, obj)}
           />
         </Grid>
@@ -104,11 +114,14 @@ export function FieldContainer({
               </FormLabel>
             )}
             <FieldContainer
+              translations={translations}
+              currentLang={currentLang}
               key={schema.config.fieldId}
               aria-labelledby={schema.config.fieldId}
               schema={schema}
               value={val}
               onValueChange={(v) => handleValueChange(v, obj)}
+              isRoot={false}
             />
           </FormControl>
         </Grid>
@@ -121,7 +134,7 @@ export function FieldContainer({
         container
         spacing={2}
         sx={{
-          p: 2,
+          p: isRoot ? 0 : 2,
         }}
       >
         {schema.fields.map((item, i) => {
@@ -259,6 +272,8 @@ export function FieldContainer({
                 key={item.id}
                 label={item.name || item.id}
                 schema={item.data as SchemaFieldArray}
+                translations={translations}
+                currentLang={currentLang}
                 value={get(value, item.id)}
                 onValueChange={(v) => objectValueChange(v, item.id)}
               />
@@ -374,11 +389,15 @@ export function FieldArray({
   label,
   schema,
   value,
+  translations,
+  currentLang,
   onValueChange,
 }: {
   label?: string;
   schema: SchemaFieldArray;
   value: any[];
+  translations: Translation;
+  currentLang: LANG;
   onValueChange?: (value: any) => void;
 }) {
   const [list, setList] = useState<RawJson[]>(
@@ -468,9 +487,12 @@ export function FieldArray({
               <div key={item.id} className='flex w-full items-center'>
                 <div className='flex flex-grow w-full mb-2 items-center'>
                   <FieldContainer
+                    translations={translations}
+                    currentLang={currentLang}
                     schema={schema.fieldSchema as SchemaField}
                     value={item.value}
                     onValueChange={(v) => onItemChange(v, i)}
+                    isRoot={false}
                   />
                   {/* <CgArrowUp
                     className='cursor-pointer ml-2 mr-2 text-gray-800 hover:text-gray-500 transition-all flex-shrink-0'

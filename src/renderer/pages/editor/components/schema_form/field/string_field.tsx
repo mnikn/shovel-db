@@ -4,6 +4,8 @@ import { SchemaFieldString } from '../../../../../models/schema';
 import { get, uniq } from 'lodash';
 import { Box, TextField } from '@mui/material';
 import { useStoryStore } from '../../../../../store';
+import { LANG } from '../../../../../../constants/i18n';
+import { Translation } from '../../../../../store/story/translation';
 // import classNames from 'classnames';
 
 const CodeFieldSchema = new SchemaFieldString();
@@ -87,19 +89,21 @@ const Editor = ({
 };
 
 function FieldString({
-  className,
   label,
   schema,
   value,
   onValueChange,
+  translations,
+  currentLang,
 }: {
-  className?: string;
   label?: string;
   schema: SchemaFieldString;
   value: any;
+  translations: Translation;
+  currentLang: LANG;
   onValueChange?: (value: any) => void;
 }) {
-  const { updateTranslateKey, translations, currentLang } = useStoryStore();
+  //   const { updateTranslateKey, translations, currentLang } = useStoryStore();
 
   const [contentValue, setContentValue] = useState(
     schema.config.needI18n ? translations[value]?.[currentLang] || '' : value
@@ -150,7 +154,10 @@ function FieldString({
 
     const termKey = value;
     if (schema.config.needI18n) {
-      updateTranslateKey(termKey, textValue);
+      translations[termKey][currentLang] = textValue;
+      if (onValueChange) {
+        onValueChange(value);
+      }
     }
   };
 
@@ -165,13 +172,18 @@ function FieldString({
       }}
     >
       <TextField
+        sx={{
+          width: '100%',
+          height: '100%',
+        }}
         required={schema.config.required}
         label={label}
         size='small'
-        defaultValue={schema.config.defaultValue}
         multiline={schema.config.type === 'multiline'}
-        value={contentValue}
+        rows={schema.config.type === 'multiline' ? 4 : undefined}
+        value={contentValue || schema.config.defaultValue}
         onChange={onTextChange}
+        autoFocus={schema.config.autoFocus}
       />
       {/* {schema.config.type === 'code' && (
         <Editor

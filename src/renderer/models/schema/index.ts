@@ -230,6 +230,7 @@ function getDefaultConfig(type: SchemaFieldType): RawJson {
         minLen: 0,
         maxLen: Number.MAX_SAFE_INTEGER,
         needI18n: false,
+        autoFocus: false,
         codeLang: '',
         fieldId: `field_string_${UUID()}`,
       };
@@ -376,9 +377,9 @@ export abstract class SchemaField {
     enableWhen: null,
   };
 
-  constructor() {
+  constructor(extraConfig?: RawJson) {
     this.config = getDefaultConfig(this.type);
-    // this.config.fieldId = `field_${UUID()}`;
+    this.config = { ...this.config, ...extraConfig };
   }
 
   setup(config: any) {

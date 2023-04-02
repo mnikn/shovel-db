@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useProjectStore } from '../project';
 import { LANG } from '../../../constants/i18n';
 
-interface Translation {
+export interface Translation {
   [key: string]: {
     [key: string]: string;
   };

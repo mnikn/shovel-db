@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Tabs, Tab, Modal, Stack, Button, Container } from '@mui/material';
 import { borderRadius } from '../../../../../theme';
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
@@ -7,6 +7,14 @@ import {
   SchemaFieldString,
 } from '../../../../../models/schema';
 import SchemaForm from '../../../components/schema_form';
+import {
+  StoryletNode,
+  StoryletNodeData,
+  StoryletSentenceNode,
+} from '../../../../../models/story/storylet';
+import { RawJson } from '../../../../../../type';
+import { useStoryStore } from '../../../../../store';
+import { cloneDeep } from 'lodash';
 
 enum TAB {
   BASIC = 'Base',
@@ -80,14 +88,100 @@ schemaObj.fields.push(
   }
 );
 
+function generateSchema(node: StoryletNode<StoryletNodeData>) {
+  const schema = new SchemaFieldObject();
+  switch (node.idPrefix) {
+    case 'sentence': {
+      schema.fields.push(
+        {
+          name: 'user id',
+          id: 'userId',
+          data: new SchemaFieldString({
+            colSpan: 4,
+          }),
+        },
+        {
+          name: 'content',
+          id: 'content',
+          data: new SchemaFieldString({
+            type: 'multiline',
+            colSpan: 12,
+            autoFocus: true,
+            needI18n: true,
+          }),
+        }
+      );
+    }
+  }
+  return schema;
+}
+
 export default function EditDialog({
+  node,
   open,
   close,
 }: {
+  node: StoryletNode<StoryletNodeData>;
   open: boolean;
   close: () => void;
 }) {
   const [currentTab, setCurrentTab] = useState<TAB>(TAB.BASIC);
+  const { translations, currentLang, updateTranslations } = useStoryStore();
+  const [formNodeData, setFormNodeData] = useState(cloneDeep(node.data));
+
+  const formTranslations = useMemo(() => {
+    return cloneDeep(translations);
+  }, [translations, currentTab]);
+
+  useEffect(() => {
+    setFormNodeData(cloneDeep(node.data));
+  }, [node.data, currentTab]);
+
+  const basicDataSchema = useMemo(() => {
+    return generateSchema(node);
+  }, [node]);
+
+  const renderSchemaForm = (schemaObj: SchemaFieldObject, value: RawJson) => (
+    <Stack
+      key={schemaObj.config.fieldId}
+      spacing={2}
+      sx={{ flexGrow: 1, overflow: 'auto' }}
+    >
+      <Container sx={{ flexGrow: 1, overflow: 'auto' }}>
+        <SchemaForm
+          translations={formTranslations}
+          currentLang={currentLang}
+          schema={schemaObj}
+          formData={value}
+          onValueChange={(val) => {
+            setFormNodeData(val);
+          }}
+        />
+      </Container>
+      <Stack
+        direction='row'
+        spacing={2}
+        sx={{
+          mt: 'auto!important',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Button
+          variant='contained'
+          onClick={() => {
+            updateTranslations(formTranslations);
+            close();
+          }}
+        >
+          Confirm
+        </Button>
+        <Button variant='outlined' onClick={close}>
+          Cancel
+        </Button>
+      </Stack>
+    </Stack>
+  );
   return (
     <Modal open={open}>
       <Stack
@@ -133,32 +227,9 @@ export default function EditDialog({
             return <Tab key={item} label={item} value={item} />;
           })}
         </Tabs>
-        {currentTab === TAB.BASIC && <div>asdsda</div>}
-        {currentTab === TAB.EXTRA && (
-          <Stack spacing={2} sx={{ flexGrow: 1, overflow: 'auto' }}>
-            <Container sx={{ flexGrow: 1, overflow: 'auto' }}>
-              <SchemaForm
-                schema={schemaObj}
-                formData={{}}
-                onValueChange={(val) => {
-                  console.log('cc: ', val);
-                }}
-              />
-            </Container>
-            <Stack
-              direction='row'
-              spacing={2}
-              sx={{
-                mt: 'auto!important',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Button variant='contained'>Confirm</Button>
-              <Button variant='outlined'>Cancel</Button>
-            </Stack>
-          </Stack>
-        )}
+        {currentTab === TAB.BASIC &&
+          renderSchemaForm(basicDataSchema, formNodeData)}
+        {currentTab === TAB.EXTRA && renderSchemaForm(schemaObj, {})}
       </Stack>
     </Modal>
   );

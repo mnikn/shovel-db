@@ -193,7 +193,6 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
           break;
         }
         case 'ArrowDown': {
-          console.log('sdds');
           const targetNode = siblingNodes
             .filter((item) => item.order >= selectingNode.order)
             .sort((a, b) => {

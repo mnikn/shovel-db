@@ -163,9 +163,13 @@ export default function BaseNodeCard({
     >
       {children}
       <EditDialog
+        node={node}
         open={editOpen}
         close={() => {
           setEditOpen(false);
+          setTimeout(() => {
+            selectNode(node.id);
+          }, 0);
         }}
       />
     </Box>
