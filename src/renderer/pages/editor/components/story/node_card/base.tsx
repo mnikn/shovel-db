@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import React, { useCallback, useRef, useLayoutEffect } from 'react';
+import React, { useCallback, useRef, useLayoutEffect, useState } from 'react';
 import {
   StoryletBranchNode,
   StoryletNode,
@@ -9,6 +9,7 @@ import {
 } from '../../../../../models/story/storylet';
 import { useStoryStore } from '../../../../../store';
 import { animation, borderRadius } from '../../../../../theme';
+import EditDialog from '../edit_dialog';
 
 export default function BaseNodeCard({
   pos,
@@ -33,6 +34,7 @@ export default function BaseNodeCard({
     getTranslationsForKey,
   } = useStoryStore();
   const viewRef = useRef<HTMLElement>();
+  const [editOpen, setEditOpen] = useState(false);
   if (!currentStorylet) {
     return null;
   }
@@ -47,12 +49,15 @@ export default function BaseNodeCard({
   }, [isSelecting]);
 
   const onSelect = useCallback(() => {
+    if (editOpen) {
+      return;
+    }
     selectNode(node.id);
-  }, [node.id]);
+  }, [node.id, editOpen]);
 
   const onKeyDown = useCallback(
     (e) => {
-      if (!isSelecting) {
+      if (!isSelecting || editOpen) {
         return;
       }
 
@@ -89,19 +94,31 @@ export default function BaseNodeCard({
           const newNode = duplicateNode();
           insertFn(newNode, node);
         } else {
-          const sentenceNode = new StoryletSentenceNode();
-          insertFn(sentenceNode, node);
+          let newNode = new StoryletSentenceNode();
+          if (e.ctrlKey) {
+            newNode = new StoryletBranchNode();
+          }
+          insertFn(newNode, node);
         }
+        return;
       }
 
       // Esc
       if (e.keyCode === 8 && !(node instanceof StoryletRootNode)) {
         deleteNode(node.id);
+        return;
+      }
+
+      if (e.code === 'Space') {
+        selectNode(null);
+        setEditOpen(true);
+        return;
       }
 
       moveSelection(e.key);
     },
     [
+      editOpen,
       isSelecting,
       insertChildNode,
       insertSiblingNode,
@@ -145,6 +162,12 @@ export default function BaseNodeCard({
       onKeyDown={onKeyDown}
     >
       {children}
+      <EditDialog
+        open={editOpen}
+        close={() => {
+          setEditOpen(false);
+        }}
+      />
     </Box>
   );
 }

@@ -95,7 +95,7 @@ export default function Explorer() {
                 cursor: 'pointer',
                 ...borderRadius.large,
                 ...animation.autoFade,
-                backgroundColor: 'primary.500',
+                backgroundColor: 'rgb(107 114 128)',
                 color: 'common.white',
               },
               userSelect: 'none',
@@ -218,12 +218,12 @@ export default function Explorer() {
         sx={{
           p: 0.5,
           backgroundColor:
-            currentOpenFile?.id === data.id ? 'primary.500' : 'inherit',
+            currentOpenFile?.id === data.id ? 'rgb(107 114 128)' : 'inherit',
           color:
             currentOpenFile?.id === data.id ? 'common.white' : 'common.black',
           '&:hover': {
             cursor: 'pointer',
-            backgroundColor: 'primary.500',
+            backgroundColor: 'rgb(107 114 128)',
             color: 'common.white',
           },
           ...borderRadius.large,
@@ -294,8 +294,8 @@ export default function Explorer() {
       sx={{
         height: '100%',
         width: '300px',
-        backgroundColor: 'primary.main',
-        color: 'primary.contrastText',
+        backgroundColor: 'rgb(249 250 251)',
+        color: 'common.black',
         overflowY: 'overlay',
         p: 2,
       }}

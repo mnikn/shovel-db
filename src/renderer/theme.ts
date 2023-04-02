@@ -17,25 +17,18 @@ export const animation = {
 // https://mui.com/customization/theming/
 const theme = createTheme({
   palette: {
-    /* primary: {
-     *   main: "#ffffff",
-     * },
-     * secondary: {
-     *   main: grey[800],
-     * }, */
-
-    primary: {
-      light: 'rgb(249 250 251)',
-      500: 'rgb(107 114 128)',
-      main: 'rgb(249 250 251)',
-      contrastText: '#000',
-    },
-    secondary: {
-      light: grey[800],
-      main: grey[900],
-      dark: '#ba000d',
-      contrastText: '#fff',
-    },
+    // primary: {
+    //   light: 'rgb(249 250 251)',
+    //   500: 'rgb(107 114 128)',
+    //   main: 'rgb(249 250 251)',
+    //   contrastText: '#000',
+    // },
+    // secondary: {
+    //   light: grey[800],
+    //   main: grey[900],
+    //   dark: '#ba000d',
+    //   contrastText: '#fff',
+    // },
   },
   /* typography: {
    *   fontWeightMedium: 600,

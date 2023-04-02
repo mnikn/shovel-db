@@ -111,6 +111,7 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
   const selectNode = useCallback((nodeId: string | null) => {
     if (selectionRef.current?.nodeId === nodeId || nodeId === null) {
       setSelection(null);
+      selectionRef.current = null;
       return;
     }
 
@@ -122,7 +123,6 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
     const nodeView = document.querySelector(`#${nodeId}`) as HTMLElement;
     nodeView.onblur = () => {
       if (selectionRef.current?.nodeId === nodeId) {
-        // setSelection(null);
         nodeView.focus();
         nodeView.onblur = null;
       }

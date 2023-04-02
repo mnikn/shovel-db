@@ -1,14 +1,13 @@
 import React from 'react';
-import { StoryletSentenceNode } from '../../../../../models/story/storylet';
+import { StoryletBranchNode } from '../../../../../models/story/storylet';
 import { useStoryStore } from '../../../../../store';
 import BaseNodeCard from './base';
-import BaseEditDialog from '../edit_dialog';
 
-export default function SentenceNodeCard({
+export default function BranchNodeCard({
   node,
   pos,
 }: {
-  node: StoryletSentenceNode;
+  node: StoryletBranchNode;
   pos: { x: number; y: number };
 }) {
   const { currentStorylet, tr } = useStoryStore();
@@ -20,7 +19,7 @@ export default function SentenceNodeCard({
     <BaseNodeCard
       pos={pos}
       node={node}
-      color={{ hover: 'rgb(187 247 208)', normal: 'rgb(74 222 128)' }}
+      color={{ hover: 'rgb(191 219 254)', normal: 'rgb(96 165 250)' }}
     >
       {tr(node.data.content)}
     </BaseNodeCard>
