@@ -139,8 +139,13 @@ export default function EditDialog({
   close: () => void;
 }) {
   const [currentTab, setCurrentTab] = useState<TAB>(TAB.BASIC);
-  const { translations, currentLang, updateTranslations, updateNode } =
-    useStoryStore();
+  const {
+    translations,
+    currentLang,
+    updateTranslations,
+    updateNode,
+    trackCurrentState,
+  } = useStoryStore();
   const [formNodeData, setFormNodeData] = useState(cloneDeep(node.data));
 
   const formTranslations = useMemo(() => {
@@ -187,6 +192,7 @@ export default function EditDialog({
             updateTranslations(formTranslations);
             node.data = formNodeData;
             updateNode(node);
+            trackCurrentState();
             close();
           }}
         >

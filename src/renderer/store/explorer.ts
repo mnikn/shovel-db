@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
-import { createStore } from "hox";
-import { buildFileTree, File, Folder } from "../models/explorer";
-import { UUID } from "../../utils/uuid";
+import { useEffect, useMemo, useState } from 'react';
+import { createGlobalStore } from 'hox';
+import { buildFileTree, File, Folder } from '../models/explorer';
+import { UUID } from '../../utils/uuid';
+import { RawJson } from '../../type';
 
 function getDeepChildren(currentFolder: any, files: any[]): any[] {
   let res: any[] = [];
   files.forEach((item) => {
-    if (item.parentId === currentFolder.id && item.type === "folder") {
+    if (item.parentId === currentFolder.id && item.type === 'folder') {
       res = [...res, ...getDeepChildren(item, files)];
     } else {
       if (item.parentId === currentFolder.id) {
@@ -17,9 +18,10 @@ function getDeepChildren(currentFolder: any, files: any[]): any[] {
   return res;
 }
 
-export const [useExplorerStore, ExplorerStoreProvider] = createStore(() => {
+export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
   const [currentOpenFile, setCurrentOpenFile] = useState<File | null>(null);
-  const [files, setFiles] = useState<any[]>([]);
+  const [files, setFiles] = useState<RawJson[]>([]);
+
   const fileTree = useMemo(() => {
     return buildFileTree(Object.values(files));
   }, [files]);
@@ -29,7 +31,7 @@ export const [useExplorerStore, ExplorerStoreProvider] = createStore(() => {
       const res = {
         id: UUID(),
         name: UUID().substring(0, 10),
-        type: "file",
+        type: 'file',
         parentId: parentId,
       };
       return res;
@@ -38,39 +40,39 @@ export const [useExplorerStore, ExplorerStoreProvider] = createStore(() => {
       const res = {
         id: UUID(),
         name: UUID().substring(0, 10),
-        type: "folder",
+        type: 'folder',
         parentId: parentId,
       };
       return res;
     };
 
-    const itemA = createFolder("static-data");
+    const itemA = createFolder('static-data');
     setFiles([
       {
-        id: "static-data",
-        name: "Static Data",
-        type: "folder",
+        id: 'static-data',
+        name: 'Static Data',
+        type: 'folder',
         parentId: null,
       },
       {
-        id: "story",
-        name: "Story",
-        type: "folder",
+        id: 'story',
+        name: 'Story',
+        type: 'folder',
         parentId: null,
       },
       itemA,
-      createItemFile("static-data"),
-      createItemFile("static-data"),
-      createItemFile("static-data"),
-      createItemFile("static-data"),
-      createItemFile("static-data"),
-      createItemFile("static-data"),
-      createItemFile("story"),
-      createItemFile("story"),
-      createItemFile("story"),
-      createItemFile("story"),
-      createItemFile("story"),
-      createItemFile("story"),
+      createItemFile('static-data'),
+      createItemFile('static-data'),
+      createItemFile('static-data'),
+      createItemFile('static-data'),
+      createItemFile('static-data'),
+      createItemFile('static-data'),
+      createItemFile('story'),
+      createItemFile('story'),
+      createItemFile('story'),
+      createItemFile('story'),
+      createItemFile('story'),
+      createItemFile('story'),
       createItemFile(itemA.id),
       createItemFile(itemA.id),
       createItemFile(itemA.id),
@@ -99,7 +101,7 @@ export const [useExplorerStore, ExplorerStoreProvider] = createStore(() => {
     if (!file) {
       return;
     }
-    if (file.type === "folder") {
+    if (file.type === 'folder') {
       const children = getDeepChildren(file, files).map((item) => item.id);
       setFiles(
         files.filter((item) => !children.includes(item.id) && item.id !== id)

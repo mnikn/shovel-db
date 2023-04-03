@@ -1,11 +1,11 @@
 import {
-  useEffect,
   useLayoutEffect,
   useCallback,
   useState,
   useRef,
+  useEffect,
 } from 'react';
-import { createStore } from 'hox';
+import { createGlobalStore } from 'hox';
 import {
   Storylet,
   StoryletBranchNode,
@@ -14,18 +14,44 @@ import {
   StoryletSentenceNode,
 } from '../../models/story/storylet';
 import useTranslation from './translation';
+import { getTrackStore, trackState } from '../track';
+import { RawJson } from '../../../type';
+import { LANG } from '../../../constants/i18n';
 
 interface NodeSelection {
   nodeId: string;
 }
 
-export const [useStoryStore, StoryStoreProvider] = createStore(() => {
+export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
   const [currentStorylet, setCurrentStorylet] = useState<Storylet | null>(null);
   const [selection, setSelection] = useState<NodeSelection | null>(null);
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
+  const currentStoryletRef = useRef(currentStorylet);
+  currentStoryletRef.current = currentStorylet;
 
   const translationModule = useTranslation();
+
+  const trackCurrentState = useCallback(() => {
+    trackState('story', {
+      currentStorylet: currentStoryletRef.current,
+      translations: translationModule.translationsRef.current,
+      currentLang: translationModule.currentLang,
+    });
+  }, []);
+
+  useEffect(() => {
+    const store = getTrackStore();
+    if (!store) {
+      return;
+    }
+
+    store.registerStoreSetter('story', (val: RawJson) => {
+      setCurrentStorylet(val.currentStorylet || null);
+      translationModule.setTranslations(val.translations || {});
+      translationModule.setCurrentLang(val.currentLang || LANG.EN);
+    });
+  }, [translationModule.updateTranslations, translationModule.switchLang]);
 
   useLayoutEffect(() => {
     const storylet = new Storylet();
@@ -48,6 +74,11 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
       storylet.upsertLink(storylet.root.id, sentenceNode3.id);
     }
     setCurrentStorylet(storylet);
+    trackState('story', {
+      currentStorylet: storylet,
+      translations: translationModule.translationsRef.current,
+      currentLang: translationModule.currentLang,
+    });
   }, []);
 
   const insertChildNode = useCallback(
@@ -67,7 +98,9 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
         translationModule.updateTranslateKey(child.data.content, '');
       }
       currentStorylet.upsertLink(parent.id, child.id);
-      setCurrentStorylet(currentStorylet.clone());
+      const res = currentStorylet.clone();
+      setCurrentStorylet(res);
+      currentStoryletRef.current = res;
     },
     [
       currentStorylet,
@@ -103,7 +136,9 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
       ) {
         translationModule.updateTranslateKey(needInsert.data.content, '');
       }
-      setCurrentStorylet(currentStorylet.clone());
+      const res = currentStorylet.clone();
+      setCurrentStorylet(res);
+      currentStoryletRef.current = res;
     },
     [currentStorylet, translationModule.updateTranslateKey]
   );
@@ -136,7 +171,9 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
         return;
       }
       currentStorylet.upsertNode(data);
-      setCurrentStorylet(currentStorylet.clone());
+      const res = currentStorylet.clone();
+      setCurrentStorylet(res);
+      currentStoryletRef.current = res;
     },
     [currentStorylet]
   );
@@ -169,7 +206,9 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
       });
       delete currentStorylet.nodes[id];
 
-      setCurrentStorylet(currentStorylet.clone());
+      const res = currentStorylet.clone();
+      setCurrentStorylet(res);
+      currentStoryletRef.current = res;
     },
     [currentStorylet]
   );
@@ -249,6 +288,7 @@ export const [useStoryStore, StoryStoreProvider] = createStore(() => {
     deleteNode,
     updateNode,
     moveSelection,
+    trackCurrentState,
     ...translationModule,
   };
 });

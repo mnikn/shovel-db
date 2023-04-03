@@ -1,3 +1,3 @@
 export type RawJson = {
-    [key: string]: any;
-  };
+  [key: string]: any;
+};

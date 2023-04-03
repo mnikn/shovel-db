@@ -8,6 +8,8 @@ import {
   StoryletSentenceNode,
 } from '../../../../../models/story/storylet';
 import { useStoryStore } from '../../../../../store';
+import { Mode, useEditorStore } from '../../../../../store/editor';
+import { trackState } from '../../../../../store/track';
 import { animation, borderRadius } from '../../../../../theme';
 import EditDialog from '../edit_dialog';
 
@@ -32,9 +34,11 @@ export default function BaseNodeCard({
     deleteNode,
     updateTranslateKeyAll,
     getTranslationsForKey,
+    trackCurrentState,
   } = useStoryStore();
   const viewRef = useRef<HTMLElement>();
   const [editOpen, setEditOpen] = useState(false);
+  const { setMode } = useEditorStore();
   if (!currentStorylet) {
     return null;
   }
@@ -100,18 +104,23 @@ export default function BaseNodeCard({
           }
           insertFn(newNode, node);
         }
+
+        trackCurrentState();
         return;
       }
 
       // Esc
       if (e.keyCode === 8 && !(node instanceof StoryletRootNode)) {
         deleteNode(node.id);
+        trackCurrentState();
         return;
       }
 
       if (e.code === 'Space') {
         selectNode(null);
+
         setEditOpen(true);
+        setMode(Mode.Popup);
         return;
       }
 
@@ -126,6 +135,8 @@ export default function BaseNodeCard({
       deleteNode,
       updateTranslateKeyAll,
       getTranslationsForKey,
+      setMode,
+      trackCurrentState,
     ]
   );
 
@@ -183,6 +194,7 @@ export default function BaseNodeCard({
         open={editOpen}
         close={() => {
           setEditOpen(false);
+          setMode(Mode.Normal);
           setTimeout(() => {
             selectNode(node.id);
           }, 0);
