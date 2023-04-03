@@ -22,6 +22,7 @@ import { FieldContainer } from '../schema_form/field';
 import { useStoryStore } from '../../../../store';
 import { cloneDeep } from 'lodash';
 import { RawJson } from '../../../../../type';
+import SchemaForm from '../schema_form';
 
 const itemSchema = new SchemaFieldObject();
 const portraitSchemaItem = new SchemaFieldObject();
@@ -125,12 +126,11 @@ export default function ActorSettings({
         >
           Actor Settings
         </DialogTitle>
-        <FieldContainer
+        <SchemaForm
           translations={formTranslations}
           currentLang={currentLang}
-          value={formData}
+          formData={formData}
           schema={settingsSchema}
-          isRoot
           onValueChange={(v) => {
             setFormData(v);
           }}

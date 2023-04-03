@@ -1,7 +1,11 @@
 import { Box } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { RawJson } from '../../../../../type';
-import { SchemaFieldObject, validateValue } from '../../../../models/schema';
+import {
+  SchemaFieldObject,
+  SchemaFieldArray,
+  validateValue,
+} from '../../../../models/schema';
 import { FieldContainer } from './field';
 import { Translation } from '../../../../store/story/translation';
 import { LANG } from '../../../../../constants/i18n';
@@ -13,9 +17,9 @@ export default function SchemaForm({
   translations,
   currentLang,
 }: {
-  formData: RawJson;
-  schema: SchemaFieldObject;
-  onValueChange: (val: RawJson) => void;
+  formData: any;
+  schema: SchemaFieldObject | SchemaFieldArray;
+  onValueChange: (val: any) => void;
   translations: Translation;
   currentLang: LANG;
 }) {
