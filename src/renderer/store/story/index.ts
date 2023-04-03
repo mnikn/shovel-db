@@ -6,6 +6,7 @@ import {
   useEffect,
 } from 'react';
 import { createGlobalStore } from 'hox';
+import { cloneDeep } from 'lodash';
 import {
   Storylet,
   StoryletBranchNode,
@@ -28,14 +29,13 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
   const currentStoryletRef = useRef(currentStorylet);
-  currentStoryletRef.current = currentStorylet;
 
   const translationModule = useTranslation();
 
   const trackCurrentState = useCallback(() => {
     trackState('story', {
-      currentStorylet: currentStoryletRef.current,
-      translations: translationModule.translationsRef.current,
+      currentStorylet: currentStoryletRef.current?.clone() || null,
+      translations: cloneDeep(translationModule.translationsRef.current),
       currentLang: translationModule.currentLang,
     });
   }, []);
@@ -47,7 +47,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     }
 
     store.registerStoreSetter('story', (val: RawJson) => {
-      setCurrentStorylet(val.currentStorylet || null);
+      setCurrentStorylet(val.currentStorylet?.clone() || null);
       translationModule.setTranslations(val.translations || {});
       translationModule.setCurrentLang(val.currentLang || LANG.EN);
     });
@@ -89,7 +89,8 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       if (!currentStorylet) {
         return;
       }
-      currentStorylet.upsertNode(child);
+      const newVal = currentStorylet.clone();
+      newVal.upsertNode(child);
       if (
         (child instanceof StoryletSentenceNode ||
           child instanceof StoryletBranchNode) &&
@@ -97,10 +98,9 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       ) {
         translationModule.updateTranslateKey(child.data.content, '');
       }
-      currentStorylet.upsertLink(parent.id, child.id);
-      const res = currentStorylet.clone();
-      setCurrentStorylet(res);
-      currentStoryletRef.current = res;
+      newVal.upsertLink(parent.id, child.id);
+      setCurrentStorylet(newVal);
+      currentStoryletRef.current = newVal;
     },
     [
       currentStorylet,
@@ -121,10 +121,11 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       if (!parent) {
         return;
       }
+      const newVal = currentStorylet.clone();
       needInsert.order = source.order;
-      currentStorylet.upsertNode(needInsert);
-      currentStorylet.upsertLink(parent.id, needInsert.id);
-      currentStorylet.getNodeChildren(parent.id).forEach((node) => {
+      newVal.upsertNode(needInsert);
+      newVal.upsertLink(parent.id, needInsert.id);
+      newVal.getNodeChildren(parent.id).forEach((node) => {
         if (node.order >= source.order && source.id !== node.id) {
           node.order += 1;
         }
@@ -136,9 +137,8 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       ) {
         translationModule.updateTranslateKey(needInsert.data.content, '');
       }
-      const res = currentStorylet.clone();
-      setCurrentStorylet(res);
-      currentStoryletRef.current = res;
+      setCurrentStorylet(newVal);
+      currentStoryletRef.current = newVal;
     },
     [currentStorylet, translationModule.updateTranslateKey]
   );
@@ -170,10 +170,10 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       if (!currentStorylet) {
         return;
       }
-      currentStorylet.upsertNode(data);
-      const res = currentStorylet.clone();
-      setCurrentStorylet(res);
-      currentStoryletRef.current = res;
+      const newVal = currentStorylet.clone();
+      newVal.upsertNode(data);
+      setCurrentStorylet(newVal);
+      currentStoryletRef.current = newVal;
     },
     [currentStorylet]
   );
@@ -183,7 +183,9 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       if (!currentStorylet) {
         return;
       }
-      const currentNode = currentStorylet.nodes[id];
+
+      const newVal = currentStorylet.clone();
+      const currentNode = newVal.nodes[id];
       if (!currentNode) {
         return;
       }
@@ -192,23 +194,22 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
         moveSelection('ArrowUp') ||
         moveSelection('ArrowLeft');
 
-      currentStorylet.getNodeChildren(id).forEach((child) => {
+      newVal.getNodeChildren(id).forEach((child) => {
         deleteNode(child.id);
-        if (currentStorylet) {
-          delete currentStorylet.nodes[child.id];
+        if (newVal) {
+          delete newVal.nodes[child.id];
         }
       });
 
-      Object.keys(currentStorylet.links).forEach((item) => {
-        if (item.includes(id) && currentStorylet) {
-          delete currentStorylet.links[item];
+      Object.keys(newVal.links).forEach((item) => {
+        if (item.includes(id) && newVal) {
+          delete newVal.links[item];
         }
       });
-      delete currentStorylet.nodes[id];
+      delete newVal.nodes[id];
 
-      const res = currentStorylet.clone();
-      setCurrentStorylet(res);
-      currentStoryletRef.current = res;
+      setCurrentStorylet(newVal);
+      currentStoryletRef.current = newVal;
     },
     [currentStorylet]
   );

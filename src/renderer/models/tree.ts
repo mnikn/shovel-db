@@ -248,8 +248,12 @@ export class Tree<T> {
 
   public clone(): Tree<T> {
     const instance = new Tree<T>();
-    instance.nodes = this.nodes;
-    instance.links = this.links;
+    const nodes = {};
+    Object.keys(this.nodes).forEach((key) => {
+      nodes[key] = this.nodes[key].clone();
+    });
+    instance.nodes = nodes;
+    instance.links = cloneDeep(this.links);
     return instance;
   }
 }
