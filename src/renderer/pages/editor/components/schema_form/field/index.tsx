@@ -11,6 +11,7 @@ import {
   SchemaFieldArray,
   SchemaFieldFile,
   SchemaFieldObject,
+  SchemaFieldSelect,
   SchemaFieldString,
 } from '../../../../../models/schema';
 import { Translation } from '../../../../../store/story/translation';
@@ -20,6 +21,7 @@ import FieldString from './string_field';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import RemoveIcon from '@mui/icons-material/Remove';
+import FieldSelect from './select_field';
 
 const getContainerLabelStyle = (label) => ({
   m: 1,
@@ -116,6 +118,16 @@ export default function Field({
       {schema instanceof SchemaFieldFile && (
         <Grid xs={schema.config.colSpan}>
           <FieldFile
+            schema={schema}
+            value={value}
+            onValueChange={onValueChange}
+            label={label}
+          />
+        </Grid>
+      )}
+      {schema instanceof SchemaFieldSelect && (
+        <Grid xs={schema.config.colSpan}>
+          <FieldSelect
             schema={schema}
             value={value}
             onValueChange={onValueChange}

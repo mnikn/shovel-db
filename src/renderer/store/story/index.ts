@@ -18,6 +18,7 @@ import useTranslation from './translation';
 import { getTrackStore, trackState } from '../track';
 import { RawJson } from '../../../type';
 import { LANG } from '../../../constants/i18n';
+import { UUID } from '../../../utils/uuid';
 
 interface NodeSelection {
   nodeId: string;
@@ -108,6 +109,17 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       ) {
         translationModule.updateTranslateKey(child.data.content, '');
       }
+
+      if (parent instanceof StoryletBranchNode) {
+        child.data.option = {
+          name: 'option_' + UUID(),
+          controlType: 'visible',
+          controlCheck: '',
+        };
+        translationModule.updateTranslateKey(child.data.option.name, '');
+      } else {
+        delete child.data.option;
+      }
       newVal.upsertLink(parent.id, child.id);
       setCurrentStorylet(newVal);
       currentStoryletRef.current = newVal;
@@ -146,6 +158,17 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
         !translationModule.hasTranslateKey(needInsert.data.content)
       ) {
         translationModule.updateTranslateKey(needInsert.data.content, '');
+      }
+
+      if (parent instanceof StoryletBranchNode) {
+        needInsert.data.option = {
+          name: 'option_' + UUID(),
+          controlType: 'visible',
+          controlCheck: '',
+        };
+        translationModule.updateTranslateKey(needInsert.data.option.name, '');
+      } else {
+        delete needInsert.data.option;
       }
       setCurrentStorylet(newVal);
       currentStoryletRef.current = newVal;

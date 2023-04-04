@@ -4,10 +4,12 @@ import { borderRadius } from '../../../../../theme';
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
 import {
   SchemaFieldObject,
+  SchemaFieldSelect,
   SchemaFieldString,
 } from '../../../../../models/schema';
 import SchemaForm from '../../../components/schema_form';
 import {
+  StoryletBranchNode,
   StoryletNode,
   StoryletNodeData,
   StoryletSentenceNode,
@@ -16,82 +18,6 @@ import { RawJson } from '../../../../../../type';
 import { useStoryStore } from '../../../../../store';
 import { cloneDeep } from 'lodash';
 import { grey } from '@mui/material/colors';
-
-enum TAB {
-  BASIC = 'Base',
-  EXTRA = 'Extra',
-}
-
-const schemaObj = new SchemaFieldObject();
-const subObj = new SchemaFieldObject();
-subObj.fields.push({
-  id: 'name444',
-  name: 'name444',
-  data: new SchemaFieldString(),
-});
-const subObj2 = new SchemaFieldObject();
-subObj2.fields.push({
-  id: 'name444',
-  name: 'name444',
-  data: new SchemaFieldString(),
-});
-const subObj3 = new SchemaFieldObject();
-subObj3.fields.push({
-  id: 'name444',
-  name: 'name444',
-  data: new SchemaFieldString(),
-});
-schemaObj.fields.push(
-  {
-    id: 'name',
-    name: 'name',
-    data: new SchemaFieldString(),
-  },
-  {
-    id: 'name2',
-    name: 'name',
-    data: new SchemaFieldString(),
-  },
-  {
-    id: 'name3',
-    name: 'name',
-    data: new SchemaFieldString(),
-  },
-  {
-    id: 'name4',
-    name: 'name',
-    data: new SchemaFieldString(),
-  },
-  {
-    id: 'name5',
-    name: 'name',
-    data: new SchemaFieldString(),
-  },
-  {
-    id: 'name6',
-    name: 'name',
-    data: new SchemaFieldString({
-      colSpan: 12,
-      type: 'code',
-      codeLang: 'python',
-    }),
-  },
-  {
-    id: 'obj',
-    name: 'obj',
-    data: subObj,
-  },
-  {
-    id: 'obj2',
-    name: 'obj2',
-    data: subObj2,
-  },
-  {
-    id: 'obj3',
-    name: 'obj3',
-    data: subObj3,
-  }
-);
 
 function generateSchema(node: StoryletNode<StoryletNodeData>) {
   const schema = new SchemaFieldObject();
@@ -125,10 +51,80 @@ function generateSchema(node: StoryletNode<StoryletNodeData>) {
           }),
         }
       );
+      break;
+    }
+    case 'branch': {
+      schema.fields.push(
+        {
+          name: 'Custom node id',
+          id: 'customNodeId',
+          data: new SchemaFieldString({
+            colSpan: 4,
+          }),
+        },
+        {
+          name: 'Content',
+          id: 'content',
+          data: new SchemaFieldString({
+            type: 'multiline',
+            colSpan: 12,
+            autoFocus: true,
+            needI18n: true,
+          }),
+        },
+        {
+          name: 'Enable check',
+          id: 'enableCheck',
+          data: new SchemaFieldString({
+            type: 'code',
+            colSpan: 12,
+            codeLang: 'python',
+          }),
+        }
+      );
+      break;
     }
   }
   return schema;
 }
+
+const optionSchema = new SchemaFieldObject();
+optionSchema.fields.push(
+  {
+    name: 'name',
+    id: 'name',
+    data: new SchemaFieldString({
+      colSpan: 8,
+      needI18n: true,
+    }),
+  },
+  {
+    name: 'Control type',
+    id: 'controlType',
+    data: new SchemaFieldSelect({
+      colSpan: 4,
+      options: [
+        {
+          label: 'disable',
+          value: 'disable',
+        },
+        {
+          label: 'visible',
+          value: 'visible',
+        },
+      ],
+    }),
+  },
+  {
+    name: 'Control check',
+    id: 'controlCheck',
+    data: new SchemaFieldString({
+      type: 'code',
+      colSpan: 12,
+      codeLang: 'python',
+    }),
+  }
+);
 
 export default function EditDialog({
   node,
@@ -139,22 +135,56 @@ export default function EditDialog({
   open: boolean;
   close: () => void;
 }) {
-  const [currentTab, setCurrentTab] = useState<TAB>(TAB.BASIC);
   const {
     translations,
     currentLang,
     updateTranslations,
     updateNode,
     trackCurrentState,
+    currentStorylet,
   } = useStoryStore();
   const [formNodeData, setFormNodeData] = useState(cloneDeep(node.data));
 
   useEffect(() => {
     if (open) {
-      setCurrentTab(TAB.BASIC);
+      setCurrentTab('basic');
       setFormNodeData(cloneDeep(node.data));
     }
   }, [open, node.data]);
+
+  const parent = useMemo(() => {
+    if (!currentStorylet) {
+      return null;
+    }
+    return currentStorylet.getNodeSingleParent(node.id);
+  }, [currentStorylet, node]);
+
+  const tabs = useMemo(() => {
+    const res = [
+      {
+        id: 'basic',
+        name: 'Basic',
+      },
+      {
+        id: 'extra',
+        name: 'Extra',
+      },
+    ];
+
+    if (parent instanceof StoryletBranchNode) {
+      res.splice(1, 0, {
+        id: 'option',
+        name: 'Option',
+      });
+    }
+    return res;
+  }, [parent]);
+
+  const [currentTab, setCurrentTab] = useState<string>(tabs[0]?.id || '');
+
+  useEffect(() => {
+    setCurrentTab(tabs[0]?.id || '');
+  }, [tabs]);
 
   const formTranslations = useMemo(() => {
     return cloneDeep(translations);
@@ -168,7 +198,11 @@ export default function EditDialog({
     return generateSchema(node);
   }, [node]);
 
-  const renderSchemaForm = (schemaObj: SchemaFieldObject, value: RawJson) => (
+  const renderSchemaForm = (
+    schemaObj: SchemaFieldObject,
+    formValue: RawJson,
+    onFormValueChanged: (val: RawJson) => void
+  ) => (
     <Stack
       key={schemaObj.config.fieldId}
       spacing={2}
@@ -179,9 +213,9 @@ export default function EditDialog({
           translations={formTranslations}
           currentLang={currentLang}
           schema={schemaObj}
-          formData={value}
+          formData={formValue}
           onValueChange={(val) => {
-            setFormNodeData(val);
+            onFormValueChanged(val);
           }}
         />
       </Container>
@@ -213,6 +247,7 @@ export default function EditDialog({
       </Stack>
     </Stack>
   );
+
   return (
     <Modal open={open}>
       <Stack
@@ -255,13 +290,21 @@ export default function EditDialog({
             borderBottom: `1px solid ${grey[300]}`,
           }}
         >
-          {Object.values(TAB).map((item) => {
-            return <Tab key={item} label={item} value={item} />;
+          {tabs.map((item) => {
+            return <Tab key={item.id} label={item.name} value={item.id} />;
           })}
         </Tabs>
-        {currentTab === TAB.BASIC &&
-          renderSchemaForm(basicDataSchema, formNodeData)}
-        {currentTab === TAB.EXTRA && renderSchemaForm(schemaObj, {})}
+        {currentTab === 'basic' &&
+          renderSchemaForm(basicDataSchema, formNodeData, (val) => {
+            setFormNodeData(val);
+          })}
+        {currentTab === 'option' &&
+          renderSchemaForm(optionSchema, formNodeData.option || {}, (val) => {
+            setFormNodeData((prev: RawJson) => {
+              return { ...prev, option: val };
+            });
+          })}
+        {currentTab === 'extra' && <></>}
       </Stack>
     </Modal>
   );
