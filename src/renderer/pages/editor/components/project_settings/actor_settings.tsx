@@ -18,8 +18,7 @@ import {
   SchemaFieldObject,
   SchemaFieldString,
 } from '../../../../models/schema';
-import { FieldContainer } from '../schema_form/field';
-import { useStoryStore } from '../../../../store';
+import { StoryActor, useStoryStore } from '../../../../store';
 import { cloneDeep } from 'lodash';
 import { RawJson } from '../../../../../type';
 import SchemaForm from '../schema_form';
@@ -28,18 +27,18 @@ const itemSchema = new SchemaFieldObject();
 const portraitSchemaItem = new SchemaFieldObject();
 portraitSchemaItem.fields.push(
   {
-    id: 'id',
-    name: 'id',
-    data: new SchemaFieldString({
-      colSpan: 6,
-    }),
-  },
-  {
     id: 'pic',
     name: 'pic',
     data: new SchemaFieldFile({
-      colSpan: 6,
+      colSpan: 3,
       type: 'img',
+    }),
+  },
+  {
+    id: 'id',
+    name: 'id',
+    data: new SchemaFieldString({
+      colSpan: 9,
     }),
   }
 );
@@ -80,9 +79,14 @@ export default function ActorSettings({
   open: boolean;
   close: () => void;
 }) {
-  const { translations, currentLang, updateTranslations, updateNode } =
-    useStoryStore();
-  const [formData, setFormData] = useState<RawJson[]>([]);
+  const {
+    translations,
+    currentLang,
+    updateTranslations,
+    updateStoryActors,
+    trackCurrentState,
+  } = useStoryStore();
+  const [formData, setFormData] = useState<StoryActor[]>([]);
 
   const formTranslations = useMemo(() => {
     return cloneDeep(translations);
@@ -126,6 +130,7 @@ export default function ActorSettings({
         >
           Actor Settings
         </DialogTitle>
+
         <SchemaForm
           translations={formTranslations}
           currentLang={currentLang}
@@ -135,6 +140,8 @@ export default function ActorSettings({
             setFormData(v);
           }}
         />
+
+        <br />
 
         <Stack
           direction='row'
@@ -149,6 +156,8 @@ export default function ActorSettings({
             variant='contained'
             onClick={() => {
               updateTranslations(formTranslations);
+              updateStoryActors(formData);
+              trackCurrentState();
               close();
             }}
           >

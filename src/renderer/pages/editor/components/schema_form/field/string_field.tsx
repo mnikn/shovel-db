@@ -1,4 +1,4 @@
-import { Box, Container, TextField } from '@mui/material';
+import { Box, Container, TextField, Stack, FormLabel } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import MonacoEditor from 'react-monaco-editor/lib/editor';
 import { LANG } from '../../../../../../constants/i18n';
@@ -106,25 +106,15 @@ function FieldString({
       )}
 
       {schema.config.type === 'code' && (
-        <Container
+        <Stack
+          spacing={1}
           sx={{
             width: '100%',
             height: schema.config.height || '300px',
             position: 'relative',
-            p: 4,
-            px: '0!important',
           }}
         >
-          {label && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '0px',
-              }}
-            >
-              {label}
-            </Box>
-          )}
+          {label && <FormLabel>{label}</FormLabel>}
           <MonacoEditor
             width='100%'
             height='100%'
@@ -145,7 +135,7 @@ function FieldString({
               }
             }}
           />
-        </Container>
+        </Stack>
       )}
     </Box>
   );

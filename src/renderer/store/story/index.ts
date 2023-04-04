@@ -23,12 +23,20 @@ interface NodeSelection {
   nodeId: string;
 }
 
+export interface StoryActor {
+  id: string;
+  name: string;
+  portraits: { id: string; pic: string };
+}
+
 export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
   const [currentStorylet, setCurrentStorylet] = useState<Storylet | null>(null);
   const [selection, setSelection] = useState<NodeSelection | null>(null);
+  const [storyActors, setStoryActors] = useState<StoryActor[]>([]);
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
   const currentStoryletRef = useRef(currentStorylet);
+  const storyActorsRef = useRef(storyActors);
 
   const translationModule = useTranslation();
 
@@ -37,6 +45,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       currentStorylet: currentStoryletRef.current?.clone() || null,
       translations: cloneDeep(translationModule.translationsRef.current),
       currentLang: translationModule.currentLang,
+      storyActors: storyActorsRef.current,
     });
   }, []);
 
@@ -50,6 +59,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       setCurrentStorylet(val.currentStorylet?.clone() || null);
       translationModule.setTranslations(val.translations || {});
       translationModule.setCurrentLang(val.currentLang || LANG.EN);
+      setStoryActors(val.storyActors || []);
     });
   }, [translationModule.updateTranslations, translationModule.switchLang]);
 
@@ -280,6 +290,11 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     [currentStorylet]
   );
 
+  const updateStoryActors = useCallback((val: StoryActor[]) => {
+    storyActorsRef.current = val;
+    setStoryActors(val);
+  }, []);
+
   return {
     currentStorylet,
     selection,
@@ -290,6 +305,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     updateNode,
     moveSelection,
     trackCurrentState,
+    updateStoryActors,
     ...translationModule,
   };
 });

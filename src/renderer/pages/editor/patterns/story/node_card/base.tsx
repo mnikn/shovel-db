@@ -116,7 +116,7 @@ export default function BaseNodeCard({
         return;
       }
 
-      if (e.code === 'Space') {
+      if (e.code === 'KeyE') {
         selectNode(null);
 
         setEditOpen(true);

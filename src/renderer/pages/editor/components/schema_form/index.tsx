@@ -6,7 +6,7 @@ import {
   SchemaFieldArray,
   validateValue,
 } from '../../../../models/schema';
-import { FieldContainer } from './field';
+import Field from './field';
 import { Translation } from '../../../../store/story/translation';
 import { LANG } from '../../../../../constants/i18n';
 
@@ -36,10 +36,10 @@ export default function SchemaForm({
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        overflow: 'auto',
+        overflow: 'hidden',
       }}
     >
-      <FieldContainer
+      <Field
         schema={schema}
         value={form}
         translations={translations}
@@ -47,7 +47,6 @@ export default function SchemaForm({
         onValueChange={(val) => {
           setForm(validateValue(val, val, schema, {}));
         }}
-        isRoot
       />
     </Box>
   );

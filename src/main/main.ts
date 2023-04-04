@@ -17,6 +17,7 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
       devTools: process.env.NODE_ENV !== 'production',
+      webSecurity: false,
     },
   });
 

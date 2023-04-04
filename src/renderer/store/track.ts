@@ -17,7 +17,7 @@ export const [useTrackStore, getTrackStore] = createGlobalStore(() => {
     {
       story: { currentStorylet: null, translations: {}, currentLang: 'en' },
       explorer: { files: [] },
-      project: {},
+      project: { storyActors: [] },
     },
   ]);
 

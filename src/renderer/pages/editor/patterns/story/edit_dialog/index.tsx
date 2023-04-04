@@ -15,6 +15,7 @@ import {
 import { RawJson } from '../../../../../../type';
 import { useStoryStore } from '../../../../../store';
 import { cloneDeep } from 'lodash';
+import { grey } from '@mui/material/colors';
 
 enum TAB {
   BASIC = 'Base',
@@ -148,6 +149,13 @@ export default function EditDialog({
   } = useStoryStore();
   const [formNodeData, setFormNodeData] = useState(cloneDeep(node.data));
 
+  useEffect(() => {
+    if (open) {
+      setCurrentTab(TAB.BASIC);
+      setFormNodeData(cloneDeep(node.data));
+    }
+  }, [open, node.data]);
+
   const formTranslations = useMemo(() => {
     return cloneDeep(translations);
   }, [translations, currentTab]);
@@ -177,6 +185,7 @@ export default function EditDialog({
           }}
         />
       </Container>
+      <br />
       <Stack
         direction='row'
         spacing={2}
@@ -243,6 +252,7 @@ export default function EditDialog({
           sx={{
             ...borderRadius.normal,
             marginTop: '0!important',
+            borderBottom: `1px solid ${grey[300]}`,
           }}
         >
           {Object.values(TAB).map((item) => {

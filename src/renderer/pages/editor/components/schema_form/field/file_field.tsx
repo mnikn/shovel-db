@@ -1,7 +1,7 @@
 import React from 'react';
 import ImageUploading from 'react-images-uploading';
 import { SchemaFieldFile } from '../../../../../models/schema';
-import { Container, FormLabel, Stack } from '@mui/material';
+import { Container, FormLabel, Stack, Box } from '@mui/material';
 import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
 import RemoveCircleOutlineRoundedIcon from '@mui/icons-material/RemoveCircleOutlineRounded';
 import { grey } from '@mui/material/colors';
@@ -39,7 +39,7 @@ export default function FieldFile({
           {({ dragProps, onImageUpload, onImageUpdate }) => {
             return (
               // write your building UI
-              <Container
+              <Box
                 sx={{
                   backgroundColor: grey[800],
                   ...borderRadius.large,
@@ -54,26 +54,41 @@ export default function FieldFile({
                   width: '80px',
                   height: '80px',
                 }}
-                // className='bg-gray-800 rounded-md flex items-center justify-center p-1 hover:bg-gray-500 transition-all cursor-pointer'
               >
                 {!value && (
                   <Container
-                    className='flex text-white justify-center items-center w-full h-full'
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'common.white',
+                      height: '100%',
+                      width: '100%',
+                    }}
                     onClick={onImageUpload}
                     {...dragProps}
                   >
-                    <AddCircleOutlineRoundedIcon sx={{ mr: 1 }} />
+                    <AddCircleOutlineRoundedIcon />
                     Upload
                   </Container>
                 )}
                 {value && (
-                  <Container className='relative w-full h-full flex'>
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      height: '100%',
+                      width: '100%',
+                      display: 'flex',
+                      p: 1,
+                    }}
+                  >
                     <img
-                      className='m-auto'
                       src={value}
                       style={{
-                        height: '72px',
+                        height: '100%',
+                        width: '100%',
                         objectFit: 'cover',
+                        margin: 'auto',
                       }}
                       alt=''
                       onClick={() => {
@@ -94,9 +109,9 @@ export default function FieldFile({
                         }
                       }}
                     />
-                  </Container>
+                  </Box>
                 )}
-              </Container>
+              </Box>
             );
           }}
         </ImageUploading>

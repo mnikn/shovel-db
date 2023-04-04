@@ -1,189 +1,130 @@
-// import classNames from 'classnames';
-import get from 'lodash/get';
-import React, { useEffect, useState, useCallback } from 'react';
-// import { CgArrowDown, CgArrowUp, CgMathPlus, CgRemove } from 'react-icons/cg';
+import { Button, Box, Stack, IconButton } from '@mui/material';
+import { grey } from '@mui/material/colors';
+import Grid from '@mui/material/Unstable_Grid2';
+import { get } from 'lodash';
+import React, { useEffect, useState } from 'react';
+import { LANG } from '../../../../../../constants/i18n';
+import { RawJson } from '../../../../../../type';
+import { UUID } from '../../../../../../utils/uuid';
 import {
   SchemaField,
-  SchemaFieldActorSelect,
   SchemaFieldArray,
-  SchemaFieldBoolean,
   SchemaFieldFile,
-  SchemaFieldNumber,
   SchemaFieldObject,
-  SchemaFieldSelect,
   SchemaFieldString,
-  SchemaFieldType,
 } from '../../../../../models/schema';
-import { UUID } from '../../../../../../utils/uuid';
-// import FieldActorSelect from './actor_select_field';
-// import FieldBoolean from './boolean_field';
-// import FieldFile from './file_field';
-// import FieldNumber from './number_field';
-// import FieldSelect from './select_field';
-import FieldString from './string_field';
-import {
-  Box,
-  Button,
-  Container,
-  FormControl,
-  FormLabel,
-  Grid,
-  Stack,
-} from '@mui/material';
-import { RawJson } from '../../../../../../type';
-import { borderRadius } from '../../../../../theme';
 import { Translation } from '../../../../../store/story/translation';
-import { LANG } from '../../../../../../constants/i18n';
-import { grey } from '@mui/material/colors';
+import { borderRadius } from '../../../../../theme';
 import FieldFile from './file_field';
+import FieldString from './string_field';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import RemoveIcon from '@mui/icons-material/Remove';
 
-export function FieldContainer({
+const getContainerLabelStyle = (label) => ({
+  m: 1,
+  pt: 4,
+  border: `1px solid ${grey[400]}`,
+  ...borderRadius.normal,
+  position: 'relative',
+  '&:before': {
+    position: 'absolute',
+    left: '12px',
+    top: '12px',
+    color: grey[500],
+    content: `"${label}"`,
+    /* width: '-webkit-fill-available', */
+    width: '40%',
+    zIndex: 'auto',
+    background: 'white',
+    overflow: 'hidden',
+  },
+});
+
+export default function Field({
   schema,
   value,
   onValueChange,
   translations,
   currentLang,
-  isRoot,
+  label,
 }: {
   schema: SchemaField;
   value: any;
   translations: Translation;
   currentLang: LANG;
   onValueChange?: (value: any) => void;
-  isRoot: boolean;
+  label?: string;
 }) {
-  const objectValueChange = useCallback(
-    (v: any, id: string) => {
-      if (onValueChange) {
-        onValueChange({
-          ...value,
-          [id]: v,
-        });
-      }
-    },
-    [value, onValueChange]
-  );
-
-  const handleValueChange = useCallback(
-    (v: any, obj?: any) => {
-      if (obj) {
-        objectValueChange(v, obj.id);
-      } else {
-        if (onValueChange) {
-          onValueChange(v);
-        }
-      }
-    },
-    [objectValueChange, onValueChange]
-  );
-
-  const renderContent = (
-    schema: SchemaField,
-    val: any,
-    obj?: { name: string; id: string; data: SchemaField }
-  ) => (
+  const gridStyle = label ? getContainerLabelStyle(label) : {};
+  return (
     <>
-      {schema instanceof SchemaFieldString && (
-        <Grid item xs={schema.config.colSpan} key={schema.config.fieldId}>
-          <FieldString
-            label={obj?.name || obj?.id}
-            schema={schema}
-            value={val}
-            translations={translations}
-            currentLang={currentLang}
-            onValueChange={(v) => handleValueChange(v, obj)}
-          />
-        </Grid>
-      )}
-      {schema instanceof SchemaFieldFile && (
-        <Grid item xs={schema.config.colSpan} key={schema.config.fieldId}>
-          <FieldFile
-            label={obj?.name || obj?.id}
-            schema={schema}
-            value={val}
-            onValueChange={(v) => handleValueChange(v, obj)}
-          />
-        </Grid>
-      )}
       {schema instanceof SchemaFieldObject && (
         <Grid
-          item
+          container
+          spacing={2}
           xs={schema.config.colSpan}
-          key={schema.config.fieldId}
           sx={{
-            border: `1px solid ${grey[400]}`,
-            ...borderRadius.normal,
+            ...gridStyle,
             alignItems: 'center',
-            m: 2,
-            pr: 2,
-            pb: 2,
+            width: '-webkit-fill-available',
           }}
         >
-          <Container
-            sx={{
-              maxHeight: '500px',
-              width: '100%',
-              //   p: 1,
-            }}
-          >
-            {obj && (
-              <FormLabel id={schema.config.fieldId}>
-                {obj?.name || obj?.id}
-              </FormLabel>
-            )}
-
-            {schema.fields.map((item, i) => {
-              if (item.data.config.enableWhen) {
-                const fn = eval(item.data.config.enableWhen);
-                if (!fn(value)) {
-                  return null;
-                }
-              }
-              return renderContent(item.data, get(value, item.id), item);
-            })}
-          </Container>
+          {schema.fields.map((field) => {
+            return (
+              <Field
+                schema={field.data}
+                value={get(value, field.id)}
+                onValueChange={(v) => {
+                  if (onValueChange) {
+                    onValueChange({
+                      ...value,
+                      [field.id]: v,
+                    });
+                  }
+                }}
+                label={field.name}
+                translations={translations}
+                currentLang={currentLang}
+              />
+            );
+          })}
         </Grid>
       )}
       {schema instanceof SchemaFieldArray && (
         <FieldArray
-          label={obj?.name || obj?.id}
           schema={schema}
+          value={value}
+          onValueChange={onValueChange}
           translations={translations}
           currentLang={currentLang}
-          value={val}
-          onValueChange={(v) => handleValueChange(v, obj)}
-          isRoot={isRoot}
+          label={label}
         />
+      )}
+      {schema instanceof SchemaFieldString && (
+        <Grid xs={schema.config.colSpan}>
+          <FieldString
+            schema={schema}
+            value={value}
+            onValueChange={onValueChange}
+            translations={translations}
+            currentLang={currentLang}
+            label={label}
+          />
+        </Grid>
+      )}
+      {schema instanceof SchemaFieldFile && (
+        <Grid xs={schema.config.colSpan}>
+          <FieldFile
+            schema={schema}
+            value={value}
+            onValueChange={onValueChange}
+            label={label}
+          />
+        </Grid>
       )}
     </>
   );
-  if (schema instanceof SchemaFieldObject) {
-    return (
-      <Grid
-        container
-        spacing={2}
-        rowGap={2}
-        sx={{
-          //   p: isRoot ? 0 : 1,
-          // m: isRoot ? 0 : 1,
-          alignItems: 'center',
-          border: isRoot ? undefined : `1px solid ${grey[400]}`,
-          ...borderRadius.normal,
-        }}
-      >
-        {schema.fields.map((item, i) => {
-          if (item.data.config.enableWhen) {
-            const fn = eval(item.data.config.enableWhen);
-            if (!fn(value)) {
-              return null;
-            }
-          }
-          return renderContent(item.data, get(value, item.id), item);
-        })}
-      </Grid>
-    );
-  }
-  return renderContent(schema, value);
 }
 
 export function FieldArray({
@@ -193,7 +134,6 @@ export function FieldArray({
   translations,
   currentLang,
   onValueChange,
-  isRoot,
 }: {
   label?: string;
   schema: SchemaFieldArray;
@@ -201,7 +141,6 @@ export function FieldArray({
   translations: Translation;
   currentLang: LANG;
   onValueChange?: (value: any) => void;
-  isRoot: boolean;
 }) {
   const [list, setList] = useState<RawJson[]>(
     (value || []).map((item) => {
@@ -270,104 +209,77 @@ export function FieldArray({
     });
   };
 
+  const gridStyle = label ? getContainerLabelStyle(label) : {};
   return (
     <Grid
-      item
-      xs={schema.config.colSpan}
-      spacing={2}
-      rowGap={2}
       sx={{
-        p: 2,
-        m: 2,
-        ml: 3,
         display: 'flex',
+        flexGrow: label ? 0 : 1,
         flexDirection: 'column',
-        flexGrow: schema.config.fitRestHeight ? 1 : 0,
         overflow: 'auto',
-        border: isRoot ? undefined : `1px solid ${grey[400]}`,
-        ...borderRadius.normal,
       }}
+      xs={schema.config.colSpan}
     >
       <Stack
-        spacing={1}
+        spacing={2}
         sx={{
-          flexGrow: 1,
-          overflow: 'auto',
+          height: '100%',
+          ...gridStyle,
+          p: label ? 4 : 0,
         }}
       >
-        {label && <FormLabel>{label}</FormLabel>}
         <Stack
+          spacing={2}
           sx={{
-            width: '100%',
-            flexGrow: 1,
             overflow: 'auto',
-            maxHeight: schema.config.height,
+            flexGrow: 1,
+            maxHeight: label ? schema.config.height || '300px' : 'inherit',
+            pt: label ? 3 : 0,
           }}
-          spacing={1}
         >
-          <Stack
-            sx={{
-              flexGrow: 1,
-              width: '100%',
-              overflow: 'auto',
-            }}
-            spacing={1}
-          >
-            {list.map((item, i) => {
-              return (
+          {list.map((item, i) => {
+            return (
+              <Stack sx={{ position: 'relative' }}>
                 <Stack
-                  key={item.id}
-                  direction={'row'}
+                  direction='row'
                   sx={{
-                    alignItems: 'center',
+                    position: 'absolute',
+                    top: '8px',
+                    right: '12px',
+                    zIndex: 10,
                   }}
                 >
-                  <Stack
-                    direction='row'
-                    sx={{
-                      flexGrow: 1,
-                      alignItems: 'center',
-                    }}
-                    spacing={4}
-                  >
-                    <FieldContainer
-                      translations={translations}
-                      currentLang={currentLang}
-                      schema={schema.fieldSchema as SchemaField}
-                      value={item.value}
-                      onValueChange={(v) => onItemChange(v, i)}
-                      isRoot={false}
-                    />
-                    {/* <CgArrowUp
-                    className='cursor-pointer ml-2 mr-2 text-gray-800 hover:text-gray-500 transition-all flex-shrink-0'
-                    onClick={() => moveUpItem(i)}
-                  />
-                  <CgArrowDown
-                    className='cursor-pointer mr-2 text-gray-800 hover:text-gray-500 transition-all flex-shrink-0'
-                    onClick={() => moveDownItem(i)}
-                  />
-                  <CgRemove
-                    className='cursor-pointer mr-2 text-gray-800 hover:text-gray-500 transition-all flex-shrink-0'
-                    onClick={() => deleteItem(i)}
-                  /> */}
-                  </Stack>
+                  <IconButton onClick={() => moveUpItem(i)}>
+                    <ArrowUpwardIcon />
+                  </IconButton>
+                  <IconButton onClick={() => moveDownItem(i)}>
+                    <ArrowDownwardIcon />
+                  </IconButton>
+                  <IconButton onClick={() => deleteItem(i)}>
+                    <RemoveIcon />
+                  </IconButton>
                 </Stack>
-              );
-            })}
-          </Stack>
-          <Button
-            variant='outlined'
-            sx={{
-              width: '100%',
-              marginTop: 'auto',
-            }}
-            // className='w-full border border-gray-300 hover:text-gray-400 p-2 border-dashed transition-all flex items-center justify-center'
-            onClick={addItem}
-          >
-            {/* <CgMathPlus className='mr-2' />  */}
-            Add Item
-          </Button>
+                <Field
+                  translations={translations}
+                  currentLang={currentLang}
+                  schema={schema.fieldSchema as SchemaField}
+                  value={item.value}
+                  label={`#${i + 1}`}
+                  onValueChange={(v) => onItemChange(v, i)}
+                />
+              </Stack>
+            );
+          })}
         </Stack>
+        <Button
+          variant='outlined'
+          sx={{
+            marginTop: 'auto',
+          }}
+          onClick={addItem}
+        >
+          Add Item
+        </Button>
       </Stack>
     </Grid>
   );
