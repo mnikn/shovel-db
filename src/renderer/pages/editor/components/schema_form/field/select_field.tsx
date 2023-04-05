@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Stack,
   Select,
@@ -9,6 +9,7 @@ import {
   FormControl,
 } from '@mui/material';
 import { SchemaFieldSelect } from '../../../../../models/schema';
+import { get } from 'lodash';
 
 function FieldSelect({
   label,
@@ -21,22 +22,47 @@ function FieldSelect({
   value: any;
   onValueChange?: (value: any) => void;
 }) {
-  const onChange = (e: any) => {
-    if (onValueChange) {
-      onValueChange(e.target.value);
-    }
-  };
+  const isGrouping = schema.config.options.find((item: any) => !!item.children);
+  const childOptions =
+    schema.config.options.find(
+      (item: any) =>
+        item.value ===
+        get(value, get(schema.config, 'groupConfig.group.valueKey'))
+    )?.children || [];
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <FormControl fullWidth>
-        <InputLabel id={schema.config.fieldId}>Age</InputLabel>
+    <Stack direction='row' sx={{ width: '100%' }} spacing={1}>
+      <FormControl sx={{ flexGrow: 1 }}>
+        <InputLabel id={schema.config.fieldId}>
+          {isGrouping ? schema.config.groupConfig?.group?.label : label}
+        </InputLabel>
         <Select
           labelId={schema.config.fieldId}
+          label={isGrouping ? schema.config.groupConfig?.group?.label : label}
           size='small'
-          value={schema.config.options.find((d) => d.value === value)?.value}
-          onChange={onChange}
-          label={label}
+          value={
+            isGrouping
+              ? get(value, get(schema.config, 'groupConfig.group.valueKey'))
+              : value
+          }
+          onChange={(e) => {
+            if (onValueChange && !isGrouping) {
+              onValueChange(e.target.value);
+            } else if (onValueChange) {
+              onValueChange({
+                [schema.config.groupConfig?.group?.valueKey]: e.target.value,
+                [schema.config.groupConfig?.group?.childKey]:
+                  schema.config.options.find(
+                    (item: any) =>
+                      item.value ===
+                      get(
+                        e.target.value,
+                        get(schema.config, 'groupConfig.group.valueKey')
+                      )
+                  )?.children?.[0]?.value,
+              });
+            }
+          }}
           sx={{
             width: '100%',
           }}
@@ -44,13 +70,59 @@ function FieldSelect({
           {schema.config.options.map((item: any) => {
             return (
               <MenuItem key={item.value} value={item.value}>
-                {item.label}
+                {get(schema.config, 'groupConfig.group.renderMenuItem')
+                  ? get(schema.config, 'groupConfig.group.renderMenuItem')(
+                      item.value,
+                      item
+                    )
+                  : item.label}
               </MenuItem>
             );
           })}
         </Select>
       </FormControl>
-    </Box>
+      {isGrouping && (
+        <FormControl sx={{ flexGrow: 1 }}>
+          <InputLabel id={schema.config.fieldId + '_child'}>
+            {schema.config.groupConfig?.child?.label}
+          </InputLabel>
+          <Select
+            labelId={schema.config.fieldId + '_child'}
+            label={schema.config.groupConfig?.child?.label}
+            size='small'
+            value={get(value, get(schema.config, 'groupConfig.child.valueKey'))}
+            onChange={(e) => {
+              if (onValueChange) {
+                onValueChange({
+                  ...value,
+                  [schema.config.groupConfig?.child?.valueKey]: e.target.value,
+                });
+              }
+            }}
+            sx={{
+              width: '100%',
+            }}
+          >
+            {childOptions.map((item: any) => {
+              return (
+                <MenuItem key={item.value} value={item.value}>
+                  {get(schema.config, 'groupConfig.child.renderMenuItem')
+                    ? get(schema.config, 'groupConfig.child.renderMenuItem')(
+                        get(
+                          value,
+                          get(schema.config, 'groupConfig.group.valueKey')
+                        ),
+                        item.value,
+                        item
+                      )
+                    : item.label}
+                </MenuItem>
+              );
+            })}
+          </Select>
+        </FormControl>
+      )}
+    </Stack>
   );
 }
 

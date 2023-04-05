@@ -27,7 +27,7 @@ interface NodeSelection {
 export interface StoryActor {
   id: string;
   name: string;
-  portraits: { id: string; pic: string };
+  portraits: { id: string; pic: string }[];
 }
 
 export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
@@ -328,6 +328,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     updateNode,
     moveSelection,
     trackCurrentState,
+    storyActors,
     updateStoryActors,
     ...translationModule,
   };

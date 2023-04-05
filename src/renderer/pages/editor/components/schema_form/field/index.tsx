@@ -175,6 +175,8 @@ export function FieldArray({
         id: UUID(),
         value: schema.fieldSchema.config.needI18n
           ? UUID()
+          : schema.fieldSchema instanceof SchemaFieldObject
+          ? schema.fieldSchema.configDefaultValue
           : schema.fieldSchema.config.defaultValue,
       });
     });

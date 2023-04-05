@@ -111,7 +111,7 @@ export function validateValue(
     //   }
     // }
     if (schema.config.needI18n && !value) {
-      return 'extra_field_' + UUID();
+      return 'string__field_' + UUID();
     }
 
     // if (schema.config.type === 'code') {
@@ -223,9 +223,6 @@ function getDefaultConfig(type: SchemaFieldType): RawJson {
         defaultValue: '',
         enableWhen: null,
         required: false,
-        customValidate: null,
-        customValidateErrorText: '',
-        helperText: '',
         type: 'singleline', // singleline | multiline | code
         template: null, // only type=code work
         minLen: 0,
@@ -234,6 +231,35 @@ function getDefaultConfig(type: SchemaFieldType): RawJson {
         autoFocus: false,
         codeLang: '',
         fieldId: `field_string_${UUID()}`,
+      };
+    }
+    case SchemaFieldType.Select: {
+      return {
+        colSpan: 4,
+        defaultValue: '',
+        options: [],
+        enableWhen: null,
+        required: false,
+        fieldId: `field_select_${UUID()}`,
+      };
+    }
+    case SchemaFieldType.File: {
+      return {
+        colSpan: 3,
+        defaultValue: '',
+        type: 'img',
+        enableWhen: null,
+        required: false,
+        fieldId: `field_file_${UUID()}`,
+      };
+    }
+    case SchemaFieldType.Array: {
+      return {
+        colSpan: 12,
+        defaultValue: [],
+        enableWhen: null,
+        required: false,
+        fieldId: `field_array_${UUID()}`,
       };
     }
   }
@@ -432,7 +458,7 @@ export class SchemaFieldObject extends SchemaField {
       }
       case SchemaFieldType.String: {
         return field.config.needI18n
-          ? 'extra_field_' + UUID()
+          ? 'string_field_' + UUID()
           : field.config.defaultValue;
       }
       case SchemaFieldType.Number: {

@@ -65,8 +65,7 @@ export class StoryletRootNode extends StoryletNode<StoryletRootNodeData> {
 export interface StoryletSentenceNodeData extends StoryletNodeData {
   content: string;
   contentSpeed: { [key: string]: number[] };
-  actor: string | null;
-  actorPortrait: string | null;
+  actor: { id: string; portrait: string } | null;
 }
 export class StoryletSentenceNode extends StoryletNode<StoryletSentenceNodeData> {
   constructor() {
@@ -78,7 +77,6 @@ export class StoryletSentenceNode extends StoryletNode<StoryletSentenceNodeData>
       beforeJumpProcess: '',
       extraData: {},
       actor: null,
-      actorPortrait: null,
     };
   }
 
@@ -89,15 +87,16 @@ export class StoryletSentenceNode extends StoryletNode<StoryletSentenceNodeData>
   static fromJson(json: RawJson): StoryletSentenceNode {
     const instance = new StoryletSentenceNode();
     instance.id = json.id;
-    instance.data.content = json.data.content;
-    instance.data.contentSpeed = json.data.contentSpeed || {};
-    instance.data.extraData = json.data.extraData || {};
-    instance.data.actor = json.data.actor;
-    instance.data.actorPortrait = json.data.actorPortrait;
-    instance.data.customNodeId = json.data.customNodeId;
-    instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
-    instance.data.afterJumpProcess = json.data.afterJumpProcess;
-    instance.data.enableCheck = json.data.enableCheck;
+    instance.data = { ...json.data };
+    // instance.data.content = json.data.content;
+    // instance.data.contentSpeed = json.data.contentSpeed || {};
+    // instance.data.extraData = json.data.extraData || {};
+    // instance.data.actor = json.data.actor;
+    // instance.data.actorPortrait = json.data.actorPortrait;
+    // instance.data.customNodeId = json.data.customNodeId;
+    // instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
+    // instance.data.afterJumpProcess = json.data.afterJumpProcess;
+    // instance.data.enableCheck = json.data.enableCheck;
     return instance;
   }
 
@@ -113,8 +112,7 @@ export class StoryletSentenceNode extends StoryletNode<StoryletSentenceNodeData>
 export interface StoryletBranchNodeData extends StoryletNodeData {
   content: string;
   contentSpeed: { [key: string]: number[] };
-  actor: string | null;
-  actorPortrait: string | null;
+  actor: { id: string; portrait: string } | null;
 }
 export class StoryletBranchNode extends StoryletNode<StoryletBranchNodeData> {
   constructor() {
@@ -126,7 +124,6 @@ export class StoryletBranchNode extends StoryletNode<StoryletBranchNodeData> {
       beforeJumpProcess: '',
       extraData: {},
       actor: null,
-      actorPortrait: null,
     };
   }
 
@@ -137,15 +134,15 @@ export class StoryletBranchNode extends StoryletNode<StoryletBranchNodeData> {
   static fromJson(json: any): StoryletBranchNode {
     const instance = new StoryletBranchNode();
     instance.id = json.id;
-    instance.data.content = json.data.content;
-    instance.data.contentSpeed = json.data.contentSpeed || {};
-    instance.data.extraData = json.data.extraData || {};
-    instance.data.actor = json.data.actor;
-    instance.data.actorPortrait = json.data.actorPortrait;
-    instance.data.customNodeId = json.data.customNodeId;
-    instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
-    instance.data.afterJumpProcess = json.data.afterJumpProcess;
-    instance.data.enableCheck = json.data.enableCheck;
+    instance.data = { ...json.data };
+    // instance.data.content = json.data.content;
+    // instance.data.contentSpeed = json.data.contentSpeed || {};
+    // instance.data.extraData = json.data.extraData || {};
+    // instance.data.actor = json.data.actor;
+    // instance.data.customNodeId = json.data.customNodeId;
+    // instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
+    // instance.data.afterJumpProcess = json.data.afterJumpProcess;
+    // instance.data.enableCheck = json.data.enableCheck;
     return instance;
   }
 

@@ -33,6 +33,17 @@ function generateSchema(node: StoryletNode<StoryletNodeData>) {
           }),
         },
         {
+          name: 'actor',
+          id: 'actor',
+          data: new SchemaFieldSelect({
+            colSpan: 8,
+            groupConfig: {
+              group: { valueKey: 'id', label: 'id' },
+              child: { valueKey: 'portrait', label: 'portrait' },
+            },
+          }),
+        },
+        {
           name: 'Content',
           id: 'content',
           data: new SchemaFieldString({
@@ -204,6 +215,8 @@ export default function EditDialog({
     updateNode,
     trackCurrentState,
     currentStorylet,
+    storyActors,
+    tr,
   } = useStoryStore();
   const [formNodeData, setFormNodeData] = useState(cloneDeep(node.data));
 
@@ -257,8 +270,68 @@ export default function EditDialog({
   }, [node.data, currentTab]);
 
   const basicDataSchema = useMemo(() => {
-    return generateSchema(node);
-  }, [node]);
+    const res = generateSchema(node);
+    // handle actor options
+    const actorField = res.fields.find((field) => {
+      return field.id === 'actor';
+    });
+    if (actorField) {
+      actorField.data.config.options = storyActors.map((actor) => {
+        return {
+          label: tr(actor.name),
+          value: actor.id,
+          children: [{ label: 'none', value: '' }].concat(
+            actor.portraits.map((portrait) => {
+              return {
+                label: portrait.id,
+                value: portrait.id,
+              };
+            })
+          ),
+        };
+      });
+      actorField.data.config.options.unshift({
+        label: 'none',
+        value: '',
+      });
+      actorField.data.config.groupConfig = {
+        group: {
+          valueKey: 'id',
+          label: 'id',
+          renderMenuItem: (v, item) => {
+            return (
+              <>
+                {v
+                  ? tr(storyActors.find((item) => item.id === v)?.name || '')
+                  : item.label}
+              </>
+            );
+          },
+        },
+        child: {
+          valueKey: 'portrait',
+          label: 'portrait',
+          renderMenuItem: (p, c, item) => {
+            const portraitItem = storyActors
+              .find((item) => item.id === p)
+              ?.portraits.find((z) => z.id === c);
+            return (
+              <Stack direction='row' spacing={2} sx={{ alignItems: 'center' }}>
+                {p && c && (
+                  <img
+                    style={{ width: '24px', height: 'auto' }}
+                    src={tr(portraitItem?.pic || '')}
+                  />
+                )}
+                {portraitItem?.id || item?.label}
+              </Stack>
+            );
+          },
+        },
+      };
+    }
+    return res;
+  }, [node, storyActors, tr]);
 
   const renderSchemaForm = (
     schemaObj: SchemaFieldObject,

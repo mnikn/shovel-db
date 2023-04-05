@@ -1,5 +1,6 @@
 import { Box, Container, TextField, Stack, FormLabel } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import { get, set } from 'lodash';
 import MonacoEditor from 'react-monaco-editor/lib/editor';
 import { LANG } from '../../../../../../constants/i18n';
 import { SchemaFieldString } from '../../../../../models/schema';
@@ -23,12 +24,16 @@ function FieldString({
   //   const { updateTranslateKey, translations, currentLang } = useStoryStore();
 
   const [contentValue, setContentValue] = useState(
-    schema.config.needI18n ? translations[value]?.[currentLang] || '' : value
+    schema.config.needI18n
+      ? get(translations, `${value}.${currentLang}`) || ''
+      : value
   );
 
   useEffect(() => {
     setContentValue(
-      schema.config.needI18n ? translations[value]?.[currentLang] || '' : value
+      schema.config.needI18n
+        ? get(translations, `${value}.${currentLang}`) || ''
+        : value
     );
   }, [currentLang, translations, value]);
 
@@ -71,7 +76,7 @@ function FieldString({
 
     const termKey = value;
     if (schema.config.needI18n) {
-      translations[termKey][currentLang] = textValue;
+      set(translations, `${termKey}.${currentLang}`, textValue);
       if (onValueChange) {
         onValueChange(value);
       }
