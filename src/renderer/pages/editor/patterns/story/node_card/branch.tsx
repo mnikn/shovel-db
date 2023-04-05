@@ -6,9 +6,13 @@ import BaseNodeCard from './base';
 export default function BranchNodeCard({
   node,
   pos,
+  onDrag,
+  onDragEnd,
 }: {
   node: StoryletBranchNode;
   pos: { x: number; y: number };
+  onDrag?: (val: any) => void;
+  onDragEnd?: (val: any) => void;
 }) {
   const { currentStorylet, tr } = useStoryStore();
   if (!currentStorylet) {
@@ -20,6 +24,8 @@ export default function BranchNodeCard({
       pos={pos}
       node={node}
       color={{ hover: 'rgb(191 219 254)', normal: 'rgb(96 165 250)' }}
+      onDrag={onDrag}
+      onDragEnd={onDragEnd}
     >
       {tr(node.data.content)}
     </BaseNodeCard>

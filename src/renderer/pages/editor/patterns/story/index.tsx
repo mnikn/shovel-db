@@ -3,17 +3,19 @@ import { Box } from '@mui/material';
 import { useStoryStore } from '../../../../store';
 import useLayout from './use_layout';
 import NodeCard from './node_card';
+import { borderRadius } from '../../../../theme';
 
 export default function Story() {
   const [zoomDom, setZoomDom] = useState<HTMLDivElement | null>(null);
   const [dragingNode, setDragingNode] = useState<any>(null);
-  const { currentStorylet } = useStoryStore();
+  const { currentStorylet, selectNode, moveStoryletNode, trackCurrentState } =
+    useStoryStore();
 
   const dragingNodeRef = useRef<HTMLDivElement>(dragingNode);
   dragingNodeRef.current = dragingNode;
   const dragTargetRef = useRef<any>(null);
 
-  const { zoom, treeData, linkData } = useLayout({
+  const { zoom, treeData, linkData, refresh } = useLayout({
     zoomDom,
     dragingNode,
   });
@@ -23,6 +25,21 @@ export default function Story() {
       setZoomDom(dom);
     }
   }, []);
+
+  /* if (dragTargetRef.current) {
+   *   if (dragTargetRef.current.type === 'child') {
+   *     StoryProvider.moveStoryletNode(
+   *       dragingNodeRef.current.id,
+   *       dragTargetRef.current.node.id
+   *     );
+   *   } else if (dragTargetRef.current.type === 'parent') {
+   *     const parentId =
+   *       StoryProvider.currentStorylet?.getNodeSingleParent(
+   *         dragTargetRef.current.node.id
+   *       )?.id || '';
+   *     StoryProvider.moveStoryletNode(dragingNodeRef.current.id, parentId);
+   *   }
+   * } */
 
   if (!currentStorylet) {
     return null;
@@ -59,12 +76,54 @@ export default function Story() {
             const nodeData = currentStorylet.nodes[item.id];
             return (
               <div key={item.id}>
-                {dragingNode && item !== dragingNode && (
-                  <div
-                    className='w-32 h-32 bg-pink-500 opacity-80 absolute hover:opacity-100 rounded-full cursor-pointer'
-                    style={{
-                      left: item.y + 700,
-                      top: item.x + 20,
+                {dragingNode &&
+                  item.id !== dragingNode.id &&
+                  !!currentStorylet.getNodeSingleParent(nodeData.id) && (
+                    <Box
+                      sx={{
+                        left: item.y - 70,
+                        top: item.x + 10,
+                        width: '8rem',
+                        height: '8rem',
+                        opacity: 0.8,
+                        position: 'absolute',
+                        cursor: 'pointer',
+                        backgroundColor: '#ec4899',
+                        ...borderRadius.round,
+                        '&:hover': {
+                          opacity: 1,
+                        },
+                        zIndex: 3,
+                      }}
+                      onMouseEnter={() => {
+                        if (!currentStorylet) {
+                          return;
+                        }
+                        dragTargetRef.current = {
+                          node: nodeData,
+                          type: 'parent',
+                        };
+                      }}
+                      onMouseLeave={() => {
+                        dragTargetRef.current = null;
+                      }}
+                    />
+                  )}
+                {dragingNode && item.id !== dragingNode.id && (
+                  <Box
+                    sx={{
+                      left: item.y + 370,
+                      top: item.x + 10,
+                      width: '8rem',
+                      height: '8rem',
+                      opacity: 0.8,
+                      position: 'absolute',
+                      cursor: 'pointer',
+                      backgroundColor: '#ec4899',
+                      ...borderRadius.round,
+                      '&:hover': {
+                        opacity: 1,
+                      },
                       zIndex: 3,
                     }}
                     onMouseEnter={() => {
@@ -81,7 +140,36 @@ export default function Story() {
                     }}
                   />
                 )}
-                {<NodeCard pos={{ x: item.x0, y: item.y0 }} node={nodeData} />}
+                {
+                  <NodeCard
+                    pos={{ x: item.x0, y: item.y0 }}
+                    node={nodeData}
+                    onDrag={(val) => {
+                      if (!dragingNodeRef.current) {
+                        dragingNodeRef.current = item;
+                        selectNode(null);
+                        setDragingNode(item);
+                        return;
+                      }
+                      item.x0 += val.dy / zoom;
+                      item.y0 += val.dx / zoom;
+                      refresh();
+                    }}
+                    onDragEnd={() => {
+                      if (dragTargetRef.current) {
+                        moveStoryletNode(
+                          dragingNodeRef.current.id,
+                          dragTargetRef.current.node.id,
+                          dragTargetRef.current.type
+                        );
+                        trackCurrentState();
+                      }
+
+                      setDragingNode(null);
+                      dragTargetRef.current = null;
+                    }}
+                  />
+                }
               </div>
             );
           })}

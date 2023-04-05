@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import * as d3 from 'd3';
 import { useStoryStore } from '../../../../store';
 // import useEventState from 'renderer/utils/use_event_state';
@@ -185,20 +185,20 @@ export default function useLayout({
       );
     };
 
-    const updatePos = (pos) => {
-      if (!elm) {
-        return;
-      }
-      d3.zoom().translateBy(d3.select(elm), pos[0], pos[1]);
-      onZoom();
-      // let transformRes = d3.zoomTransform(elm);
-      // transformRes = transformRes.translate(initialPos[0], initialPos[1]);
-      // transformRes = transformRes.scale();
-      // d3.select(zoomDom).style(
-      //   'transform',
-      //   `translate(${transformRes.x}px,${transformRes.y}px) scale(${transformRes.k})`
-      // );
-    };
+    // const updatePos = (pos) => {
+    //   if (!elm) {
+    //     return;
+    //   }
+    //   d3.zoom().translateBy(d3.select(elm), pos[0], pos[1]);
+    //   onZoom();
+    //   let transformRes = d3.zoomTransform(elm);
+    //   transformRes = transformRes.translate(initialPos[0], initialPos[1]);
+    //   transformRes = transformRes.scale();
+    //   d3.select(zoomDom).style(
+    //     'transform',
+    //     `translate(${transformRes.x}px,${transformRes.y}px) scale(${transformRes.k})`
+    //   );
+    // };
 
     // eventBus.on(Event.UPDATE_VIEW_POS, updatePos);
 
@@ -217,22 +217,24 @@ export default function useLayout({
     // };
   }, [zoomDom]);
 
+  const refresh = useCallback(() => {
+    setTreeData((prev: any) => {
+      return [...prev];
+    });
+  }, []);
+
   useEffect(() => {
-    const refresh = () => {
-      setTreeData((prev: any) => {
-        return [...prev];
-      });
-    };
     refresh();
     // eventBus.on(Event.REFRESH_NODE_VIEW, refresh);
     // return () => {
     //   eventBus.off(Event.REFRESH_NODE_VIEW, refresh);
     // };
-  }, []);
+  }, [refresh]);
 
   return {
     zoom,
     treeData,
     linkData,
+    refresh,
   };
 }

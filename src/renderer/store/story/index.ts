@@ -6,7 +6,7 @@ import {
   useEffect,
 } from 'react';
 import { createGlobalStore } from 'hox';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, maxBy } from 'lodash';
 import {
   Storylet,
   StoryletBranchNode,
@@ -19,6 +19,7 @@ import { getTrackStore, trackState } from '../track';
 import { RawJson } from '../../../type';
 import { LANG } from '../../../constants/i18n';
 import { UUID } from '../../../utils/uuid';
+import { formatNodeLinkId, NodeLink } from '../../models/tree';
 
 interface NodeSelection {
   nodeId: string;
@@ -247,6 +248,61 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     [currentStorylet]
   );
 
+  const moveStoryletNode = useCallback(
+    (sourceId: string, targetNodeId: string, type: 'child' | 'parent') => {
+      if (!currentStorylet) {
+        return;
+      }
+
+      const val = currentStorylet.clone();
+      Object.values(val.links).forEach((item) => {
+        if (item.target.id === sourceId) {
+          delete val.links[formatNodeLinkId(item.source.id, item.target.id)];
+        }
+      });
+
+      const targetNode = val.nodes[targetNodeId];
+
+      if (type === 'child') {
+        const child = val.nodes[sourceId];
+        const parent = val.nodes[targetNodeId];
+        const newLinkItem = new NodeLink(parent, child);
+        if (parent instanceof StoryletBranchNode) {
+          child.data.option = {
+            name: 'option_' + UUID(),
+            controlType: 'visible',
+            controlCheck: '',
+          };
+        }
+        val.links[formatNodeLinkId(parent.id, sourceId)] = newLinkItem;
+        child.order = maxBy(val.getNodeChildren(parent.id), 'order') + 1;
+      } else if (type === 'parent') {
+        const child = val.nodes[sourceId];
+        const newParentId =
+          currentStorylet?.getNodeSingleParent(targetNodeId)?.id || '';
+        const parent = val.nodes[newParentId];
+        const newLinkItem = new NodeLink(parent, child);
+        if (parent instanceof StoryletBranchNode) {
+          child.data.option = {
+            name: 'option_' + UUID(),
+            controlType: 'visible',
+            controlCheck: '',
+          };
+        }
+        val.links[formatNodeLinkId(parent.id, sourceId)] = newLinkItem;
+        child.order = targetNode.order - 1;
+        val.getNodeChildren(parent.id).forEach((node) => {
+          if (node.order <= child.order && node.id !== child.id) {
+            node.order -= 1;
+          }
+        });
+      }
+
+      setCurrentStorylet(val);
+    },
+    [currentStorylet]
+  );
+
   const moveSelection = useCallback(
     (direction: string) => {
       if (!selectionRef.current || !currentStorylet) {
@@ -326,6 +382,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     insertSiblingNode,
     deleteNode,
     updateNode,
+    moveStoryletNode,
     moveSelection,
     trackCurrentState,
     storyActors,

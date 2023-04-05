@@ -1,4 +1,5 @@
 import { Box, Container } from '@mui/material';
+import * as d3 from 'd3';
 import React, { useCallback, useRef, useLayoutEffect, useState } from 'react';
 import {
   StoryletBranchNode,
@@ -19,11 +20,15 @@ export default function BaseNodeCard({
   node,
   color,
   children,
+  onDrag,
+  onDragEnd,
 }: {
   node: StoryletNode<StoryletNodeData>;
   pos: { x: number; y: number };
   color: { normal: string; hover: string; active?: string };
   children: React.ReactNode;
+  onDrag?: (val: any) => void;
+  onDragEnd?: (val: any) => void;
 }) {
   const {
     currentStorylet,
@@ -149,7 +154,26 @@ export default function BaseNodeCard({
   return (
     <Box
       id={node.id}
-      ref={viewRef}
+      ref={(dom) => {
+        if (!dom) {
+          return;
+        }
+
+        viewRef.current = dom as HTMLElement;
+        const dragListener = d3
+          .drag()
+          .on('drag', (d) => {
+            if (onDrag) {
+              onDrag(d);
+            }
+          })
+          .on('end', (d) => {
+            if (onDragEnd) {
+              onDragEnd(d);
+            }
+          });
+        dragListener(d3.select(dom as any));
+      }}
       sx={{
         position: 'absolute',
         p: 4,
