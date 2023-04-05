@@ -27,10 +27,10 @@ export default function Main() {
 
   return (
     <Box sx={{ flexGrow: 1, background: 'rgb(75 85 99)' }}>
-      {currentOpenFile?.fullpath?.split('.')?.[0] === 'Static Data' && (
+      {currentOpenFile?.fullpath?.split('.')?.[0] === 'static-data' && (
         <StaticData />
       )}
-      {currentOpenFile?.fullpath?.split('.')?.[0] === 'Story' && <Story />}
+      {currentOpenFile?.fullpath?.split('.')?.[0] === 'story' && <Story />}
       <ProjectSettings
         open={projectSettingsOpen}
         close={() => {

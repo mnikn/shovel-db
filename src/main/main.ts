@@ -1,12 +1,26 @@
-import { app, BrowserWindow, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
-import { SHOW_PROJET_SETTINGS } from '../constants/events';
+import fs from 'fs';
+import {
+  DELETE_STORY_FILE,
+  SAVE_STORY_FILE,
+  SHOW_PROJET_SETTINGS,
+} from '../constants/events';
 
 const remote = require('@electron/remote/main');
 
 remote.initialize();
 let mainWindow: Electron.BrowserWindow | null;
+
+function ensureDirExists(filePath: string) {
+  const dirname = path.dirname(filePath);
+  if (fs.existsSync(dirname)) {
+    return true;
+  }
+  ensureDirExists(dirname);
+  fs.mkdirSync(dirname);
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -96,6 +110,26 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+ipcMain.on(SAVE_STORY_FILE, (_, arg) => {
+  const { filePath, data } = arg;
+  ensureDirExists(filePath);
+  try {
+    // fs.writeFileSync(filePath, JSON.stringify(data, null, 2), {
+    //   encoding: 'utf8',
+    //   flag: 'w+',
+    // });
+    console.log('filePath: ', filePath);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+ipcMain.on(DELETE_STORY_FILE, (_, arg) => {
+  const { filePath } = arg;
+    fs.rmSync(filePath);
 });
 
 app.on('activate', () => {

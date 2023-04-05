@@ -1,15 +1,12 @@
 import * as remote from '@electron/remote';
-import * as d3 from 'd3';
 import ArticleIcon from '@mui/icons-material/Article';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FolderIcon from '@mui/icons-material/Folder';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { Box, Container, Stack, TextField } from '@mui/material';
-import React, { useCallback, useReducer, useRef, useState } from 'react';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { grey } from '@mui/material/colors';
+import * as d3 from 'd3';
+import React, { useRef, useState } from 'react';
 import { File, Folder } from '../../../models/explorer';
 import { useExplorerStore } from '../../../store';
 import { animation, borderRadius } from '../../../theme';

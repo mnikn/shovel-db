@@ -52,11 +52,12 @@ export class StoryletRootNode extends StoryletNode<StoryletRootNodeData> {
   static fromJson(json: any): Node<any> {
     const instance = new StoryletRootNode();
     instance.id = json.id;
-    instance.data.extraData = json.data.extraData || {};
-    instance.data.customNodeId = json.data.customNodeId;
-    instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
-    instance.data.afterJumpProcess = json.data.afterJumpProcess;
-    instance.data.enableCheck = json.data.enableCheck;
+    instance.data = { ...json.data };
+    // instance.data.extraData = json.data.extraData || {};
+    // instance.data.customNodeId = json.data.customNodeId;
+    // instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
+    // instance.data.afterJumpProcess = json.data.afterJumpProcess;
+    // instance.data.enableCheck = json.data.enableCheck;
     return instance;
   }
 }
@@ -198,7 +199,6 @@ export class StoryletActionNode extends StoryletNode<StoryletActionNodeData> {
 
 export class Storylet extends Tree<StoryletNodeData> {
   public id: string = 'storylet_' + UUID();
-  public customNodeId: string = '';
   public name: string = '';
 
   constructor(newRoot = true) {
@@ -239,7 +239,6 @@ export class Storylet extends Tree<StoryletNodeData> {
     const instance = new Storylet();
     instance.id = this.id;
     instance.name = this.name;
-    instance.customNodeId = this.customNodeId;
     instance.nodes = { ...this.nodes };
     instance.links = { ...this.links };
     return instance;
@@ -249,7 +248,6 @@ export class Storylet extends Tree<StoryletNodeData> {
     const data = super.toJson();
     data.name = this.name;
     data.id = this.id;
-    data.customNodeId = this.customNodeId;
     return data;
   }
 
@@ -318,7 +316,6 @@ export class Storylet extends Tree<StoryletNodeData> {
 
     instance.id = json.id;
     instance.name = json.name;
-    instance.customNodeId = json.st;
     return instance;
   }
 }

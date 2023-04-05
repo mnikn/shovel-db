@@ -25,10 +25,6 @@ export default function SchemaForm({
 }) {
   const [form, setForm] = useState<any>(formData);
 
-  useEffect(() => {
-    onValueChange(form);
-  }, [form]);
-
   return (
     <Box
       sx={{
@@ -45,7 +41,9 @@ export default function SchemaForm({
         translations={translations}
         currentLang={currentLang}
         onValueChange={(val) => {
-          setForm(validateValue(val, val, schema, {}));
+          const finalVal = validateValue(val, val, schema, {});
+          setForm(finalVal);
+          onValueChange(finalVal);
         }}
       />
     </Box>

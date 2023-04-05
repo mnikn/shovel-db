@@ -20,6 +20,8 @@ import { RawJson } from '../../../type';
 import { LANG } from '../../../constants/i18n';
 import { UUID } from '../../../utils/uuid';
 import { formatNodeLinkId, NodeLink } from '../../models/tree';
+import { Story } from '../../models/story/story';
+import { Event, eventEmitter } from '..';
 
 interface NodeSelection {
   nodeId: string;
@@ -32,18 +34,22 @@ export interface StoryActor {
 }
 
 export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
+  const [story, setStory] = useState<{ [key: string]: Storylet }>({});
   const [currentStorylet, setCurrentStorylet] = useState<Storylet | null>(null);
   const [selection, setSelection] = useState<NodeSelection | null>(null);
   const [storyActors, setStoryActors] = useState<StoryActor[]>([]);
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
   const currentStoryletRef = useRef(currentStorylet);
+  const storyRef = useRef(story);
+  storyRef.current = story;
   const storyActorsRef = useRef(storyActors);
 
   const translationModule = useTranslation();
 
   const trackCurrentState = useCallback(() => {
     trackState('story', {
+      story: { ...storyRef.current },
       currentStorylet: currentStoryletRef.current?.clone() || null,
       translations: cloneDeep(translationModule.translationsRef.current),
       currentLang: translationModule.currentLang,
@@ -58,40 +64,13 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     }
 
     store.registerStoreSetter('story', (val: RawJson) => {
+      setStory(val.story);
       setCurrentStorylet(val.currentStorylet?.clone() || null);
       translationModule.setTranslations(val.translations || {});
       translationModule.setCurrentLang(val.currentLang || LANG.EN);
       setStoryActors(val.storyActors || []);
     });
   }, [translationModule.updateTranslations, translationModule.switchLang]);
-
-  useLayoutEffect(() => {
-    const storylet = new Storylet();
-    const sentenceNode = new StoryletSentenceNode();
-    const sentenceNode2 = new StoryletSentenceNode();
-    const sentenceNode3 = new StoryletSentenceNode();
-    // sentenceNode.data.content = 'asdas';
-    translationModule.updateTranslateKey(sentenceNode.data.content, 'asds');
-    translationModule.updateTranslateKey(sentenceNode2.data.content, 'ff');
-    translationModule.updateTranslateKey(sentenceNode3.data.content, 'sdf');
-    // sentenceNode2.data.content = 'ds';
-    // sentenceNode3.data.content = 'reer';
-    storylet.name = 'asdsad';
-    storylet.upsertNode(sentenceNode);
-    storylet.upsertNode(sentenceNode2);
-    storylet.upsertNode(sentenceNode3);
-    if (storylet.root) {
-      storylet.upsertLink(storylet.root.id, sentenceNode.id);
-      storylet.upsertLink(storylet.root.id, sentenceNode2.id);
-      storylet.upsertLink(storylet.root.id, sentenceNode3.id);
-    }
-    setCurrentStorylet(storylet);
-    trackState('story', {
-      currentStorylet: storylet,
-      translations: translationModule.translationsRef.current,
-      currentLang: translationModule.currentLang,
-    });
-  }, []);
 
   const insertChildNode = useCallback(
     (
@@ -374,7 +353,71 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     setStoryActors(val);
   }, []);
 
+  useEffect(() => {
+    const openStorylet = (fileId) => {
+      setCurrentStorylet(story[fileId]);
+    };
+    const deleteStorylet = (fileId) => {
+      const storylet = story[fileId];
+      delete story[fileId];
+      setCurrentStorylet((prev) => {
+        if (prev && prev.id === storylet.id) {
+          return null;
+        }
+        return prev;
+      });
+    };
+    const createStorylet = (file: any) => {
+      setStory((prev) => {
+        const newVal = { ...prev };
+        const newStorylet = new Storylet();
+        newStorylet.name = file.name;
+        newVal[file.id] = newStorylet;
+        return newVal;
+      });
+    };
+
+    const updateStoryletName = (fileId: string, name: string) => {
+      const storylet = story[fileId];
+      if (!storylet) {
+        return;
+      }
+      const newVal = storylet.clone();
+      newVal.name = name;
+      setCurrentStorylet(newVal);
+    };
+
+    eventEmitter.on(Event.CreateStorylet, createStorylet);
+    eventEmitter.on(Event.DeleteStorylet, deleteStorylet);
+    eventEmitter.on(Event.OpenStorylet, openStorylet);
+    eventEmitter.on(Event.UpdateStoryletName, updateStoryletName);
+    return () => {
+      eventEmitter.off(Event.CreateStorylet, createStorylet);
+      eventEmitter.off(Event.DeleteStorylet, deleteStorylet);
+      eventEmitter.off(Event.OpenStorylet, openStorylet);
+      eventEmitter.off(Event.UpdateStoryletName, updateStoryletName);
+    };
+  }, [story]);
+
+  useEffect(() => {
+    if (!currentStorylet) {
+      return;
+    }
+    setStory((prev) => {
+      const fileKey = Object.keys(prev).find(
+        (k) => prev[k].id === currentStorylet.id
+      );
+      if (!fileKey) {
+        return prev;
+      }
+      const newVal = { ...prev };
+      newVal[fileKey] = currentStorylet;
+      return newVal;
+    });
+  }, [currentStorylet]);
+
   return {
+    story,
     currentStorylet,
     selection,
     selectNode,

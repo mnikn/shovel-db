@@ -23,6 +23,27 @@ import { grey } from '@mui/material/colors';
 function generateSchema(node: StoryletNode<StoryletNodeData>) {
   const schema = new SchemaFieldObject();
   switch (node.idPrefix) {
+    case 'root': {
+      schema.fields.push(
+        {
+          name: 'Custom node id',
+          id: 'customNodeId',
+          data: new SchemaFieldString({
+            colSpan: 4,
+          }),
+        },
+        {
+          name: 'Enable check',
+          id: 'enableCheck',
+          data: new SchemaFieldString({
+            type: 'code',
+            colSpan: 12,
+            codeLang: 'python',
+          }),
+        }
+      );
+      break;
+    }
     case 'sentence': {
       schema.fields.push(
         {
@@ -220,13 +241,6 @@ export default function EditDialog({
   } = useStoryStore();
   const [formNodeData, setFormNodeData] = useState(cloneDeep(node.data));
 
-  useEffect(() => {
-    if (open) {
-      setCurrentTab('basic');
-      setFormNodeData(cloneDeep(node.data));
-    }
-  }, [open, node.data]);
-
   const parent = useMemo(() => {
     if (!currentStorylet) {
       return null;
@@ -261,13 +275,17 @@ export default function EditDialog({
     setCurrentTab(tabs[0]?.id || '');
   }, [tabs]);
 
+  useEffect(() => {
+    if (open) {
+      setCurrentTab('basic');
+      setFormNodeData(cloneDeep(node.data));
+    }
+  }, [open, node.data, currentTab]);
+  console.log('ssa: ', formNodeData, node);
+
   const formTranslations = useMemo(() => {
     return cloneDeep(translations);
   }, [translations, currentTab]);
-
-  useEffect(() => {
-    setFormNodeData(cloneDeep(node.data));
-  }, [node.data, currentTab]);
 
   const basicDataSchema = useMemo(() => {
     const res = generateSchema(node);

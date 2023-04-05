@@ -28,6 +28,7 @@
     "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.9.1",
     "d3": "^7.8.4",
+    "eventemitter3": "^5.0.0",
     "hox": "^2.1.0",
     "lodash": "^4.17.21",
     "monaco-editor": "^0.36.1",
@@ -36,7 +37,8 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
     "react-images-uploading": "^3.1.7",
-    "react-monaco-editor": "^0.52.0"
+    "react-monaco-editor": "^0.52.0",
+    "upath": "^2.0.1"
   },
   "devDependencies": {
     "@types/d3": "^7.4.0",

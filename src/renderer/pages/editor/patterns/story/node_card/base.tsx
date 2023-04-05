@@ -219,17 +219,19 @@ export default function BaseNodeCard({
           {node.data.customNodeId}
         </Container>
       )}
-      <EditDialog
-        node={node}
-        open={editOpen}
-        close={() => {
-          setEditOpen(false);
-          setMode(Mode.Normal);
-          setTimeout(() => {
-            selectNode(node.id);
-          }, 0);
-        }}
-      />
+      {editOpen && (
+        <EditDialog
+          node={node}
+          open={editOpen}
+          close={() => {
+            setEditOpen(false);
+            setMode(Mode.Normal);
+            setTimeout(() => {
+              selectNode(node.id);
+            }, 0);
+          }}
+        />
+      )}
     </Box>
   );
 }

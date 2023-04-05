@@ -78,4 +78,11 @@ export class Story {
       return res;
     }, null);
   }
+
+  public clone(): Story {
+    const instance = new Story();
+    instance.storylets = this.storylets;
+    instance.storyGroups = this.storyGroups;
+    return instance;
+  }
 }
