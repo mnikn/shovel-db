@@ -42,8 +42,9 @@ function FieldSelect({
           size='small'
           value={
             isGrouping
-              ? get(value, get(schema.config, 'groupConfig.group.valueKey'))
-              : value
+              ? get(value, get(schema.config, 'groupConfig.group.valueKey')) ||
+                ''
+              : value || ''
           }
           onChange={(e) => {
             if (onValueChange && !isGrouping) {
@@ -90,7 +91,9 @@ function FieldSelect({
             labelId={schema.config.fieldId + '_child'}
             label={schema.config.groupConfig?.child?.label}
             size='small'
-            value={get(value, get(schema.config, 'groupConfig.child.valueKey'))}
+            value={
+              get(value, get(schema.config, 'groupConfig.child.valueKey')) || ''
+            }
             onChange={(e) => {
               if (onValueChange) {
                 onValueChange({

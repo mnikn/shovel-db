@@ -290,10 +290,10 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
           };
         }
         val.links[formatNodeLinkId(parent.id, sourceId)] = newLinkItem;
-        child.order = targetNode.order - 1;
+        child.order = targetNode.order + 1;
         val.getNodeChildren(parent.id).forEach((node) => {
-          if (node.order <= child.order && node.id !== child.id) {
-            node.order -= 1;
+          if (node.order >= child.order && node.id !== child.id) {
+            node.order += 1;
           }
         });
       }

@@ -1,5 +1,5 @@
-import { RawJson } from "../../type";
-import { UUID } from "../../utils/uuid";
+import { RawJson } from '../../type';
+import { UUID } from '../../utils/uuid';
 
 function getFullPath(item: Folder | File | null): string | null {
   if (item === null) {
@@ -14,8 +14,10 @@ function getFullPath(item: Folder | File | null): string | null {
 
 export class File {
   public id = UUID();
-  public name = "";
+  public name = '';
   public parent: Folder | null = null;
+  public order = -1;
+
   get fullpath(): string | null {
     return getFullPath(this);
   }
@@ -23,8 +25,9 @@ export class File {
   public toJson(): any {
     return {
       id: this.id,
-      type: "file",
+      type: 'file',
       name: this.name,
+      order: this.order,
       parentId: this.parent?.id || null,
     };
   }
@@ -32,9 +35,10 @@ export class File {
 
 export class Folder {
   public id = UUID();
-  public name = "";
+  public name = '';
   public collapsed = false;
   public children: Array<Folder | File> = [];
+  public order = -1;
 
   public parent: Folder | null = null;
 
@@ -45,8 +49,9 @@ export class Folder {
   public toJson(): any {
     return {
       id: this.id,
-      type: "folder",
+      type: 'folder',
       name: this.name,
+      order: this.order,
       parentId: this.parent?.id || null,
       children: this.children.map((item) => item.id),
     };
@@ -81,7 +86,7 @@ export class Folder {
     }
     this.children.forEach((item) => {
       if (item instanceof File) {
-        return
+        return;
       }
       const item2 = item.findChildRecursive(id);
       if (item2) {
@@ -105,11 +110,15 @@ export function buildFileTree(data: RawJson[]): Array<File | Folder> {
   return values.filter((val: File | Folder) => val.parent === null);
 }
 
-export function buildFileTreeItem(item: RawJson, dataMap: Map<string, any> = new Map()) {
-  if (item.type === "folder") {
+export function buildFileTreeItem(
+  item: RawJson,
+  dataMap: Map<string, any> = new Map()
+) {
+  if (item.type === 'folder') {
     const folder = new Folder();
     folder.id = item.id;
     folder.name = item.name;
+    folder.order = item.order;
     folder.parent =
       item.parentId !== null
         ? dataMap.get(item.parentId) instanceof Folder
@@ -130,10 +139,11 @@ export function buildFileTreeItem(item: RawJson, dataMap: Map<string, any> = new
     return folder;
   }
 
-  if (item.type === "file") {
+  if (item.type === 'file') {
     const file = new File();
     file.id = item.id;
     file.name = item.name;
+    file.order = item.order;
     file.parent =
       item.parentId !== null
         ? dataMap.get(item.parentId) instanceof Folder

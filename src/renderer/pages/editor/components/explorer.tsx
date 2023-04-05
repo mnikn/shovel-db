@@ -1,11 +1,12 @@
 import * as remote from '@electron/remote';
+import * as d3 from 'd3';
 import ArticleIcon from '@mui/icons-material/Article';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FolderIcon from '@mui/icons-material/Folder';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import { Box, Stack, TextField } from '@mui/material';
-import React, { useState } from 'react';
+import { Box, Container, Stack, TextField } from '@mui/material';
+import React, { useCallback, useReducer, useRef, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { grey } from '@mui/material/colors';
@@ -19,8 +20,25 @@ export default function Explorer() {
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string | null>(null);
 
-  const { currentOpenFile, openFile, fileTree, updateItem, deleteItem } =
-    useExplorerStore();
+  const [dragingItem, setDragingItem] = useState<{
+    pos: { x: number; y: number };
+    target?: File | Folder;
+    data: File | Folder;
+  } | null>(null);
+
+  const dragingItemRef = useRef(dragingItem);
+  dragingItemRef.current = dragingItem;
+
+  const {
+    currentOpenFile,
+    openFile,
+    fileTree,
+    updateItem,
+    deleteItem,
+    newFile,
+    newFolder,
+    moveFile,
+  } = useExplorerStore();
 
   const fileContextMenu = [
     {
@@ -44,6 +62,72 @@ export default function Explorer() {
     },
   ];
 
+  const onDragEnd = () => {
+    if (dragingItemRef.current?.target) {
+      moveFile(
+        dragingItemRef.current?.data.id,
+        dragingItemRef.current?.target.id
+      );
+    }
+    setDragingItem(null);
+  };
+
+  const onDrag = (d: any, data: File | Folder) => {
+    setDragingItem((prev) => {
+      if (!prev) {
+        return {
+          pos: { x: d.x + 20, y: d.y },
+          data,
+          target: undefined,
+        };
+      }
+      return {
+        ...prev,
+        pos: { x: d.x + 20, y: d.y },
+        data,
+      };
+    });
+  };
+
+  const rederDragingComponent = (data) =>
+    data.parent &&
+    data.id !== dragingItem?.data.id && (
+      <Box
+        sx={{
+          left: '-16px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: '1.5rem',
+          height: '1.5rem',
+          opacity: 0.8,
+          position: 'absolute',
+          cursor: 'pointer',
+          backgroundColor: '#ec4899',
+          ...borderRadius.round,
+          '&:hover': {
+            opacity: 1,
+          },
+          zIndex: 3,
+        }}
+        onMouseEnter={() => {
+          setDragingItem((prev) => {
+            if (!prev) {
+              return prev;
+            }
+            return { ...prev, target: data };
+          });
+        }}
+        onMouseLeave={() => {
+          setDragingItem((prev) => {
+            if (!prev) {
+              return prev;
+            }
+            return { ...prev, target: undefined };
+          });
+        }}
+      />
+    );
+
   const TreeItem = ({
     data,
     index,
@@ -51,35 +135,6 @@ export default function Explorer() {
     data: File | Folder;
     index: number;
   }) => {
-    const [{ isDragging }, dragRef] = useDrag(
-      () => ({
-        type: data instanceof File ? 'file' : 'folder',
-        item: data,
-        collect: (monitor) => ({
-          isDragging: monitor.isDragging(),
-        }),
-      }),
-      []
-    );
-
-    const [{ isOver, canDrop }, drop] = useDrop(
-      () => ({
-        accept: 'all',
-        canDrop: () => {
-          console.log('dsds: ');
-          return true;
-        },
-        drop: () => {
-          console.log('drop');
-        },
-        collect: (monitor) => ({
-          isOver: !!monitor.isOver(),
-          canDrop: !!monitor.canDrop(),
-        }),
-      }),
-      []
-    );
-
     if (data instanceof Folder) {
       const isCollapsed = !uncollapsedFolders.find((item) => item === data.id);
       return (
@@ -90,16 +145,32 @@ export default function Explorer() {
             spacing={0.5}
             sx={{
               p: 0.5,
+              position: 'relative',
               transition: 'all 0.2s ease',
-              '&:hover': {
-                cursor: 'pointer',
-                ...borderRadius.large,
-                ...animation.autoFade,
-                backgroundColor: 'rgb(107 114 128)',
-                color: 'common.white',
-              },
+              '&:hover': !dragingItem
+                ? {
+                    cursor: 'pointer',
+                    ...borderRadius.large,
+                    ...animation.autoFade,
+                    backgroundColor: 'rgb(107 114 128)',
+                    color: 'common.white',
+                  }
+                : undefined,
               userSelect: 'none',
               /* backgroundColor: !isOver && canDrop ? grey[500] : "inherit", */
+            }}
+            ref={(dom) => {
+              if (!dom) {
+                return;
+              }
+
+              const dragListener = d3
+                .drag()
+                .on('drag', (d) => {
+                  onDrag(d, data);
+                })
+                .on('end', onDragEnd);
+              dragListener(d3.select(dom as any));
             }}
             onClick={() => {
               if (uncollapsedFolders.find((item) => item === data.id)) {
@@ -118,13 +189,13 @@ export default function Explorer() {
                 {
                   label: 'New File',
                   click: () => {
-                    console.log('New File');
+                    newFile(data.id);
                   },
                 },
                 {
                   label: 'New Folder',
                   click: () => {
-                    console.log('New Folder');
+                    newFolder(data.id);
                   },
                 },
                 {
@@ -152,6 +223,7 @@ export default function Explorer() {
               menu.popup({ window: remote.getCurrentWindow() });
             }}
           >
+            {dragingItem && rederDragingComponent(data)}
             <Stack direction='row' spacing={0}>
               {!isCollapsed ? (
                 <>
@@ -168,6 +240,7 @@ export default function Explorer() {
             {editingItem === data.id && (
               <TextField
                 variant='standard'
+                color='secondary'
                 inputProps={{
                   style: {
                     color: '#fff',
@@ -193,17 +266,15 @@ export default function Explorer() {
                 }}
               />
             )}
-            {editingItem !== data.id && (
-              <div ref={dragRef} style={{ opacity: isDragging ? 0.5 : 1 }}>
-                {data.name}
-              </div>
-            )}
+            {editingItem !== data.id && <div>{data.name}</div>}
           </Stack>
           {!isCollapsed && (
-            <Stack sx={{ pl: 4 }} spacing={1} ref={drop}>
-              {data.children.map((item, i) => {
-                return <TreeItem key={item.id} data={item} index={i} />;
-              })}
+            <Stack sx={{ pl: 4 }} spacing={1}>
+              {data.children
+                .sort((a, b) => a.order - b.order)
+                .map((item, i) => {
+                  return <TreeItem key={item.id} data={item} index={i} />;
+                })}
             </Stack>
           )}
         </>
@@ -217,15 +288,18 @@ export default function Explorer() {
         spacing={0.5}
         sx={{
           p: 0.5,
+          position: 'relative',
           backgroundColor:
             currentOpenFile?.id === data.id ? 'rgb(107 114 128)' : 'inherit',
           color:
             currentOpenFile?.id === data.id ? 'common.white' : 'common.black',
-          '&:hover': {
-            cursor: 'pointer',
-            backgroundColor: 'rgb(107 114 128)',
-            color: 'common.white',
-          },
+          '&:hover': !dragingItem
+            ? {
+                cursor: 'pointer',
+                backgroundColor: 'rgb(107 114 128)',
+                color: 'common.white',
+              }
+            : undefined,
           ...borderRadius.large,
           ...animation.autoFade,
           userSelect: 'none',
@@ -250,11 +324,26 @@ export default function Explorer() {
           });
           menu.popup({ window: remote.getCurrentWindow() });
         }}
+        ref={(dom) => {
+          if (!dom) {
+            return;
+          }
+
+          const dragListener = d3
+            .drag()
+            .on('drag', (d) => {
+              onDrag(d, data);
+            })
+            .on('end', onDragEnd);
+          dragListener(d3.select(dom as any));
+        }}
       >
+        {dragingItem && rederDragingComponent(data)}
         <ArticleIcon />
         {editingItem === data.id && (
           <TextField
             variant='standard'
+            color='secondary'
             inputProps={{
               style: {
                 color: '#fff',
@@ -279,18 +368,13 @@ export default function Explorer() {
             }}
           />
         )}
-        {editingItem !== data.id && (
-          <div ref={dragRef} style={{ opacity: isDragging ? 0.5 : 1 }}>
-            {data.name}
-          </div>
-        )}
+        {editingItem !== data.id && <div>{data.name}</div>}
       </Stack>
     );
   };
 
   return (
     <Box
-      // className='bg-gray-50 w-72 flex flex-col items-center p-5'
       sx={{
         height: '100%',
         width: '300px',
@@ -300,13 +384,32 @@ export default function Explorer() {
         p: 2,
       }}
     >
-      <DndProvider backend={HTML5Backend}>
-        <Stack spacing={1}>
-          {fileTree.map((file, i) => {
+      <Stack spacing={1}>
+        {fileTree
+          .sort((a, b) => a.order - b.order)
+          .map((file, i) => {
             return <TreeItem key={file.id} data={file} index={i} />;
           })}
-        </Stack>
-      </DndProvider>
+      </Stack>
+      {dragingItem && (
+        <Container
+          sx={{
+            position: 'absolute',
+            p: 1,
+            width: 'auto',
+            ...borderRadius.normal,
+            backgroundColor: 'rgb(107 114 128)',
+            color: 'common.white',
+            left: dragingItem?.pos.x,
+            top: dragingItem?.pos.y,
+            userSelect: 'none',
+            pointerEvents: 'none',
+            zIndex: 5,
+          }}
+        >
+          {dragingItem?.data.name}
+        </Container>
+      )}
     </Box>
   );
 }

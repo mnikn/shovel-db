@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { maxBy } from 'lodash';
 import { createGlobalStore } from 'hox';
 import { buildFileTree, File, Folder } from '../models/explorer';
 import { UUID } from '../../utils/uuid';
@@ -27,20 +28,22 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
   }, [files]);
 
   useEffect(() => {
-    const createItemFile = (parentId: string | null = null) => {
+    const createItemFile = (parentId: string | null = null, order = -1) => {
       const res = {
         id: UUID(),
         name: UUID().substring(0, 10),
         type: 'file',
+        order,
         parentId: parentId,
       };
       return res;
     };
-    const createFolder = (parentId: string | null = null) => {
+    const createFolder = (parentId: string | null = null, order = -1) => {
       const res = {
         id: UUID(),
         name: UUID().substring(0, 10),
         type: 'folder',
+        order,
         parentId: parentId,
       };
       return res;
@@ -49,35 +52,40 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
     const itemA = createFolder('static-data');
     setFiles([
       {
-        id: 'static-data',
-        name: 'Static Data',
-        type: 'folder',
-        parentId: null,
-      },
-      {
         id: 'story',
         name: 'Story',
         type: 'folder',
+        order: 1,
         parentId: null,
       },
-      itemA,
-      createItemFile('static-data'),
-      createItemFile('static-data'),
-      createItemFile('static-data'),
-      createItemFile('static-data'),
-      createItemFile('static-data'),
-      createItemFile('static-data'),
-      createItemFile('story'),
-      createItemFile('story'),
-      createItemFile('story'),
-      createItemFile('story'),
-      createItemFile('story'),
-      createItemFile('story'),
-      createItemFile(itemA.id),
-      createItemFile(itemA.id),
-      createItemFile(itemA.id),
-      createItemFile(itemA.id),
-      createItemFile(itemA.id),
+      {
+        id: 'static-data',
+        name: 'Static Data',
+        type: 'folder',
+        order: 2,
+        parentId: null,
+      },
+      createItemFile('story', 1),
+      createItemFile('story', 2),
+      createItemFile('story', 3),
+      // itemA,
+      // createItemFile('static-data'),
+      // createItemFile('static-data'),
+      // createItemFile('static-data'),
+      // createItemFile('static-data'),
+      // createItemFile('static-data'),
+      // createItemFile('static-data'),
+      // createItemFile('story'),
+      // createItemFile('story'),
+      // createItemFile('story'),
+      // createItemFile('story'),
+      // createItemFile('story'),
+      // createItemFile('story'),
+      // createItemFile(itemA.id),
+      // createItemFile(itemA.id),
+      // createItemFile(itemA.id),
+      // createItemFile(itemA.id),
+      // createItemFile(itemA.id),
     ]);
   }, []);
 
@@ -96,6 +104,42 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
     setFiles([...files]);
   };
 
+  const newFile = useCallback((parentId: string) => {
+    setFiles((prev) => {
+      const val = new File().toJson();
+      val.name = 'Untitled';
+      const parent = prev.find((item) => item.id === parentId);
+      if (!parent) {
+        return prev;
+      }
+      val.parentId = parentId;
+      val.order =
+        maxBy(
+          prev.filter((item) => item.parentId === parentId),
+          'order'
+        ) || 0 + 1;
+      return prev.concat(val);
+    });
+  }, []);
+
+  const newFolder = useCallback((parentId: string) => {
+    setFiles((prev) => {
+      const val = new Folder().toJson();
+      val.name = 'Untitled';
+      const parent = prev.find((item) => item.id === parentId);
+      if (!parent) {
+        return prev;
+      }
+      val.parentId = parentId;
+      val.order =
+        maxBy(
+          prev.filter((item) => item.parentId === parentId),
+          'order'
+        ) || 0 + 1;
+      return prev.concat(val);
+    });
+  }, []);
+
   const deleteItem = (id: string) => {
     const file = files.find((item) => item.id === id);
     if (!file) {
@@ -111,12 +155,47 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
     }
   };
 
+  const moveFile = useCallback((sourceId: string, targetId: string) => {
+    setFiles((files) => {
+      const newVal = [...files];
+      const sourceItem = newVal.find((item) => item.id === sourceId);
+      const targetItem = newVal.find((item) => item.id === targetId);
+      if (!sourceItem || !targetItem) {
+        return files;
+      }
+      if (targetItem.type === 'folder') {
+        sourceItem.parentId = targetId;
+        sourceItem.order =
+          maxBy(
+            newVal.filter((item) => item.parentId === targetId),
+            'order'
+          ) + 1;
+      } else if (targetItem.type === 'file') {
+        const parentId = targetItem.parentId;
+        sourceItem.parentId = parentId;
+        sourceItem.order = targetItem.order + 1;
+        newVal
+          .filter((item) => item.parentId === parentId)
+          .forEach((item) => {
+            if (item.order >= sourceItem.order && item.id !== sourceItem.id) {
+              item.order += 1;
+            }
+          });
+      }
+
+      return newVal;
+    });
+  }, []);
+
   return {
     files,
     fileTree,
     currentOpenFile,
     openFile,
+    newFile,
+    newFolder,
     updateItem,
     deleteItem,
+    moveFile,
   };
 });

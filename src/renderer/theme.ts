@@ -23,12 +23,11 @@ const theme = createTheme({
     //   main: 'rgb(249 250 251)',
     //   contrastText: '#000',
     // },
-    // secondary: {
-    //   light: grey[800],
-    //   main: grey[900],
-    //   dark: '#ba000d',
-    //   contrastText: '#fff',
-    // },
+    secondary: {
+      light: grey[50],
+      main: grey[200],
+      contrastText: '#fff',
+    },
   },
   /* typography: {
    *   fontWeightMedium: 600,
