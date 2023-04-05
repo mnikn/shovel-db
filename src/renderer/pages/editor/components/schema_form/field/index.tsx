@@ -59,6 +59,7 @@ export default function Field({
   label?: string;
 }) {
   const gridStyle = label ? getContainerLabelStyle(label) : {};
+
   return (
     <>
       {schema instanceof SchemaFieldObject && (
@@ -73,6 +74,12 @@ export default function Field({
           }}
         >
           {schema.fields.map((field) => {
+            if (field.data.config.enableWhen) {
+              const fn = eval(field.data.config.enableWhen);
+              if (!fn(value)) {
+                return null;
+              }
+            }
             return (
               <Field
                 schema={field.data}

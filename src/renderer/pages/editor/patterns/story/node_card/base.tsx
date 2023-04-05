@@ -6,6 +6,7 @@ import {
   StoryletNodeData,
   StoryletRootNode,
   StoryletSentenceNode,
+  StoryletActionNode,
 } from '../../../../../models/story/storylet';
 import { useStoryStore } from '../../../../../store';
 import { Mode, useEditorStore } from '../../../../../store/editor';
@@ -93,19 +94,24 @@ export default function BaseNodeCard({
         insertFn = insertChildNode;
       }
       if (insertFn) {
-        // duplicate
-        if (e.shiftKey && !(node instanceof StoryletRootNode)) {
-          const newNode = duplicateNode();
-          insertFn(newNode, node);
-        } else {
-          let newNode = new StoryletSentenceNode();
-          if (e.ctrlKey) {
-            newNode = new StoryletBranchNode();
+        let newNode: StoryletNode<StoryletNodeData> =
+          new StoryletSentenceNode();
+        if (e.ctrlKey) {
+          newNode = new StoryletBranchNode();
+          if (e.shiftKey) {
+            newNode = new StoryletActionNode();
           }
-          insertFn(newNode, node);
         }
+        insertFn(newNode, node);
 
         trackCurrentState();
+        return;
+      }
+
+      if (e.code === 'KeyD' && e.ctrlKey) {
+        const insertNodeFn = e.shiftKey ? insertSiblingNode : insertChildNode;
+        const newNode = duplicateNode();
+        insertNodeFn(newNode, node);
         return;
       }
 

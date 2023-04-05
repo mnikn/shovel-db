@@ -8,7 +8,6 @@ export enum NodeType {
   Sentence = 'sentence',
   Branch = 'branch',
   Action = 'action',
-  Custom = 'custom',
 }
 
 type Code = string;
@@ -158,30 +157,44 @@ export class StoryletBranchNode extends StoryletNode<StoryletBranchNodeData> {
   }
 }
 
-// action node
-export interface StoryletCustomNodeData extends StoryletNodeData {
-  customType: string;
+export enum ActionType {
+  JumpNode = 'jumpNode',
+  JumpStorylet = 'jumpStorylet',
+  Code = 'code',
 }
-export class StoryletCustomNode extends StoryletNode<StoryletCustomNodeData> {
+
+// action node
+export interface StoryletActionNodeData extends StoryletNodeData {
+  actionType: ActionType;
+  targetNode?: string;
+  targetStorylet?: string;
+  process?: string;
+}
+export class StoryletActionNode extends StoryletNode<StoryletActionNodeData> {
   constructor() {
     super();
     this.data = {
-      type: NodeType.Custom,
-      beforeJumpProcess: '',
-      customType: '',
+      type: NodeType.Action,
+      actionType: ActionType.Code,
       extraData: {},
     };
   }
 
-  static fromJson(json: RawJson): StoryletCustomNode {
-    const instance = new StoryletCustomNode();
+  get idPrefix() {
+    return 'action';
+  }
+
+  static fromJson(json: RawJson): StoryletActionNode {
+    const instance = new StoryletActionNode();
     instance.id = json.id;
-    instance.data.customType = json.data.customType;
-    instance.data.extraData = json.data.extraData;
-    instance.data.customNodeId = json.data.customNodeId;
-    instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
-    instance.data.afterJumpProcess = json.data.afterJumpProcess;
-    instance.data.enableCheck = json.data.enableCheck;
+    instance.data = { ...json.data };
+    // instance.data.customNodeId = json.data.customNodeId;
+    // instance.data.actionType = json.data.customType;
+    // instance.data.extraData = json.data.extraData;
+    // instance.data.customNodeId = json.data.customNodeId;
+    // instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
+    // instance.data.afterJumpProcess = json.data.afterJumpProcess;
+    // instance.data.enableCheck = json.data.enableCheck;
     return instance;
   }
 }
@@ -283,8 +296,8 @@ export class Storylet extends Tree<StoryletNodeData> {
           instance = StoryletSentenceNode.fromJson(nodeData);
         } else if (nodeType === NodeType.Branch) {
           instance = StoryletBranchNode.fromJson(nodeData);
-        } else if (nodeType === NodeType.Custom) {
-          instance = StoryletCustomNode.fromJson(nodeData);
+        } else if (nodeType === NodeType.Action) {
+          instance = StoryletActionNode.fromJson(nodeData);
         } else if (nodeType === NodeType.Root) {
           instance = StoryletRootNode.fromJson(nodeData);
         }

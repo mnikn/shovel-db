@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  StoryletActionNode,
   StoryletBranchNode,
   StoryletNode,
   StoryletNodeData,
@@ -9,6 +10,7 @@ import {
 import RootNodeCard from './root';
 import SentenceNodeCard from './sentence';
 import BranchNodeCard from './branch';
+import ActionNodeCard from './action';
 
 export default function NodeCard({
   pos,
@@ -27,6 +29,9 @@ export default function NodeCard({
       )}
       {node instanceof StoryletBranchNode && (
         <BranchNodeCard pos={pos} node={node} />
+      )}
+      {node instanceof StoryletActionNode && (
+        <ActionNodeCard pos={pos} node={node} />
       )}
     </>
   );

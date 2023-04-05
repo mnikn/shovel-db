@@ -9,6 +9,7 @@ import {
 } from '../../../../../models/schema';
 import SchemaForm from '../../../components/schema_form';
 import {
+  ActionType,
   StoryletBranchNode,
   StoryletNode,
   StoryletNodeData,
@@ -78,6 +79,67 @@ function generateSchema(node: StoryletNode<StoryletNodeData>) {
           data: new SchemaFieldString({
             type: 'code',
             colSpan: 12,
+            codeLang: 'python',
+          }),
+        }
+      );
+      break;
+    }
+    case 'action': {
+      schema.fields.push(
+        {
+          name: 'Custom node id',
+          id: 'customNodeId',
+          data: new SchemaFieldString({
+            colSpan: 4,
+          }),
+        },
+        {
+          name: 'Action type',
+          id: 'actionType',
+          data: new SchemaFieldSelect({
+            colSpan: 4,
+            options: Object.values(ActionType).map((item) => {
+              return {
+                value: item,
+                label: item,
+              };
+            }),
+            defaultValue: ActionType.Code,
+          }),
+        },
+        {
+          name: 'Target node',
+          id: 'targetNode',
+          data: new SchemaFieldString({
+            colSpan: 4,
+            enableWhen: `(v) => v.actionType === "${ActionType.JumpNode}"`,
+          }),
+        },
+        {
+          name: 'Target storylet',
+          id: 'targetStorylet',
+          data: new SchemaFieldString({
+            colSpan: 4,
+            enableWhen: `(v) => v.actionType === "${ActionType.JumpStorylet}"`,
+          }),
+        },
+        {
+          name: 'Enable check',
+          id: 'enableCheck',
+          data: new SchemaFieldString({
+            type: 'code',
+            colSpan: 12,
+            codeLang: 'python',
+          }),
+        },
+        {
+          name: 'Process code',
+          id: 'process',
+          data: new SchemaFieldString({
+            colSpan: 12,
+            enableWhen: `(v) => v.actionType === "${ActionType.Code}"`,
+            type: 'code',
             codeLang: 'python',
           }),
         }
