@@ -1,5 +1,4 @@
 import { app, BrowserWindow, ipcMain, Menu } from 'electron';
-import * as path from 'path';
 import * as url from 'url';
 import fs from 'fs';
 import {
@@ -7,6 +6,7 @@ import {
   SAVE_STORY_FILE,
   SHOW_PROJET_SETTINGS,
 } from '../constants/events';
+const path = require('path');
 
 const remote = require('@electron/remote/main');
 
@@ -120,16 +120,34 @@ ipcMain.on(SAVE_STORY_FILE, (_, arg) => {
     //   encoding: 'utf8',
     //   flag: 'w+',
     // });
+    // let finalFilePath =
+    //   process.platform === 'win32' ? filePath.replace(/\\/g, '\\\\') : filePath;
+    // console.log('filePath: ', finalFilePath);
+    // fs.writeFileSync(finalFilePath, JSON.stringify(data, null, 2));
+
+    // const storyPath = 'D:\\test_data\\story\\story';
+    // const finalFilePath = path.join(storyPath, 'story.json');
+    // const finalFilePath = path.join(
+    //   'D:\\test_data\\story\\story',
+    //   'story.json'
+    // );
+
+    // const finalFilePath = path.resolve('../../test_data', 'story.json');
     console.log('filePath: ', filePath);
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    fs.writeFileSync(filePath, data);
   } catch (err) {
     console.log(err);
   }
+  // try {
+  //   fs.writeFileSync('myfile.txt', 'the text to write in the file', 'utf-8');
+  // } catch (e) {
+  //   alert('Failed to save the file !');
+  // }
 });
 
 ipcMain.on(DELETE_STORY_FILE, (_, arg) => {
   const { filePath } = arg;
-    fs.rmSync(filePath);
+  fs.rmSync(filePath);
 });
 
 app.on('activate', () => {

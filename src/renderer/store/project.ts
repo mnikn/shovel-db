@@ -48,8 +48,13 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
         return;
       }
 
-      const filePath = join(rootPath, 'story/story.json');
-      ipcRenderer.send(SAVE_STORY_FILE, { filePath, data: story });
+      const storyPath = join(rootPath, 'story');
+      const filePath = join(storyPath, 'story.json');
+      // const filePath = rootPath + '\\story\\story.json';
+      ipcRenderer.send(SAVE_STORY_FILE, {
+        filePath,
+        data: JSON.stringify(story, null, 2),
+      });
     },
     [projectPath]
   );
