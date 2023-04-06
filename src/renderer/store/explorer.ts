@@ -1,15 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { maxBy } from 'lodash';
 import { createGlobalStore } from 'hox';
-import { normalize } from 'upath';
-import { join } from 'path';
-import { buildFileTree, File, Folder } from '../models/explorer';
-import { UUID } from '../../utils/uuid';
-import { RawJson } from '../../type';
-import { ipcRenderer } from 'electron';
-import { SAVE_STORY_FILE } from '../../constants/events';
-import { useStoryStore } from './story';
+import { maxBy } from 'lodash';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Event, eventEmitter } from '.';
+import { RawJson } from '../../type';
+import { buildFileTree, File, Folder } from '../models/explorer';
 
 export function getDeepChildren(currentFolder: any, files: any[]): any[] {
   let res: any[] = [];
@@ -44,27 +38,6 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
   }, [files]);
 
   useEffect(() => {
-    // const createItemFile = (parentId: string | null = null, order = -1) => {
-    //   const res = {
-    //     id: UUID(),
-    //     name: UUID().substring(0, 10),
-    //     type: 'file',
-    //     order,
-    //     parentId: parentId,
-    //   };
-    //   return res;
-    // };
-    // const createFolder = (parentId: string | null = null, order = -1) => {
-    //   const res = {
-    //     id: UUID(),
-    //     name: UUID().substring(0, 10),
-    //     type: 'folder',
-    //     order,
-    //     parentId: parentId,
-    //   };
-    //   return res;
-    // };
-
     setFiles([
       {
         id: 'story',
@@ -81,6 +54,16 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
         parentId: null,
       },
     ]);
+  }, []);
+
+  useEffect(() => {
+    const updateExploere = (files: Array<File | Folder>) => {
+      setFiles(files);
+    };
+    eventEmitter.on(Event.UpdateExplorer, updateExploere);
+    return () => {
+      eventEmitter.off(Event.UpdateExplorer, updateExploere);
+    };
   }, []);
 
   const openFile = useCallback((file: File | null) => {

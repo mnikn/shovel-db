@@ -2,8 +2,9 @@ import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import * as url from 'url';
 import fs from 'fs';
 import {
-  DELETE_STORY_FILE,
-  SAVE_STORY_FILE,
+  DELETE_FILE,
+  READ_FILE,
+  SAVE_FILE,
   SHOW_PROJET_SETTINGS,
 } from '../constants/events';
 const path = require('path');
@@ -112,40 +113,28 @@ app.on('window-all-closed', () => {
   }
 });
 
-ipcMain.on(SAVE_STORY_FILE, (_, arg) => {
+ipcMain.on(SAVE_FILE, (event, arg) => {
   const { filePath, data } = arg;
   ensureDirExists(filePath);
   try {
-    // fs.writeFileSync(filePath, JSON.stringify(data, null, 2), {
-    //   encoding: 'utf8',
-    //   flag: 'w+',
-    // });
-    // let finalFilePath =
-    //   process.platform === 'win32' ? filePath.replace(/\\/g, '\\\\') : filePath;
-    // console.log('filePath: ', finalFilePath);
-    // fs.writeFileSync(finalFilePath, JSON.stringify(data, null, 2));
-
-    // const storyPath = 'D:\\test_data\\story\\story';
-    // const finalFilePath = path.join(storyPath, 'story.json');
-    // const finalFilePath = path.join(
-    //   'D:\\test_data\\story\\story',
-    //   'story.json'
-    // );
-
-    // const finalFilePath = path.resolve('../../test_data', 'story.json');
-    console.log('filePath: ', filePath);
     fs.writeFileSync(filePath, data);
+    event.sender.send(SAVE_FILE + '-response');
   } catch (err) {
     console.log(err);
   }
-  // try {
-  //   fs.writeFileSync('myfile.txt', 'the text to write in the file', 'utf-8');
-  // } catch (e) {
-  //   alert('Failed to save the file !');
-  // }
 });
 
-ipcMain.on(DELETE_STORY_FILE, (_, arg) => {
+ipcMain.on(READ_FILE, (event, arg) => {
+  const { filePath } = arg;
+  try {
+    const res = fs.readFileSync(filePath, { encoding: 'utf8' });
+    event.sender.send(READ_FILE + '-response', res);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+ipcMain.on(DELETE_FILE, (_, arg) => {
   const { filePath } = arg;
   fs.rmSync(filePath);
 });

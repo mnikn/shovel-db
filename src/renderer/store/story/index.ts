@@ -387,17 +387,39 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       setCurrentStorylet(newVal);
     };
 
+    const updateStory = (val: RawJson) => {
+      const res = {};
+      Object.keys(val).forEach((key) => {
+        res[key] = Storylet.fromJson(val[key]);
+      });
+      setStory(res);
+    };
+
+    const updateStoryActors = (val: any[]) => {
+      setStoryActors(val);
+    };
+
+    const updateTranslations = (val: RawJson) => {
+      translationModule.updateTranslations(val);
+    };
+
+    eventEmitter.on(Event.UpdateStory, updateStory);
+    eventEmitter.on(Event.UpdateStoryActors, updateStoryActors);
+    eventEmitter.on(Event.UpdateStoryTranslations, updateTranslations);
     eventEmitter.on(Event.CreateStorylet, createStorylet);
     eventEmitter.on(Event.DeleteStorylet, deleteStorylet);
     eventEmitter.on(Event.OpenStorylet, openStorylet);
     eventEmitter.on(Event.UpdateStoryletName, updateStoryletName);
     return () => {
+      eventEmitter.off(Event.UpdateStory, updateStory);
+      eventEmitter.off(Event.UpdateStoryActors, updateStoryActors);
+      eventEmitter.off(Event.UpdateStoryTranslations, updateTranslations);
       eventEmitter.off(Event.CreateStorylet, createStorylet);
       eventEmitter.off(Event.DeleteStorylet, deleteStorylet);
       eventEmitter.off(Event.OpenStorylet, openStorylet);
       eventEmitter.off(Event.UpdateStoryletName, updateStoryletName);
     };
-  }, [story]);
+  }, [story, translationModule.updateTranslations]);
 
   useEffect(() => {
     if (!currentStorylet) {

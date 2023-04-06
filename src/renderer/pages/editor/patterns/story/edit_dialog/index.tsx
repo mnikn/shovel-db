@@ -281,7 +281,6 @@ export default function EditDialog({
       setFormNodeData(cloneDeep(node.data));
     }
   }, [open, node.data, currentTab]);
-  console.log('ssa: ', formNodeData, node);
 
   const formTranslations = useMemo(() => {
     return cloneDeep(translations);
@@ -386,7 +385,7 @@ export default function EditDialog({
           variant='contained'
           onClick={() => {
             updateTranslations(formTranslations);
-            node.data = formNodeData;
+            node.data = { ...node.data, ...formNodeData };
             updateNode(node);
             trackCurrentState();
             close();

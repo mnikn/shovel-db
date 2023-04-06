@@ -1,9 +1,11 @@
-import { Box, Stack } from '@mui/material';
+import { Box, Stack, CircularProgress, FormLabel } from '@mui/material';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { useStoryStore } from '../../store';
+import { useExplorerStore, useStoryStore } from '../../store';
 import { Mode, useEditorStore } from '../../store/editor';
 import { useProjectStore } from '../../store/project';
 import { useTrackStore } from '../../store/track';
+import { grey } from '@mui/material/colors';
+import { borderRadius } from '../../theme';
 import Explorer from './components/explorer';
 import Main from './main';
 
@@ -11,11 +13,17 @@ export default function Editor() {
   const { undo, redo } = useTrackStore();
   const { mode } = useEditorStore();
 
-  const { story, translations: storyTranslations } = useStoryStore();
+  const {
+    story,
+    translations: storyTranslations,
+    storyActors,
+  } = useStoryStore();
+  const { files } = useExplorerStore();
   const { save } = useProjectStore();
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const handle = (e) => {
+    const handle = async (e) => {
       if (mode !== Mode.Normal) {
         return;
       }
@@ -28,20 +36,54 @@ export default function Editor() {
       }
 
       if (e.code === 'KeyS' && e.ctrlKey) {
-        save({ story, storyTranslations }, {});
+        setSaving(true);
+        await save({
+          story,
+          storyActors,
+          storyTranslations,
+          files,
+          staticData: {},
+        });
+        setTimeout(() => {
+          setSaving(false);
+        }, 500);
       }
     };
     window.addEventListener('keydown', handle);
     return () => {
       window.removeEventListener('keydown', handle);
     };
-  }, [undo, redo, mode, save, story, storyTranslations]);
+  }, [undo, redo, mode, save, story, storyActors, storyTranslations, files]);
 
   return (
     <Box>
       <Stack direction={'row'} sx={{ height: '100%', width: '100%' }}>
         <Explorer />
-        <Main />
+        <Main>
+          {saving ? (
+            <Stack
+              direction='row'
+              spacing={2}
+              sx={{
+                backgroundColor: grey[50],
+                position: 'absolute',
+                top: '24px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '150px',
+                height: '50px',
+                alignItems: 'center',
+                justifyContent: 'center',
+                ...borderRadius.larger,
+              }}
+            >
+              <CircularProgress
+                sx={{ height: '24px!important', width: '24px!important' }}
+              />
+              <FormLabel>Saving...</FormLabel>
+            </Stack>
+          ) : null}
+        </Main>
       </Stack>
     </Box>
   );

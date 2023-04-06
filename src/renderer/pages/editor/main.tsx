@@ -8,7 +8,7 @@ import { SHOW_PROJET_SETTINGS } from '../../../constants/events';
 import ProjectSettings from './components/project_settings';
 import { Mode, useEditorStore } from '../../store/editor';
 
-export default function Main() {
+export default function Main({ children }: { children?: any }) {
   const { currentOpenFile } = useExplorerStore();
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
   const { setMode } = useEditorStore();
@@ -26,7 +26,9 @@ export default function Main() {
   }, [setMode]);
 
   return (
-    <Box sx={{ flexGrow: 1, background: 'rgb(75 85 99)' }}>
+    <Box
+      sx={{ flexGrow: 1, background: 'rgb(75 85 99)', position: 'relative' }}
+    >
       {currentOpenFile?.fullpath?.split('.')?.[0] === 'static-data' && (
         <StaticData />
       )}
@@ -38,6 +40,7 @@ export default function Main() {
           setMode(Mode.Normal);
         }}
       />
+      {children}
     </Box>
   );
 }

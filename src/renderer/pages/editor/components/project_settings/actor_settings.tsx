@@ -82,11 +82,12 @@ export default function ActorSettings({
   const {
     translations,
     currentLang,
+    storyActors,
     updateTranslations,
     updateStoryActors,
     trackCurrentState,
   } = useStoryStore();
-  const [formData, setFormData] = useState<StoryActor[]>([]);
+  const [formData, setFormData] = useState<StoryActor[]>(storyActors);
 
   const formTranslations = useMemo(() => {
     return cloneDeep(translations);

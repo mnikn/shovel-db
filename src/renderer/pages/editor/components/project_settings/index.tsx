@@ -94,12 +94,14 @@ export default function ProjectSettings({
                 Edit
               </Button>
             </Stack>
-            <ActorSettings
-              open={actorSettingsOpen}
-              close={() => {
-                setActorSettingsOpen(false);
-              }}
-            />
+            {actorSettingsOpen && (
+              <ActorSettings
+                open={actorSettingsOpen}
+                close={() => {
+                  setActorSettingsOpen(false);
+                }}
+              />
+            )}
           </Stack>
         )}
       </Stack>
