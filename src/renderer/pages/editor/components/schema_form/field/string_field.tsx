@@ -17,8 +17,8 @@ function FieldString({
   label?: string;
   schema: SchemaFieldString;
   value: any;
-  translations: Translation;
-  currentLang: LANG;
+  translations?: Translation;
+  currentLang?: LANG;
   onValueChange?: (value: any) => void;
 }) {
   //   const { updateTranslateKey, translations, currentLang } = useStoryStore();

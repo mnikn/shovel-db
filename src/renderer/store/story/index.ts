@@ -20,7 +20,6 @@ import { RawJson } from '../../../type';
 import { LANG } from '../../../constants/i18n';
 import { UUID } from '../../../utils/uuid';
 import { formatNodeLinkId, NodeLink } from '../../models/tree';
-import { Story } from '../../models/story/story';
 import { Event, eventEmitter } from '..';
 
 interface NodeSelection {
@@ -33,11 +32,39 @@ export interface StoryActor {
   portraits: { id: string; pic: string }[];
 }
 
+export interface NodeSettings {
+  extendBasicSchema?: string;
+  extraDataSchema?: string;
+}
+
 export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
   const [story, setStory] = useState<{ [key: string]: Storylet }>({});
   const [currentStorylet, setCurrentStorylet] = useState<Storylet | null>(null);
   const [selection, setSelection] = useState<NodeSelection | null>(null);
   const [storyActors, setStoryActors] = useState<StoryActor[]>([]);
+  const [nodeSettings, setNodeSettings] = useState<{
+    root: NodeSettings;
+    sentence: NodeSettings;
+    branch: NodeSettings;
+    action: NodeSettings;
+  }>({
+    root: {
+      extendBasicSchema: '(prevSchema) => { return prevSchema; }',
+      extraDataSchema: '{}',
+    },
+    sentence: {
+      extendBasicSchema: '(prevSchema) => { return prevSchema; }',
+      extraDataSchema: '{}',
+    },
+    branch: {
+      extendBasicSchema: '(prevSchema) => { return prevSchema; }',
+      extraDataSchema: '{}',
+    },
+    action: {
+      extendBasicSchema: '(prevSchema) => { return prevSchema; }',
+      extraDataSchema: '{}',
+    },
+  });
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
   const currentStoryletRef = useRef(currentStorylet);
@@ -452,6 +479,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     trackCurrentState,
     storyActors,
     updateStoryActors,
+    nodeSettings,
     ...translationModule,
   };
 });

@@ -2,6 +2,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import * as path from 'path';
 import { Configuration as WebpackConfiguration } from 'webpack';
 import { Configuration as WebpackDevServerConfiguration } from 'webpack-dev-server';
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 const rootPath = path.resolve(__dirname, '..');
 
@@ -57,6 +58,10 @@ const config: Configuration = {
   },
   plugins: [
     new HtmlWebpackPlugin({ template: path.resolve(rootPath, 'index.html') }),
+    new MonacoWebpackPlugin({
+      languages: ['json', 'javascript', 'python'], //configure your languages here
+      features: ['coreCommands', 'find'],
+    }), // Place it here
   ],
 };
 

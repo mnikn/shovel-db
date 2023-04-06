@@ -20,8 +20,8 @@ export default function SchemaForm({
   formData: any;
   schema: SchemaFieldObject | SchemaFieldArray;
   onValueChange: (val: any) => void;
-  translations: Translation;
-  currentLang: LANG;
+  translations?: Translation;
+  currentLang?: LANG;
 }) {
   const [form, setForm] = useState<any>(formData);
 

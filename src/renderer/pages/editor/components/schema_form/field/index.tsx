@@ -53,8 +53,8 @@ export default function Field({
 }: {
   schema: SchemaField;
   value: any;
-  translations: Translation;
-  currentLang: LANG;
+  translations?: Translation;
+  currentLang?: LANG;
   onValueChange?: (value: any) => void;
   label?: string;
 }) {
@@ -157,8 +157,8 @@ export function FieldArray({
   label?: string;
   schema: SchemaFieldArray;
   value: any[];
-  translations: Translation;
-  currentLang: LANG;
+  translations?: Translation;
+  currentLang?: LANG;
   onValueChange?: (value: any) => void;
 }) {
   const [list, setList] = useState<RawJson[]>(

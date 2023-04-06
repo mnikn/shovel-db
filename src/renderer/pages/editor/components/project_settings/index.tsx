@@ -13,10 +13,11 @@ import { borderRadius } from '../../../../theme';
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
 import ActorSettings from './actor_settings';
 import { grey } from '@mui/material/colors';
+import CodeSettings from './code_settings';
 
 enum TAB {
-  StaticData = 'Static Data',
   Story = 'Story',
+  StaticData = 'Static Data',
 }
 
 export default function ProjectSettings({
@@ -26,8 +27,9 @@ export default function ProjectSettings({
   open: boolean;
   close: () => void;
 }) {
-  const [currentTab, setCurrentTab] = useState(TAB.StaticData);
+  const [currentTab, setCurrentTab] = useState(TAB.Story);
   const [actorSettingsOpen, setActorSettingsOpen] = useState(false);
+  const [nodeSettingsOpen, setNodeSettingsOpen] = useState(false);
   return (
     <Modal open={open}>
       <Stack
@@ -93,15 +95,48 @@ export default function ProjectSettings({
               >
                 Edit
               </Button>
+              {actorSettingsOpen && (
+                <ActorSettings
+                  open={actorSettingsOpen}
+                  close={() => {
+                    setActorSettingsOpen(false);
+                  }}
+                />
+              )}
             </Stack>
-            {actorSettingsOpen && (
-              <ActorSettings
-                open={actorSettingsOpen}
-                close={() => {
-                  setActorSettingsOpen(false);
+            <Stack
+              direction='row'
+              spacing={2}
+              sx={{
+                alignItems: 'center',
+              }}
+            >
+              <FormLabel id='actor-edit'>Sentence node settings:</FormLabel>
+              <Button
+                variant='outlined'
+                onClick={() => {
+                  setNodeSettingsOpen(true);
                 }}
-              />
-            )}
+              >
+                Edit basic schema
+              </Button>
+              <Button
+                variant='outlined'
+                onClick={() => {
+                  setNodeSettingsOpen(true);
+                }}
+              >
+                Edit extra data schema
+              </Button>
+              {nodeSettingsOpen && (
+                <CodeSettings
+                  open={nodeSettingsOpen}
+                  close={() => {
+                    setNodeSettingsOpen(false);
+                  }}
+                />
+              )}
+            </Stack>
           </Stack>
         )}
       </Stack>
