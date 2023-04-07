@@ -37,7 +37,6 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
 
   useLayoutEffect(() => {
     const cacheProjectPath = localStorage.getItem(PROJECT_ROOT_PATH);
-    console.log('rer: ', cacheProjectPath);
     if (!cacheProjectPath) {
       return;
     }
@@ -58,6 +57,7 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       // console.log('ewds: ', storyRes);
       eventEmitter.emit(Event.UpdateStory, storyRes.story);
       eventEmitter.emit(Event.UpdateStoryActors, storyRes.actors);
+      eventEmitter.emit(Event.UpdateStoryNodeSettings, storyRes.nodeSettings);
 
       const storyTranslationsPath = join(storyPath, 'translations.csv');
       const storyTranslationsRes = await ipcSend(READ_FILE, {
@@ -90,6 +90,7 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       story,
       storyActors,
       storyTranslations,
+      storyNodeSettings,
       files,
       staticData,
     }: any) => {
@@ -120,7 +121,6 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       });
 
       const storyFilePath = join(storyPath, 'story.json');
-
       const storeStory = {};
       Object.keys(story).forEach((key) => {
         storeStory[key] = story[key].toJson();
@@ -128,7 +128,11 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       await ipcSend(SAVE_FILE, {
         filePath: storyFilePath,
         data: JSON.stringify(
-          { story: storeStory, actors: storyActors },
+          {
+            story: storeStory,
+            actors: storyActors,
+            nodeSettings: storyNodeSettings,
+          },
           null,
           2
         ),

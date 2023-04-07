@@ -12,6 +12,7 @@ export enum Event {
   CreateStorylet = 'createStorylet',
   UpdateStory = 'updateStory',
   UpdateStoryActors = 'updateStoryActors',
+  UpdateStoryNodeSettings = 'updateStoryNodeSettings',
   UpdateStoryTranslations = 'updateStoryTranslations',
   UpdateStoryletName = 'updateStoryletName',
   UpdateExplorer = 'updateExplorer',

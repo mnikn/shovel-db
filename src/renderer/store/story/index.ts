@@ -21,6 +21,7 @@ import { LANG } from '../../../constants/i18n';
 import { UUID } from '../../../utils/uuid';
 import { formatNodeLinkId, NodeLink } from '../../models/tree';
 import { Event, eventEmitter } from '..';
+import { DEFAULT_CONFIG, DEFAULT_CONFIG_JSON } from '../../models/schema';
 
 interface NodeSelection {
   nodeId: string;
@@ -50,19 +51,19 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
   }>({
     root: {
       extendBasicSchema: '(prevSchema) => { return prevSchema; }',
-      extraDataSchema: '{}',
+      extraDataSchema: JSON.stringify(DEFAULT_CONFIG_JSON.OBJECT_JSON, null, 2),
     },
     sentence: {
       extendBasicSchema: '(prevSchema) => { return prevSchema; }',
-      extraDataSchema: '{}',
+      extraDataSchema: JSON.stringify(DEFAULT_CONFIG_JSON.OBJECT_JSON, null, 2),
     },
     branch: {
       extendBasicSchema: '(prevSchema) => { return prevSchema; }',
-      extraDataSchema: '{}',
+      extraDataSchema: JSON.stringify(DEFAULT_CONFIG_JSON.OBJECT_JSON, null, 2),
     },
     action: {
       extendBasicSchema: '(prevSchema) => { return prevSchema; }',
-      extraDataSchema: '{}',
+      extraDataSchema: JSON.stringify(DEFAULT_CONFIG_JSON.OBJECT_JSON, null, 2),
     },
   });
   const selectionRef = useRef(selection);
@@ -437,6 +438,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     eventEmitter.on(Event.DeleteStorylet, deleteStorylet);
     eventEmitter.on(Event.OpenStorylet, openStorylet);
     eventEmitter.on(Event.UpdateStoryletName, updateStoryletName);
+    eventEmitter.on(Event.UpdateStoryNodeSettings, setNodeSettings);
     return () => {
       eventEmitter.off(Event.UpdateStory, updateStory);
       eventEmitter.off(Event.UpdateStoryActors, updateStoryActors);
@@ -445,6 +447,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       eventEmitter.off(Event.DeleteStorylet, deleteStorylet);
       eventEmitter.off(Event.OpenStorylet, openStorylet);
       eventEmitter.off(Event.UpdateStoryletName, updateStoryletName);
+      eventEmitter.off(Event.UpdateStoryNodeSettings, setNodeSettings);
     };
   }, [story, translationModule.updateTranslations]);
 
@@ -480,6 +483,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     storyActors,
     updateStoryActors,
     nodeSettings,
+    setNodeSettings,
     ...translationModule,
   };
 });

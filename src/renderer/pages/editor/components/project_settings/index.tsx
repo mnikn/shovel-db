@@ -14,11 +14,205 @@ import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
 import ActorSettings from './actor_settings';
 import { grey } from '@mui/material/colors';
 import CodeSettings from './code_settings';
+import { useProjectStore, useStoryStore } from '../../../../store';
+import { DEFAULT_CONFIG, DEFAULT_CONFIG_JSON } from '../../../../models/schema';
 
 enum TAB {
   Story = 'Story',
   StaticData = 'Static Data',
 }
+
+let isInject = false;
+const editorDidMount = (_, monaco: any) => {
+  if (isInject) {
+    return;
+  }
+  const createDependencyProposals = (range) => {
+    const fieldObj = {
+      your_field: {
+        name: 'your_field',
+        config: {},
+      },
+    };
+    const formatInnerField = (obj: any) => {
+      const objStr = JSON.stringify(obj, null, 2);
+      return objStr.substring(1, objStr.length - 1);
+    };
+    let snippets = [
+      {
+        label: 'object',
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.OBJECT_JSON, null, 2),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
+        label: 'array',
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.ARR_JSON, null, 2),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
+        label: 'string',
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.STR_JSON, null, 2),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
+        label: 'boolean',
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.BOOLEAN_JSON, null, 2),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
+        label: 'number',
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.NUM_JSON, null, 2),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
+        label: 'select',
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.SELECT_JSON, null, 2),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
+        label: 'numberField',
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.NUM_JSON,
+          },
+        }),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
+        label: 'stringField',
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.STR_JSON,
+          },
+        }),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
+        label: 'booleanField',
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.BOOLEAN_JSON,
+          },
+        }),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
+        label: 'selectField',
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.SELECT_JSON,
+          },
+        }),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
+        label: 'arrayField', // 用户键入list2d_basic的任意前缀即可触发自动补全，选择该项即可触发添加代码片段
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.ARR_JSON,
+          },
+        }),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
+        label: 'objectField', // 用户键入list2d_basic的任意前缀即可触发自动补全，选择该项即可触发添加代码片段
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.OBJECT_JSON,
+          },
+        }),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
+        label: 'field', // 用户键入list2d_basic的任意前缀即可触发自动补全，选择该项即可触发添加代码片段
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: formatInnerField(fieldObj), // ${i:j}，其中i表示按tab切换的顺序编号，j表示默认串
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+    ];
+    return snippets;
+  };
+
+  /* monaco.languages.unregisterCompletionItemProvider('schema-json-config'); */
+  monaco.languages.registerCompletionItemProvider('json', {
+    provideCompletionItems: (model, position) => {
+      var word = model.getWordUntilPosition(position);
+      var range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn,
+      };
+      return {
+        suggestions: createDependencyProposals(range),
+      };
+    },
+  });
+  isInject = true;
+};
 
 export default function ProjectSettings({
   open,
@@ -29,7 +223,105 @@ export default function ProjectSettings({
 }) {
   const [currentTab, setCurrentTab] = useState(TAB.Story);
   const [actorSettingsOpen, setActorSettingsOpen] = useState(false);
-  const [nodeSettingsOpen, setNodeSettingsOpen] = useState(false);
+  const [basicSchemaSettingsOpen, setBasicSchemaSettingsOpen] = useState<{
+    [key: string]: boolean;
+  }>({
+    root: false,
+    sentnce: false,
+    branch: false,
+    action: false,
+  });
+
+  const [extraDataSchemaSettingsOpen, setExtraDataSchemaSettingsOpen] =
+    useState<{ [key: string]: boolean }>({
+      root: false,
+      sentnce: false,
+      branch: false,
+      action: false,
+    });
+  const { nodeSettings, setNodeSettings } = useStoryStore();
+
+  console.log('dse: ', nodeSettings);
+
+  const renderNodeSettingsComponent = (nodeKey: string) => {
+    return (
+      <Stack
+        direction='row'
+        spacing={2}
+        sx={{
+          alignItems: 'center',
+        }}
+        key={nodeKey}
+      >
+        <FormLabel id='actor-edit'>{nodeKey} node settings:</FormLabel>
+        <Button
+          variant='outlined'
+          onClick={() => {
+            setBasicSchemaSettingsOpen((prev) => {
+              return { ...prev, [nodeKey]: true };
+            });
+          }}
+        >
+          Edit basic schema
+        </Button>
+        <Button
+          variant='outlined'
+          onClick={() => {
+            setExtraDataSchemaSettingsOpen((prev) => {
+              return { ...prev, [nodeKey]: true };
+            });
+          }}
+        >
+          Edit extra data schema
+        </Button>
+        {basicSchemaSettingsOpen[nodeKey] && (
+          <CodeSettings
+            open={basicSchemaSettingsOpen[nodeKey]}
+            value={nodeSettings[nodeKey].extendBasicSchema}
+            onValueChange={(val) => {
+              setNodeSettings((prev) => {
+                return {
+                  ...prev,
+                  [nodeKey]: {
+                    ...nodeSettings[nodeKey],
+                    extendBasicSchema: val,
+                  },
+                };
+              });
+            }}
+            lang='javascript'
+            onEditorMounted={editorDidMount}
+            close={() => {
+              setBasicSchemaSettingsOpen((prev) => {
+                return { ...prev, [nodeKey]: false };
+              });
+            }}
+          />
+        )}
+        {extraDataSchemaSettingsOpen[nodeKey] && (
+          <CodeSettings
+            lang='json'
+            open={extraDataSchemaSettingsOpen[nodeKey]}
+            value={nodeSettings[nodeKey].extraDataSchema}
+            onValueChange={(val) => {
+              setNodeSettings((prev) => {
+                return {
+                  ...prev,
+                  [nodeKey]: { ...nodeSettings[nodeKey], extraDataSchema: val },
+                };
+              });
+            }}
+            onEditorMounted={editorDidMount}
+            close={() => {
+              setExtraDataSchemaSettingsOpen((prev) => {
+                return { ...prev, [nodeKey]: false };
+              });
+            }}
+          />
+        )}
+      </Stack>
+    );
+  };
   return (
     <Modal open={open}>
       <Stack
@@ -104,39 +396,9 @@ export default function ProjectSettings({
                 />
               )}
             </Stack>
-            <Stack
-              direction='row'
-              spacing={2}
-              sx={{
-                alignItems: 'center',
-              }}
-            >
-              <FormLabel id='actor-edit'>Sentence node settings:</FormLabel>
-              <Button
-                variant='outlined'
-                onClick={() => {
-                  setNodeSettingsOpen(true);
-                }}
-              >
-                Edit basic schema
-              </Button>
-              <Button
-                variant='outlined'
-                onClick={() => {
-                  setNodeSettingsOpen(true);
-                }}
-              >
-                Edit extra data schema
-              </Button>
-              {nodeSettingsOpen && (
-                <CodeSettings
-                  open={nodeSettingsOpen}
-                  close={() => {
-                    setNodeSettingsOpen(false);
-                  }}
-                />
-              )}
-            </Stack>
+            {Object.keys(nodeSettings).map((nodeKey) => {
+              return renderNodeSettingsComponent(nodeKey);
+            })}
           </Stack>
         )}
       </Stack>

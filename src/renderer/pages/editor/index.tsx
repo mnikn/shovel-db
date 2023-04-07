@@ -15,6 +15,7 @@ export default function Editor() {
 
   const {
     story,
+    nodeSettings,
     translations: storyTranslations,
     storyActors,
   } = useStoryStore();
@@ -41,6 +42,7 @@ export default function Editor() {
           story,
           storyActors,
           storyTranslations,
+          storyNodeSettings: nodeSettings,
           files,
           staticData: {},
         });
@@ -53,7 +55,17 @@ export default function Editor() {
     return () => {
       window.removeEventListener('keydown', handle);
     };
-  }, [undo, redo, mode, save, story, storyActors, storyTranslations, files]);
+  }, [
+    undo,
+    redo,
+    mode,
+    save,
+    story,
+    storyActors,
+    nodeSettings,
+    storyTranslations,
+    files,
+  ]);
 
   return (
     <Box>

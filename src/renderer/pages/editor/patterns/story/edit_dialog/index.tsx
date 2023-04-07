@@ -19,6 +19,7 @@ import { RawJson } from '../../../../../../type';
 import { useStoryStore } from '../../../../../store';
 import { cloneDeep } from 'lodash';
 import { grey } from '@mui/material/colors';
+import { buildSchema } from '../../../../../models/schema/factory';
 
 function generateSchema(node: StoryletNode<StoryletNodeData>) {
   const schema = new SchemaFieldObject();
@@ -237,6 +238,7 @@ export default function EditDialog({
     trackCurrentState,
     currentStorylet,
     storyActors,
+    nodeSettings,
     tr,
   } = useStoryStore();
   const [formNodeData, setFormNodeData] = useState(cloneDeep(node.data));
@@ -247,6 +249,12 @@ export default function EditDialog({
     }
     return currentStorylet.getNodeSingleParent(node.id);
   }, [currentStorylet, node]);
+
+  const extraDataShcema = useMemo(() => {
+    return buildSchema(
+      JSON.parse(nodeSettings[node.data.type]?.extraDataSchema || '{}')
+    ) as SchemaFieldObject;
+  }, [nodeSettings]);
 
   const tabs = useMemo(() => {
     const res = [
@@ -275,12 +283,11 @@ export default function EditDialog({
     setCurrentTab(tabs[0]?.id || '');
   }, [tabs]);
 
-  useEffect(() => {
-    if (open) {
-      setCurrentTab('basic');
-      setFormNodeData(cloneDeep(node.data));
-    }
-  }, [open, node.data, currentTab]);
+  /* useEffect(() => {
+   *     if (currentTab === 'basic') {
+   *         setFormNodeData(cloneDeep(node.data));
+   *     }
+   * }, [node.data, currentTab]); */
 
   const formTranslations = useMemo(() => {
     return cloneDeep(translations);
@@ -449,6 +456,12 @@ export default function EditDialog({
         {currentTab === 'basic' &&
           renderSchemaForm(basicDataSchema, formNodeData, (val) => {
             setFormNodeData(val);
+          })}
+        {currentTab === 'extra' &&
+          renderSchemaForm(extraDataShcema, formNodeData.extraData, (val) => {
+            setFormNodeData((prev: RawJson) => {
+              return { ...prev, extraData: val };
+            });
           })}
         {currentTab === 'option' &&
           renderSchemaForm(optionSchema, formNodeData.option || {}, (val) => {

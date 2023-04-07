@@ -129,6 +129,7 @@ function FieldString({
             options={{
               insertSpaces: true,
               autoIndent: 'full',
+              tabSize: 2,
               scrollbar: {
                 horizontal: 'auto',
                 vertical: 'auto',
@@ -139,6 +140,7 @@ function FieldString({
                 onValueChange(v);
               }
             }}
+            editorDidMount={schema.config?.editorMounted || (() => {})}
           />
         </Stack>
       )}

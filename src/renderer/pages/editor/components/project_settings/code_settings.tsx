@@ -13,6 +13,7 @@ import React, { useMemo, useState } from 'react';
 import { borderRadius } from '../../../../theme';
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
 import {
+  DEFAULT_CONFIG,
   SchemaFieldArray,
   SchemaFieldFile,
   SchemaFieldObject,
@@ -24,22 +25,33 @@ import { RawJson } from '../../../../../type';
 import SchemaForm from '../schema_form';
 import FieldString from '../schema_form/field/string_field';
 
-const schemaObj = new SchemaFieldString({
-  colSpan: 12,
-  type: 'code',
-  codeLang: 'json',
-  height: '500px',
-});
-
 export default function CodeSettings({
   open,
   close,
+  lang,
+  value,
+  onValueChange,
+  onEditorMounted,
 }: {
   open: boolean;
   close: () => void;
+  lang: string;
+  value: string;
+  onValueChange: (val: string) => void;
+  onEditorMounted?: (editorVal: any, monaco: any) => void;
 }) {
   const { nodeSettings } = useStoryStore();
-  const [formData, setFormData] = useState<string>('');
+  const [formData, setFormData] = useState<string>(value);
+
+  const schemaObj = useMemo(() => {
+    return new SchemaFieldString({
+      colSpan: 12,
+      type: 'code',
+      codeLang: lang,
+      height: '500px',
+      editorMounted: onEditorMounted,
+    });
+  }, [lang, onEditorMounted]);
 
   return (
     <Modal open={open}>
@@ -103,6 +115,7 @@ export default function CodeSettings({
           <Button
             variant='contained'
             onClick={() => {
+              onValueChange(formData);
               close();
             }}
           >

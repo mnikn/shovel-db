@@ -101,50 +101,9 @@ export function validateValue(
   }
 
   if (schema.type === SchemaFieldType.String) {
-    // if (schema.config.needI18n) {
-    //   if (typeof value === 'object' && value !== null) {
-    //     return value;
-    //   } else {
-    //     return schemaConfig.i18n.reduce((res, item) => {
-    //       return { ...res, [item]: schema.config.defaultValue };
-    //     }, '');
-    //   }
-    // }
     if (schema.config.needI18n && !value) {
       return 'string__field_' + UUID();
     }
-
-    // if (schema.config.type === 'code') {
-    //   if (!!schema.config.template) {
-    //     const fields = uniq(
-    //       (schema.config.template || '')
-    //         .match(/(\{{2}\w*\}{2})/g)
-    //         ?.map((item2) => item2.substring(2, item2.length - 2)) || []
-    //     );
-
-    //     if (!value) {
-    //       value = {
-    //         fields: {},
-    //         value: '',
-    //       };
-    //     }
-
-    //     value.fields = fields.reduce((res: any, k) => {
-    //       res[k] = value?.fields[k] || null;
-    //       return res;
-    //     }, {});
-    //     let finalValue = schema.config.template;
-    //     fields.forEach((f) => {
-    //       finalValue = finalValue.replaceAll(`{{${f}}}`, value.fields[f]);
-    //     });
-    //     return { value: finalValue, fields: value.fields };
-    //   }
-    //   if (typeof value !== 'object' || !value) {
-    //     return { value: null, fields: {} };
-    //   } else {
-    //     return value;
-    //   }
-    // }
 
     if (typeof value === 'string') {
       return value;
@@ -267,13 +226,6 @@ function getDefaultConfig(type: SchemaFieldType): RawJson {
 }
 
 export const DEFAULT_CONFIG = {
-  OBJECT: {
-    colSpan: 12,
-    enableWhen: null,
-    initialExpand: true,
-    summary: '{{___key}}',
-    fieldId: `field_object_${UUID()}`,
-  },
   OBJECT_CONFIG_DEFAULT: {
     colSpan: 12,
     initialExpand: true,
@@ -395,6 +347,35 @@ export const DEFAULT_CONFIG = {
     colSpan: 4,
     defaultValue: '',
     type: 'img',
+  },
+};
+
+export const DEFAULT_CONFIG_JSON = {
+  OBJECT_JSON: {
+    type: 'object',
+    fields: {},
+    config: DEFAULT_CONFIG.OBJECT_CONFIG_DEFAULT,
+  },
+  STR_JSON: {
+    type: 'string',
+    config: DEFAULT_CONFIG.STRING_CONFIG_DEFAULT,
+  },
+  BOOLEAN_JSON: {
+    type: 'boolean',
+    config: DEFAULT_CONFIG.BOOLEAN_CONFIG_DEFAULT,
+  },
+  NUM_JSON: {
+    type: 'number',
+    config: DEFAULT_CONFIG.NUMBER_CONFIG_DEFAULT,
+  },
+  ARR_JSON: {
+    type: 'array',
+    fieldSchema: null,
+    config: DEFAULT_CONFIG.ARRAY_CONFIG_DEFAULT,
+  },
+  SELECT_JSON: {
+    type: 'select',
+    config: DEFAULT_CONFIG.SELECT_CONFIG_DEFAULT,
   },
 };
 
