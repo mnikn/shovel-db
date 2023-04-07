@@ -1,6 +1,7 @@
 import { Box, Container } from '@mui/material';
 import * as d3 from 'd3';
 import React, { useCallback, useRef, useLayoutEffect, useState } from 'react';
+import { grey } from '@mui/material/colors';
 import {
   StoryletBranchNode,
   StoryletNode,
@@ -41,6 +42,7 @@ export default function BaseNodeCard({
     updateTranslateKeyAll,
     getTranslationsForKey,
     trackCurrentState,
+    tr,
   } = useStoryStore();
   const viewRef = useRef<HTMLElement>();
   const [editOpen, setEditOpen] = useState(false);
@@ -217,6 +219,28 @@ export default function BaseNodeCard({
           }}
         >
           {node.data.customNodeId}
+        </Container>
+      )}
+
+      {currentStorylet.getNodeSingleParent(node.id) instanceof
+        StoryletBranchNode && (
+        <Container
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '-170px',
+            p: 1,
+            ...borderRadius.larger,
+            width: '160px',
+            minHeight: '60px',
+            maxHeight: '120px',
+            overflow: 'hidden',
+            textAlign: 'center',
+            backgroundColor: grey[50],
+            transform: 'translateY(-50%)',
+          }}
+        >
+          {tr(node.data.option?.name || '')}
         </Container>
       )}
       {editOpen && (
