@@ -88,6 +88,7 @@ function FieldSelect({
             {schema.config.groupConfig?.child?.label}
           </InputLabel>
           <Select
+            variant='standard'
             labelId={schema.config.fieldId + '_child'}
             label={schema.config.groupConfig?.child?.label}
             size='small'

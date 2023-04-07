@@ -23,7 +23,7 @@ interface ProjectSettings {
 
 export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
   const [projectSettings, setProjectSettings] = useState<ProjectSettings>({
-    i18n: [LANG.EN, LANG.ZH_CN],
+    i18n: [LANG.ZH_CN, LANG.EN],
   });
   const [projectPath, setProjectPath] = useState<string | null>(
     localStorage.getItem(PROJECT_ROOT_PATH) || null
