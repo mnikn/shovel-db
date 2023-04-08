@@ -1,4 +1,5 @@
 import { Box, Container } from '@mui/material';
+import { clipboard } from 'electron';
 import * as d3 from 'd3';
 import React, { useCallback, useRef, useLayoutEffect, useState } from 'react';
 import { grey } from '@mui/material/colors';
@@ -9,6 +10,7 @@ import {
   StoryletRootNode,
   StoryletSentenceNode,
   StoryletActionNode,
+  Storylet,
 } from '../../../../../models/story/storylet';
 import { useStoryStore } from '../../../../../store';
 import { Mode, useEditorStore } from '../../../../../store/editor';
@@ -119,6 +121,22 @@ export default function BaseNodeCard({
         const insertNodeFn = e.shiftKey ? insertSiblingNode : insertChildNode;
         const newNode = duplicateNode();
         insertNodeFn(newNode, node);
+        return;
+      }
+
+      if (e.code === 'KeyC' && e.ctrlKey) {
+        clipboard.writeText(JSON.stringify(node.toJson()));
+        return;
+      }
+
+      if (e.code === 'KeyV' && e.ctrlKey) {
+        const nodeJson = clipboard.readText();
+        console.log('dsd');
+        const newNode = Storylet.fromNodeJson({
+          ...JSON.parse(nodeJson),
+          id: undefined,
+        });
+        insertChildNode(newNode, node);
         return;
       }
 

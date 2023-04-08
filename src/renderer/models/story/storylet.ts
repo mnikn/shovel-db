@@ -87,17 +87,8 @@ export class StoryletSentenceNode extends StoryletNode<StoryletSentenceNodeData>
 
   static fromJson(json: RawJson): StoryletSentenceNode {
     const instance = new StoryletSentenceNode();
-    instance.id = json.id;
+    instance.id = json.id || instance.id;
     instance.data = { ...json.data };
-    // instance.data.content = json.data.content;
-    // instance.data.contentSpeed = json.data.contentSpeed || {};
-    // instance.data.extraData = json.data.extraData || {};
-    // instance.data.actor = json.data.actor;
-    // instance.data.actorPortrait = json.data.actorPortrait;
-    // instance.data.customNodeId = json.data.customNodeId;
-    // instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
-    // instance.data.afterJumpProcess = json.data.afterJumpProcess;
-    // instance.data.enableCheck = json.data.enableCheck;
     return instance;
   }
 
@@ -134,16 +125,8 @@ export class StoryletBranchNode extends StoryletNode<StoryletBranchNodeData> {
 
   static fromJson(json: any): StoryletBranchNode {
     const instance = new StoryletBranchNode();
-    instance.id = json.id;
+    instance.id = json.id || instance.id;
     instance.data = { ...json.data };
-    // instance.data.content = json.data.content;
-    // instance.data.contentSpeed = json.data.contentSpeed || {};
-    // instance.data.extraData = json.data.extraData || {};
-    // instance.data.actor = json.data.actor;
-    // instance.data.customNodeId = json.data.customNodeId;
-    // instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
-    // instance.data.afterJumpProcess = json.data.afterJumpProcess;
-    // instance.data.enableCheck = json.data.enableCheck;
     return instance;
   }
 
@@ -184,15 +167,8 @@ export class StoryletActionNode extends StoryletNode<StoryletActionNodeData> {
 
   static fromJson(json: RawJson): StoryletActionNode {
     const instance = new StoryletActionNode();
-    instance.id = json.id;
+    instance.id = json.id || instance.id;
     instance.data = { ...json.data };
-    // instance.data.customNodeId = json.data.customNodeId;
-    // instance.data.actionType = json.data.customType;
-    // instance.data.extraData = json.data.extraData;
-    // instance.data.customNodeId = json.data.customNodeId;
-    // instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
-    // instance.data.afterJumpProcess = json.data.afterJumpProcess;
-    // instance.data.enableCheck = json.data.enableCheck;
     return instance;
   }
 }
@@ -284,21 +260,7 @@ export class Storylet extends Tree<StoryletNodeData> {
 
     instance.nodes = Object.keys(json.nodes).reduce(
       (res: RawJson, k: string) => {
-        const nodeType = json.nodes[k].data.type;
-        const nodeData = json.nodes[k];
-        let instance: RawJson | null = null;
-        if (nodeType === NodeType.Sentence) {
-          instance = StoryletSentenceNode.fromJson(nodeData);
-        } else if (nodeType === NodeType.Branch) {
-          instance = StoryletBranchNode.fromJson(nodeData);
-        } else if (nodeType === NodeType.Action) {
-          instance = StoryletActionNode.fromJson(nodeData);
-        } else if (nodeType === NodeType.Root) {
-          instance = StoryletRootNode.fromJson(nodeData);
-        }
-        if (instance) {
-          res[k] = instance;
-        }
+        res[k] = Storylet.fromNodeJson(json.nodes[k]);
         return res;
       },
       {}
@@ -316,6 +278,22 @@ export class Storylet extends Tree<StoryletNodeData> {
 
     instance.id = json.id;
     instance.name = json.name;
+    return instance;
+  }
+
+  public static fromNodeJson(json: RawJson): StoryletNode<StoryletNodeData> {
+    const nodeType = json.data.type;
+    const nodeData = json;
+    let instance: StoryletNode<StoryletNodeData> | null = new StoryletNode();
+    if (nodeType === NodeType.Sentence) {
+      instance = StoryletSentenceNode.fromJson(nodeData);
+    } else if (nodeType === NodeType.Branch) {
+      instance = StoryletBranchNode.fromJson(nodeData);
+    } else if (nodeType === NodeType.Action) {
+      instance = StoryletActionNode.fromJson(nodeData);
+    } else if (nodeType === NodeType.Root) {
+      instance = StoryletRootNode.fromJson(nodeData);
+    }
     return instance;
   }
 }

@@ -241,8 +241,6 @@ export default function ProjectSettings({
     });
   const { nodeSettings, setNodeSettings } = useStoryStore();
 
-  console.log('dse: ', nodeSettings);
-
   const renderNodeSettingsComponent = (nodeKey: string) => {
     return (
       <Stack

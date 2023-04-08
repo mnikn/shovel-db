@@ -197,13 +197,15 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     selectionRef.current = { nodeId };
 
     const nodeView = document.querySelector(`#${nodeId}`) as HTMLElement;
-    nodeView.onblur = () => {
-      if (selectionRef.current?.nodeId === nodeId) {
-        nodeView.focus();
-        nodeView.onblur = null;
-      }
-    };
-    nodeView.focus();
+    if (nodeView) {
+      nodeView.onblur = () => {
+        if (selectionRef.current?.nodeId === nodeId) {
+          nodeView.focus();
+          nodeView.onblur = null;
+        }
+      };
+      nodeView.focus();
+    }
   }, []);
 
   const updateNode = useCallback(
