@@ -109,7 +109,13 @@ function FieldSelect({
           >
             {childOptions.map((item: any) => {
               return (
-                <MenuItem key={item.value} value={item.value}>
+                <MenuItem
+                  key={item.value}
+                  value={item.value}
+                  sx={{
+                    background: 'white',
+                  }}
+                >
                   {get(schema.config, 'groupConfig.child.renderMenuItem')
                     ? get(schema.config, 'groupConfig.child.renderMenuItem')(
                         get(

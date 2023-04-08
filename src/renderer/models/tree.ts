@@ -1,4 +1,4 @@
-import { cloneDeep } from 'lodash';
+import { cloneDeep, maxBy } from 'lodash';
 import { RawJson } from '../../type';
 import { UUID } from '../../utils/uuid';
 
@@ -112,10 +112,11 @@ export class Tree<T> {
       this.links[linkId].data = linkData || this.links[linkId].data;
     }
 
+    const maxOrderNode = maxBy(this.getNodeChildren(fromNodeId), 'order');
     this.nodes[targetNodeId].order =
       this.nodes[targetNodeId].order !== -1
         ? this.nodes[targetNodeId].order
-        : this.getNodeChildren(fromNodeId).length;
+        : (maxOrderNode?.order !== undefined ? maxOrderNode?.order : -1) + 1;
   }
 
   public upsertLinks(fromNodeId: string, targetNodeIds: string[]) {

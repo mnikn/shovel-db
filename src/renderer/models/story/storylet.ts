@@ -52,12 +52,8 @@ export class StoryletRootNode extends StoryletNode<StoryletRootNodeData> {
   static fromJson(json: any): Node<any> {
     const instance = new StoryletRootNode();
     instance.id = json.id;
+    instance.order = json.order || -1;
     instance.data = { ...json.data };
-    // instance.data.extraData = json.data.extraData || {};
-    // instance.data.customNodeId = json.data.customNodeId;
-    // instance.data.beforeJumpProcess = json.data.beforeJumpProcess;
-    // instance.data.afterJumpProcess = json.data.afterJumpProcess;
-    // instance.data.enableCheck = json.data.enableCheck;
     return instance;
   }
 }
@@ -88,6 +84,7 @@ export class StoryletSentenceNode extends StoryletNode<StoryletSentenceNodeData>
   static fromJson(json: RawJson): StoryletSentenceNode {
     const instance = new StoryletSentenceNode();
     instance.id = json.id || instance.id;
+    instance.order = json.order || -1;
     instance.data = { ...json.data };
     return instance;
   }
@@ -126,6 +123,7 @@ export class StoryletBranchNode extends StoryletNode<StoryletBranchNodeData> {
   static fromJson(json: any): StoryletBranchNode {
     const instance = new StoryletBranchNode();
     instance.id = json.id || instance.id;
+    instance.order = json.order || -1;
     instance.data = { ...json.data };
     return instance;
   }
@@ -168,6 +166,7 @@ export class StoryletActionNode extends StoryletNode<StoryletActionNodeData> {
   static fromJson(json: RawJson): StoryletActionNode {
     const instance = new StoryletActionNode();
     instance.id = json.id || instance.id;
+    instance.order = json.order || -1;
     instance.data = { ...json.data };
     return instance;
   }
@@ -226,30 +225,6 @@ export class Storylet extends Tree<StoryletNodeData> {
     data.id = this.id;
     return data;
   }
-
-  // public upsertLink(
-  //   fromNodeId: string,
-  //   targetNodeId: string,
-  //   linkData?: RawJson
-  // ) {
-  //   super.upsertLink(fromNodeId, targetNodeId, linkData);
-  //   this.nodes[targetNodeId].data.order =
-  //     this.nodes[targetNodeId].data.order !== -1
-  //       ? this.nodes[targetNodeId].data.order
-  //       : this.getNodeChildren(fromNodeId).length;
-  // }
-
-  // public unlink(linkId: string) {
-  //   const parent = this.links[linkId].target;
-  //   const unlinkNodeOrder = this.links[linkId].source.data.order;
-  //   super.unlink(linkId);
-  //   this.getNodeChildren(parent.id).forEach((item) => {
-  //     if (item.data.order >= unlinkNodeOrder) {
-  //       item.data.order -= 1;
-  //     }
-  //   });
-  //   delete this.links[linkId];
-  // }
 
   public getNodeChildrenLinks(id: string): NodeLink[] {
     return Object.values(this.links).filter((item) => item.source.id === id);
