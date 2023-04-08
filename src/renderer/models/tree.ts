@@ -56,6 +56,7 @@ export class Node<T> {
   public toJson(): any {
     return {
       id: this.id,
+      order: this.order,
       data: cloneDeep(this.data),
     };
   }
@@ -63,6 +64,7 @@ export class Node<T> {
   static fromJson(json: any): Node<any> {
     const instance = new Node<any>();
     instance.id = json.id;
+    instance.order = json.order;
     instance.data = json.data;
     return instance;
   }

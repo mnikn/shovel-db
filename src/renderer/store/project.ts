@@ -82,7 +82,9 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       eventEmitter.emit(Event.UpdateStoryTranslations, translations);
     };
 
-    load();
+    setTimeout(() => {
+      load();
+    }, 0);
   }, []);
 
   const save = useCallback(

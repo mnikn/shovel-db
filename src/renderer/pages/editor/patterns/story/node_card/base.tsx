@@ -1,4 +1,4 @@
-import { Box, Container } from '@mui/material';
+import { Box, Container, Divider, Stack } from '@mui/material';
 import { clipboard } from 'electron';
 import * as d3 from 'd3';
 import React, { useCallback, useRef, useLayoutEffect, useState } from 'react';
@@ -17,6 +17,7 @@ import { Mode, useEditorStore } from '../../../../../store/editor';
 import { trackState } from '../../../../../store/track';
 import { animation, borderRadius } from '../../../../../theme';
 import EditDialog from '../edit_dialog';
+import Grid2 from '@mui/material/Unstable_Grid2';
 
 export default function BaseNodeCard({
   pos,
@@ -49,6 +50,8 @@ export default function BaseNodeCard({
   const viewRef = useRef<HTMLElement>();
   const [editOpen, setEditOpen] = useState(false);
   const { setMode } = useEditorStore();
+  const [isHover, setIsHover] = useState(false);
+  const [isDraging, setIsDraging] = useState(false);
   if (!currentStorylet) {
     return null;
   }
@@ -171,6 +174,18 @@ export default function BaseNodeCard({
     ]
   );
 
+  const renderPopupItem = (content) => {
+    return (
+      <>
+        <Grid2 xs sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>
+          {content}
+        </Grid2>
+      </>
+    );
+  };
+  const hasPopupContent =
+    !!node.data.enableCheck ||
+    (node instanceof StoryletActionNode && node.data.process);
   return (
     <Box
       id={node.id}
@@ -183,11 +198,14 @@ export default function BaseNodeCard({
         const dragListener = d3
           .drag()
           .on('drag', (d) => {
+            setIsDraging(true);
+            setIsHover(false);
             if (onDrag) {
               onDrag(d);
             }
           })
           .on('end', (d) => {
+            setIsDraging(false);
             if (onDragEnd) {
               onDragEnd(d);
             }
@@ -202,9 +220,10 @@ export default function BaseNodeCard({
         justifyContent: 'center',
         cursor: 'pointer',
         userSelect: 'none',
-        backgroundColor: !isSelecting
-          ? color.normal
-          : color.active || color.hover,
+        backgroundColor:
+          !isSelecting && !isDraging
+            ? color.normal
+            : color.active || color.hover,
         ...animation.autoFade,
         ...borderRadius.larger,
         fontSize: '2rem',
@@ -217,10 +236,20 @@ export default function BaseNodeCard({
         '&:hover': {
           backgroundColor: color.hover,
         },
-        zIndex: isSelecting ? 2 : 1,
+        zIndex: isHover ? 10 : isSelecting ? 2 : 1,
       }}
       onClick={onSelect}
       onKeyDown={onKeyDown}
+      onMouseEnter={() => {
+        if (!isDraging) {
+          setIsHover(true);
+        }
+      }}
+      onMouseLeave={() => {
+        if (!isDraging) {
+          setIsHover(false);
+        }
+      }}
     >
       {children}
       {node.data.customNodeId && (
@@ -238,6 +267,30 @@ export default function BaseNodeCard({
         >
           {node.data.customNodeId}
         </Container>
+      )}
+      {(isSelecting || isHover) && !editOpen && hasPopupContent && (
+        <Stack
+          sx={{
+            p: 2,
+            position: 'absolute',
+            top: '-350px',
+            height: '250px',
+            background: 'white',
+            width: '600px',
+            ...borderRadius.larger,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Grid2 container spacing={4}>
+            {node.data.enableCheck && renderPopupItem('Enable check')}
+            {node instanceof StoryletActionNode &&
+              node.data.process &&
+              renderPopupItem('Process')}
+          </Grid2>
+        </Stack>
       )}
 
       {currentStorylet.getNodeSingleParent(node.id) instanceof
