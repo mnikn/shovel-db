@@ -51,7 +51,7 @@ export default function BaseNodeCard({
   } = useStoryStore();
   const viewRef = useRef<HTMLElement>();
   const [editOpen, setEditOpen] = useState(false);
-  const { setMode } = useEditorStore();
+  const { setMode, mode } = useEditorStore();
   const [isHover, setIsHover] = useState(false);
   const [isDraging, setIsDraging] = useState(false);
   if (!currentStorylet) {
@@ -76,7 +76,7 @@ export default function BaseNodeCard({
 
   const onKeyDown = useCallback(
     (e) => {
-      if (!isSelecting || editOpen) {
+      if (!isSelecting || editOpen || mode === Mode.Popup) {
         return;
       }
 
@@ -173,6 +173,7 @@ export default function BaseNodeCard({
       translations,
       updateTranslateKeyAll,
       getTranslationsForKey,
+      mode,
       setMode,
       trackCurrentState,
     ]

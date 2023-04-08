@@ -1,4 +1,11 @@
-import { Stack, TextField, Box, FormLabel, Divider } from '@mui/material';
+import {
+  Stack,
+  TextField,
+  Box,
+  FormLabel,
+  Divider,
+  Modal,
+} from '@mui/material';
 import { grey } from '@mui/material/colors';
 import React, {
   useEffect,
@@ -19,16 +26,24 @@ function countMatchSubstring(str: string, substr: string): number {
 
 const activeStyle = { backgroundColor: grey[400], cursor: 'pointer' };
 export default function SearchPanel({ close }: { close: () => void }) {
-  const { recentOpenFiles, files, openFile } = useExplorerStore();
+  const { recentOpenFiles, files, openFile, currentOpenFile } =
+    useExplorerStore();
   const [query, setQuery] = useState<string>('');
   const [selectingItemIndex, setSelectingItemIndex] = useState<number>(0);
   const selectingItemIndexRef = useRef(selectingItemIndex);
   selectingItemIndexRef.current = selectingItemIndex;
 
+  const searchResultRef = useRef<File[]>([]);
   const searchResult: File[] = useMemo((): File[] => {
-    const allFiles = files.filter((item) => item.type === 'file') as File[];
+    const allFiles = files.filter(
+      (item) => item.type === 'file' && item.id !== currentOpenFile?.id
+    ) as File[];
     if (!query) {
-      return allFiles;
+      return allFiles.sort((a, b) => {
+        const recentBounsA = recentOpenFiles.lastIndexOf(a.id);
+        const recentBounsB = recentOpenFiles.lastIndexOf(b.id);
+        return recentBounsB - recentBounsA;
+      });
     }
     const allFileInfo = allFiles.map((f) => {
       return { id: f.id, path: getFullPath(f, files)?.replaceAll('.', '/') };
@@ -45,14 +60,17 @@ export default function SearchPanel({ close }: { close: () => void }) {
       .filter((item) => res.includes(item.id))
       .sort((a, b) => {
         const queryArr = query.replaceAll(' ', '/').split('/');
+        const recentBounsA = recentOpenFiles.lastIndexOf(a.id);
+        const recentBounsB = recentOpenFiles.lastIndexOf(b.id);
         return (
-          countMatchSubstring(a.name, queryArr[queryArr.length - 1]) -
-          countMatchSubstring(b.name, queryArr[queryArr.length - 1])
+          countMatchSubstring(b.name, queryArr[queryArr.length - 1]) +
+          recentBounsB -
+          (countMatchSubstring(a.name, queryArr[queryArr.length - 1]) +
+            recentBounsA)
         );
       });
-  }, [recentOpenFiles, files, query]);
+  }, [recentOpenFiles, files, query, currentOpenFile]);
 
-  const searchResultRef = useRef(searchResult);
   searchResultRef.current = searchResult;
 
   useEffect(() => {
@@ -86,8 +104,8 @@ export default function SearchPanel({ close }: { close: () => void }) {
         if (!file) {
           return;
         }
-        openFile(file);
         close();
+        openFile(file);
       }
       if (e.code === 'Escape') {
         e.preventDefault();
@@ -101,73 +119,80 @@ export default function SearchPanel({ close }: { close: () => void }) {
   }, [close]);
 
   return (
-    <Stack
-      sx={{
-        p: 2,
-        position: 'absolute',
-        top: '42px',
-        left: '55%',
-        transform: 'translateX(-50%)',
-        width: '500px',
-        height: '600px',
-        background: 'white',
-        outline: 'none',
-        ...borderRadius.larger,
-      }}
-      spacing={2}
-    >
-      <TextField
-        size='small'
-        value={query}
-        autoFocus
-        onChange={(e) => {
-          setQuery(e.target.value);
+    <Modal open>
+      <Stack
+        sx={{
+          p: 2,
+          position: 'absolute',
+          top: '42px',
+          left: '55%',
+          transform: 'translateX(-50%)',
+          width: '500px',
+          height: '600px',
+          background: 'white',
+          outline: 'none',
+          ...borderRadius.larger,
         }}
-      />
-      <Stack sx={{ flexGrow: 1, overflow: 'auto' }}>
-        {searchResult.map((item, i) => {
-          const itemStyle = i === selectingItemIndex ? activeStyle : {};
-          return (
-            <Stack key={item.id}>
+        spacing={2}
+      >
+        <TextField
+          size='small'
+          value={query}
+          autoFocus
+          onChange={(e) => {
+            setQuery(e.target.value);
+          }}
+        />
+        <Stack sx={{ flexGrow: 1, overflow: 'auto' }}>
+          {searchResult.map((item, i) => {
+            const itemStyle = i === selectingItemIndex ? activeStyle : {};
+            return (
               <Stack
-                direction='row'
-                spacing={2}
-                sx={{
-                  alignItems: 'center',
-                  p: 1,
-                  outline: 'none',
-                  '&:hover': activeStyle,
-                  '&:focus': activeStyle,
-                  ...itemStyle,
-                  ...borderRadius.normal,
-                  ...animation.autoFade,
+                key={item.id}
+                onClick={() => {
+                  openFile(item);
                 }}
               >
-                <Box
+                <Stack
+                  direction='row'
+                  spacing={2}
                   sx={{
-                    pointerEvents: 'none',
-                    userSelect: 'none',
-                    fontWeight: 'bold',
-                    fontSize: '1.05rem',
+                    alignItems: 'center',
+                    p: 1,
+                    outline: 'none',
+                    '&:hover': activeStyle,
+                    '&:focus': activeStyle,
+                    ...itemStyle,
+                    ...borderRadius.normal,
+                    ...animation.autoFade,
                   }}
                 >
-                  {item.name}
-                </Box>
-                <FormLabel
-                  sx={{
-                    fontSize: '0.75rem',
-                    pointerEvents: 'none',
-                    userSelect: 'none',
-                  }}
-                >
-                  {getFullPath(item, files)?.replaceAll('.', '/')}
-                </FormLabel>
+                  <Box
+                    sx={{
+                      pointerEvents: 'none',
+                      userSelect: 'none',
+                      fontWeight: 'bold',
+                      fontSize: '1.05rem',
+                    }}
+                  >
+                    {item.name}
+                  </Box>
+                  <FormLabel
+                    sx={{
+                      fontSize: '0.75rem',
+                      pointerEvents: 'none',
+                      userSelect: 'none',
+                    }}
+                  >
+                    {getFullPath(item, files)?.replaceAll('.', '/')}
+                  </FormLabel>
+                </Stack>
+                <Divider flexItem />
               </Stack>
-              <Divider flexItem />
-            </Stack>
-          );
-        })}
+            );
+          })}
+        </Stack>
       </Stack>
-    </Stack>
+    </Modal>
   );
 }

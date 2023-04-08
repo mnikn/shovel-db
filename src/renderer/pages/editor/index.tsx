@@ -1,5 +1,5 @@
 import { Box, Stack, CircularProgress, FormLabel } from '@mui/material';
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { useExplorerStore, useStoryStore } from '../../store';
 import { Mode, useEditorStore } from '../../store/editor';
 import { useProjectStore } from '../../store/project';
@@ -12,7 +12,7 @@ import SearchPanel from './components/search_panel';
 
 export default function Editor() {
   const { undo, redo } = useTrackStore();
-  const { mode } = useEditorStore();
+  const { mode, setMode } = useEditorStore();
 
   const {
     story,
@@ -24,9 +24,17 @@ export default function Editor() {
   const { save } = useProjectStore();
   const [saving, setSaving] = useState(false);
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
+  const searchPanelOpenRef = useRef(searchPanelOpen);
+  searchPanelOpenRef.current = searchPanelOpen;
 
   useEffect(() => {
     const handle = async (e) => {
+      if (e.code === 'KeyP' && e.ctrlKey) {
+        e.preventDefault();
+        setMode(searchPanelOpenRef.current ? Mode.Normal : Mode.Popup);
+        setSearchPanelOpen((prev) => !prev);
+      }
+
       if (mode !== Mode.Normal) {
         return;
       }
@@ -51,11 +59,6 @@ export default function Editor() {
         setTimeout(() => {
           setSaving(false);
         }, 500);
-      }
-
-      if (e.code === 'KeyP' && e.ctrlKey) {
-        e.preventDefault();
-        setSearchPanelOpen((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handle);
@@ -109,6 +112,7 @@ export default function Editor() {
           <SearchPanel
             close={() => {
               setSearchPanelOpen(false);
+              setMode(Mode.Normal);
             }}
           />
         )}
