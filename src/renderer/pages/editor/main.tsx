@@ -35,13 +35,15 @@ export default function Main({ children }: { children?: any }) {
       {getFullPath(currentOpenFile, files)?.split('.')?.[0] === 'story' && (
         <Story />
       )}
-      <ProjectSettings
-        open={projectSettingsOpen}
-        close={() => {
-          setProjectSettingsOpen(false);
-          setMode(Mode.Normal);
-        }}
-      />
+      {projectSettingsOpen && (
+        <ProjectSettings
+          open={projectSettingsOpen}
+          close={() => {
+            setProjectSettingsOpen(false);
+            setMode(Mode.Normal);
+          }}
+        />
+      )}
       {children}
     </Box>
   );

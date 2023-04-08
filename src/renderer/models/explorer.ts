@@ -24,7 +24,7 @@ export function getFullPath(
   if (item === null) {
     return null;
   }
-  if (item.parentId === null) {
+  if (!item.parentId) {
     return item.name;
   }
 

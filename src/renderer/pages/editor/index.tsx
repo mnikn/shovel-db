@@ -8,6 +8,7 @@ import { grey } from '@mui/material/colors';
 import { borderRadius } from '../../theme';
 import Explorer from './components/explorer';
 import Main from './main';
+import SearchPanel from './components/search_panel';
 
 export default function Editor() {
   const { undo, redo } = useTrackStore();
@@ -22,6 +23,7 @@ export default function Editor() {
   const { files } = useExplorerStore();
   const { save } = useProjectStore();
   const [saving, setSaving] = useState(false);
+  const [searchPanelOpen, setSearchPanelOpen] = useState(false);
 
   useEffect(() => {
     const handle = async (e) => {
@@ -50,6 +52,11 @@ export default function Editor() {
           setSaving(false);
         }, 500);
       }
+
+      if (e.code === 'KeyP' && e.ctrlKey) {
+        e.preventDefault();
+        setSearchPanelOpen((prev) => !prev);
+      }
     };
     window.addEventListener('keydown', handle);
     return () => {
@@ -73,29 +80,38 @@ export default function Editor() {
         <Explorer />
         <Main>
           {saving ? (
-            <Stack
-              direction='row'
-              spacing={2}
-              sx={{
-                backgroundColor: grey[50],
-                position: 'absolute',
-                top: '24px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '150px',
-                height: '50px',
-                alignItems: 'center',
-                justifyContent: 'center',
-                ...borderRadius.larger,
-              }}
-            >
-              <CircularProgress
-                sx={{ height: '24px!important', width: '24px!important' }}
-              />
-              <FormLabel>Saving...</FormLabel>
-            </Stack>
+            <>
+              <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                  backgroundColor: grey[50],
+                  position: 'absolute',
+                  top: '24px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '150px',
+                  height: '50px',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  ...borderRadius.larger,
+                }}
+              >
+                <CircularProgress
+                  sx={{ height: '24px!important', width: '24px!important' }}
+                />
+                <FormLabel>Saving...</FormLabel>
+              </Stack>
+            </>
           ) : null}
         </Main>
+        {searchPanelOpen && (
+          <SearchPanel
+            close={() => {
+              setSearchPanelOpen(false);
+            }}
+          />
+        )}
       </Stack>
     </Box>
   );

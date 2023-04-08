@@ -28,6 +28,7 @@ export function getDeepChildren(currentFolder: any, files: any[]): any[] {
 
 export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
   const [currentOpenFile, setCurrentOpenFile] = useState<File | null>(null);
+  const [recentOpenFiles, setRecentOpenFiles] = useState<string[]>([]);
   const [files, setFiles] = useState<Array<File | Folder>>([]);
   const filesRef = useRef<Array<File | Folder>>(files);
   filesRef.current = files;
@@ -63,6 +64,14 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
 
   const openFile = useCallback((file: File | null) => {
     setCurrentOpenFile(file);
+    if (file) {
+      setRecentOpenFiles((prev) => {
+        let newVal = [...prev];
+        newVal.push(file.id);
+        newVal = newVal.slice(-10);
+        return newVal;
+      });
+    }
     const rootParent = getRootParent(file?.parentId || '', filesRef.current);
     if (rootParent.id === 'story') {
       eventEmitter.emit(Event.OpenStorylet, file?.id);
@@ -185,6 +194,7 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
   return {
     files,
     currentOpenFile,
+    recentOpenFiles,
     openFile,
     newFile,
     newFolder,
