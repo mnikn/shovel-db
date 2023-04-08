@@ -6,11 +6,12 @@ import FolderIcon from '@mui/icons-material/Folder';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { Box, Container, Stack, TextField } from '@mui/material';
 import * as d3 from 'd3';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   File,
   Folder,
   getChildren,
+  getPathParents,
   getRootParent,
 } from '../../../models/explorer';
 import { useExplorerStore } from '../../../store';
@@ -33,6 +34,15 @@ export default function Explorer() {
     newFolder,
     moveFile,
   } = useExplorerStore();
+
+  useEffect(() => {
+    if (!currentOpenFile) {
+      return;
+    }
+
+    const parents = getPathParents(currentOpenFile.id, files);
+    setUncollapsedFolders(parents);
+  }, [currentOpenFile, files]);
 
   const fileContextMenu = [
     {

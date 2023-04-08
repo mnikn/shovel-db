@@ -20,7 +20,7 @@ export default function Editor() {
     translations: storyTranslations,
     storyActors,
   } = useStoryStore();
-  const { files } = useExplorerStore();
+  const { files, recentOpenFiles } = useExplorerStore();
   const { save } = useProjectStore();
   const [saving, setSaving] = useState(false);
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
@@ -54,6 +54,7 @@ export default function Editor() {
           storyTranslations,
           storyNodeSettings: nodeSettings,
           files,
+          recentOpenFiles,
           staticData: {},
         });
         setTimeout(() => {
@@ -70,6 +71,7 @@ export default function Editor() {
     redo,
     mode,
     save,
+    recentOpenFiles,
     story,
     storyActors,
     nodeSettings,

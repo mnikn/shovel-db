@@ -48,6 +48,10 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       const settingsData = JSON.parse(res);
       setProjectSettings({ i18n: settingsData.i18n });
       eventEmitter.emit(Event.UpdateExplorer, settingsData.files);
+      eventEmitter.emit(
+        Event.UpdateRecentOpenFiles,
+        settingsData.recentOpenFiles
+      );
 
       const storyPath = join(cacheProjectPath, 'story');
       const storyFilePath = join(storyPath, 'story.json');
@@ -80,6 +84,15 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       }
       // console.log('dsc: ', translations);
       eventEmitter.emit(Event.UpdateStoryTranslations, translations);
+
+      setTimeout(() => {
+        const lastRecentOpenFile =
+          settingsData.recentOpenFiles[settingsData.recentOpenFiles.length - 1];
+        if (lastRecentOpenFile) {
+          console.log('dsd: ', lastRecentOpenFile);
+          eventEmitter.emit(Event.OpenFile, lastRecentOpenFile);
+        }
+      }, 0);
     };
 
     setTimeout(() => {
@@ -93,6 +106,7 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       storyActors,
       storyTranslations,
       storyNodeSettings,
+      recentOpenFiles,
       files,
       staticData,
     }: any) => {
@@ -119,7 +133,11 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
 
       await ipcSend(SAVE_FILE, {
         filePath: projectFilePath,
-        data: JSON.stringify({ files, ...projectSettings }, null, 2),
+        data: JSON.stringify(
+          { files, recentOpenFiles, ...projectSettings },
+          null,
+          2
+        ),
       });
 
       const storyFilePath = join(storyPath, 'story.json');

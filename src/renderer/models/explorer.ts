@@ -79,3 +79,19 @@ export function getRootParent(id: string, files: Array<File | Folder>): any {
   }
   return getRootParent(item.parentId, files);
 }
+
+export function getPathParents(
+  id: string,
+  files: Array<File | Folder>,
+  res: string[] = []
+): string[] {
+  const item = files.find((d) => d.id === id);
+  if (!item) {
+    return res;
+  }
+
+  if (!item.parentId) {
+    return [...res, item.id];
+  }
+  return getPathParents(item.parentId, files, [...res, item.id]);
+}

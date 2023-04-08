@@ -16,6 +16,8 @@ export enum Event {
   UpdateStoryTranslations = 'updateStoryTranslations',
   UpdateStoryletName = 'updateStoryletName',
   UpdateExplorer = 'updateExplorer',
+  UpdateRecentOpenFiles = 'updateRecentOpenFiles',
+  OpenFile = 'openFile',
 }
 
 export const eventEmitter = new EventEmitter();

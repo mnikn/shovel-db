@@ -56,9 +56,24 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
     const updateExploere = (files: Array<File | Folder>) => {
       setFiles(files);
     };
+    const startOpenFile = (fileId: string) => {
+      const data = filesRef.current.find((item) => item.id === fileId) as File;
+      if (!data) {
+        return;
+      }
+      setCurrentOpenFile(data);
+      const rootParent = getRootParent(data?.parentId || '', filesRef.current);
+      if (rootParent.id === 'story') {
+        eventEmitter.emit(Event.OpenStorylet, data?.id);
+      }
+    };
     eventEmitter.on(Event.UpdateExplorer, updateExploere);
+    eventEmitter.on(Event.UpdateRecentOpenFiles, setRecentOpenFiles);
+    eventEmitter.on(Event.OpenFile, startOpenFile);
     return () => {
       eventEmitter.off(Event.UpdateExplorer, updateExploere);
+      eventEmitter.off(Event.UpdateRecentOpenFiles, setRecentOpenFiles);
+      eventEmitter.off(Event.OpenFile, startOpenFile);
     };
   }, []);
 
