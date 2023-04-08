@@ -17,15 +17,6 @@ export default function Explorer() {
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string | null>(null);
 
-  const [dragingItem, setDragingItem] = useState<{
-    pos: { x: number; y: number };
-    target?: File | Folder;
-    data: File | Folder;
-  } | null>(null);
-
-  const dragingItemRef = useRef(dragingItem);
-  dragingItemRef.current = dragingItem;
-
   const {
     currentOpenFile,
     openFile,
@@ -58,33 +49,6 @@ export default function Explorer() {
       },
     },
   ];
-
-  const onDragEnd = () => {
-    if (dragingItemRef.current?.target) {
-      moveFile(
-        dragingItemRef.current?.data.id,
-        dragingItemRef.current?.target.id
-      );
-    }
-    setDragingItem(null);
-  };
-
-  const onDrag = (d: any, data: File | Folder) => {
-    setDragingItem((prev) => {
-      if (!prev) {
-        return {
-          pos: { x: d.x + 20, y: d.y },
-          data,
-          target: undefined,
-        };
-      }
-      return {
-        ...prev,
-        pos: { x: d.x + 20, y: d.y },
-        data,
-      };
-    });
-  };
 
   const dragListen = (dom, data) => {
     const onDragStart = (event) => {
@@ -130,16 +94,18 @@ export default function Explorer() {
             sx={{
               p: 0.5,
               position: 'relative',
-              transition: 'all 0.2s ease',
-              '&:hover': !dragingItem
+              ...borderRadius.large,
+              ...animation.autoFade,
+              '&:hover': !editingItem
                 ? {
                     cursor: 'pointer',
-                    ...borderRadius.large,
-                    ...animation.autoFade,
                     backgroundColor: 'rgb(107 114 128)',
                     color: 'common.white',
                   }
                 : undefined,
+              backgroundColor:
+                editingItem === data.id ? 'rgb(107 114 128)' : 'inherit',
+              color: editingItem === data.id ? 'common.white' : 'common.black',
               userSelect: 'none',
               /* backgroundColor: !isOver && canDrop ? grey[500] : "inherit", */
             }}
@@ -160,6 +126,9 @@ export default function Explorer() {
               dragListen(dom as any, data);
             }}
             onClick={() => {
+              if (editingItem) {
+                return;
+              }
               if (uncollapsedFolders.find((item) => item === data.id)) {
                 setUncollapsedFolders(
                   uncollapsedFolders.filter((f) => f !== data.id)
@@ -233,7 +202,7 @@ export default function Explorer() {
                   },
                 }}
                 value={editingName}
-                // autoFocus
+                autoFocus
                 onChange={(e) => {
                   setEditingName(e.target.value);
                 }}
@@ -276,10 +245,14 @@ export default function Explorer() {
           p: 0.5,
           position: 'relative',
           backgroundColor:
-            currentOpenFile?.id === data.id ? 'rgb(107 114 128)' : 'inherit',
+            currentOpenFile?.id === data.id || editingItem === data.id
+              ? 'rgb(107 114 128)'
+              : 'inherit',
           color:
-            currentOpenFile?.id === data.id ? 'common.white' : 'common.black',
-          '&:hover': !dragingItem
+            currentOpenFile?.id === data.id || editingItem === data.id
+              ? 'common.white'
+              : 'common.black',
+          '&:hover': !editingItem
             ? {
                 cursor: 'pointer',
                 backgroundColor: 'rgb(107 114 128)',
@@ -291,6 +264,9 @@ export default function Explorer() {
           userSelect: 'none',
         }}
         onClick={() => {
+          if (editingItem) {
+            return;
+          }
           openFile(data);
         }}
         draggable={!editingItem}
@@ -379,25 +355,6 @@ export default function Explorer() {
             return <TreeItem key={file.id} data={file} />;
           })}
       </Stack>
-      {dragingItem && (
-        <Container
-          sx={{
-            position: 'absolute',
-            p: 1,
-            width: 'auto',
-            ...borderRadius.normal,
-            backgroundColor: 'rgb(107 114 128)',
-            color: 'common.white',
-            left: dragingItem?.pos.x,
-            top: dragingItem?.pos.y,
-            userSelect: 'none',
-            pointerEvents: 'none',
-            zIndex: 5,
-          }}
-        >
-          {dragingItem?.data.name}
-        </Container>
-      )}
     </Box>
   );
 }
