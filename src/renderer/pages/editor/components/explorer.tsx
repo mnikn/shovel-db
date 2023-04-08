@@ -7,10 +7,16 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { Box, Container, Stack, TextField } from '@mui/material';
 import * as d3 from 'd3';
 import React, { useRef, useState } from 'react';
-import { File, Folder, getChildren } from '../../../models/explorer';
+import {
+  File,
+  Folder,
+  getChildren,
+  getRootParent,
+} from '../../../models/explorer';
 import { useExplorerStore } from '../../../store';
 import { animation, borderRadius } from '../../../theme';
 
+let cacheDragingData: File | Folder | null = null;
 export default function Explorer() {
   const [uncollapsedFolders, setUncollapsedFolders] = useState<string[]>([]);
 
@@ -50,35 +56,36 @@ export default function Explorer() {
     },
   ];
 
-  const dragListen = (dom, data) => {
-    const onDragStart = (event) => {
-      console.log('dsw: ', event, data);
-      const dragData = {
-        ...data,
-        parent: data.parent?.id || null,
-      };
-      event.dataTransfer.setData('application/json', JSON.stringify(dragData));
+  const onDragStart = (event, data) => {
+    const dragData = {
+      ...data,
     };
+    event.dataTransfer.setData('application/json', JSON.stringify(dragData));
+    cacheDragingData = dragData;
+  };
 
-    const onDragOver = (event) => {
-      event.preventDefault();
-      /* event.dataTransfer.setData('application/json', data); */
-    };
+  const onDragOver = (event, data) => {
+    const dragingData = cacheDragingData;
+    if (!dragingData) {
+      return;
+    }
+    if (
+      data.id === dragingData.id ||
+      (!data.parentId && getRootParent(dragingData.id, files).id !== data.id)
+    ) {
+      return;
+    }
+    event.preventDefault();
+  };
 
-    const onDragDrop = (event) => {
-      event.preventDefault();
-      const dragData = JSON.parse(
-        event.dataTransfer.getData('application/json')
-      );
-      const targetData = data;
-      moveFile(dragData.id, targetData.id);
-    };
-
-    dom.addEventListener('dragstart', onDragStart);
-
-    dom.addEventListener('dragover', onDragOver);
-
-    dom.addEventListener('drop', onDragDrop);
+  const onDragDrop = (event, data) => {
+    event.preventDefault();
+    const dragingData = JSON.parse(
+      event.dataTransfer.getData('application/json')
+    );
+    const targetData = data;
+    moveFile(dragingData.id, targetData.id);
+    cacheDragingData = null;
   };
 
   const TreeItem = ({ data }: { data: File | Folder }) => {
@@ -109,21 +116,14 @@ export default function Explorer() {
               userSelect: 'none',
               /* backgroundColor: !isOver && canDrop ? grey[500] : "inherit", */
             }}
-            ref={(dom) => {
-              if (!dom) {
-                return;
-              }
-
-              {
-                /* const dragListener = d3
-                    .drag()
-                    .on('drag', (d) => {
-                    onDrag(d, data);
-                    })
-                    .on('end', onDragEnd);
-                    dragListener(d3.select(dom as any)); */
-              }
-              dragListen(dom as any, data);
+            onDragStart={(event) => {
+              onDragStart(event, data);
+            }}
+            onDrop={(event) => {
+              onDragDrop(event, data);
+            }}
+            onDragOver={(event) => {
+              onDragOver(event, data);
             }}
             onClick={() => {
               if (editingItem) {
@@ -287,19 +287,14 @@ export default function Explorer() {
           });
           menu.popup({ window: remote.getCurrentWindow() });
         }}
-        ref={(dom) => {
-          if (!dom) {
-            return;
-          }
-
-          /* const dragListener = d3
-           *   .drag()
-           *   .on('drag', (d) => {
-           *     onDrag(d, data);
-           *   })
-           *   .on('end', onDragEnd);
-           *   dragListener(d3.select(dom as any)); */
-          dragListen(dom as any, data);
+        onDragStart={(event) => {
+          onDragStart(event, data);
+        }}
+        onDrop={(event) => {
+          onDragDrop(event, data);
+        }}
+        onDragOver={(event) => {
+          onDragOver(event, data);
         }}
       >
         <ArticleIcon />
