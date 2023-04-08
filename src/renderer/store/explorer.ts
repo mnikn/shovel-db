@@ -105,7 +105,7 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
       maxBy(
         prev.filter((item) => item.parentId === parentId),
         'order'
-      ) || 0 + 1;
+      )?.order || 0 + 1;
     const res = prev.concat(val);
     setFiles(res);
     const rootFolder = getRootParent(parentId, res);
@@ -127,7 +127,7 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
         maxBy(
           prev.filter((item) => item.parentId === parentId),
           'order'
-        ) || 0 + 1;
+        )?.order || 0 + 1;
       return prev.concat(val);
     });
   }, []);
@@ -154,6 +154,7 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
   };
 
   const moveFile = useCallback((sourceId: string, targetId: string) => {
+    console.log('dsds: ', sourceId, targetId);
     setFiles((files) => {
       const newVal = [...files];
       const sourceItem = newVal.find((item) => item.id === sourceId);
@@ -167,7 +168,8 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
           maxBy(
             newVal.filter((item) => item.parentId === targetId),
             'order'
-          ) + 1;
+          )?.order || 0 + 1;
+        // targetItem.children.push(sourceItem.id);
       } else if (targetItem.type === 'file') {
         const parentId = targetItem.parentId;
         sourceItem.parentId = parentId;

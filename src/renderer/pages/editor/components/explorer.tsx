@@ -86,6 +86,37 @@ export default function Explorer() {
     });
   };
 
+  const dragListen = (dom, data) => {
+    const onDragStart = (event) => {
+      console.log('dsw: ', event, data);
+      const dragData = {
+        ...data,
+        parent: data.parent?.id || null,
+      };
+      event.dataTransfer.setData('application/json', JSON.stringify(dragData));
+    };
+
+    const onDragOver = (event) => {
+      event.preventDefault();
+      /* event.dataTransfer.setData('application/json', data); */
+    };
+
+    const onDragDrop = (event) => {
+      event.preventDefault();
+      const dragData = JSON.parse(
+        event.dataTransfer.getData('application/json')
+      );
+      const targetData = data;
+      moveFile(dragData.id, targetData.id);
+    };
+
+    dom.addEventListener('dragstart', onDragStart);
+
+    dom.addEventListener('dragover', onDragOver);
+
+    dom.addEventListener('drop', onDragDrop);
+  };
+
   const rederDragingComponent = (data) =>
     data.parent &&
     data.id !== dragingItem?.data.id && (
@@ -161,13 +192,16 @@ export default function Explorer() {
                 return;
               }
 
-              const dragListener = d3
-                .drag()
-                .on('drag', (d) => {
-                  onDrag(d, data);
-                })
-                .on('end', onDragEnd);
-              dragListener(d3.select(dom as any));
+              {
+                /* const dragListener = d3
+                    .drag()
+                    .on('drag', (d) => {
+                    onDrag(d, data);
+                    })
+                    .on('end', onDragEnd);
+                    dragListener(d3.select(dom as any)); */
+              }
+              dragListen(dom as any, data);
             }}
             onClick={() => {
               if (uncollapsedFolders.find((item) => item === data.id)) {
@@ -304,6 +338,7 @@ export default function Explorer() {
         onClick={() => {
           openFile(data);
         }}
+        draggable={!editingItem}
         onDoubleClick={() => {
           setEditingName(data.name);
           setEditingItem(data.id);
@@ -326,13 +361,14 @@ export default function Explorer() {
             return;
           }
 
-          const dragListener = d3
-            .drag()
-            .on('drag', (d) => {
-              onDrag(d, data);
-            })
-            .on('end', onDragEnd);
-          dragListener(d3.select(dom as any));
+          /* const dragListener = d3
+           *   .drag()
+           *   .on('drag', (d) => {
+           *     onDrag(d, data);
+           *   })
+           *   .on('end', onDragEnd);
+           *   dragListener(d3.select(dom as any)); */
+          dragListen(dom as any, data);
         }}
       >
         {dragingItem && rederDragingComponent(data)}
