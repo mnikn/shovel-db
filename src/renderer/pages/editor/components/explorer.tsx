@@ -7,7 +7,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { Box, Container, Stack, TextField } from '@mui/material';
 import * as d3 from 'd3';
 import React, { useRef, useState } from 'react';
-import { File, Folder } from '../../../models/explorer';
+import { File, Folder, getChildren } from '../../../models/explorer';
 import { useExplorerStore } from '../../../store';
 import { animation, borderRadius } from '../../../theme';
 
@@ -29,7 +29,7 @@ export default function Explorer() {
   const {
     currentOpenFile,
     openFile,
-    fileTree,
+    files,
     updateItem,
     deleteItem,
     newFile,
@@ -117,53 +117,9 @@ export default function Explorer() {
     dom.addEventListener('drop', onDragDrop);
   };
 
-  const rederDragingComponent = (data) =>
-    data.parent &&
-    data.id !== dragingItem?.data.id && (
-      <Box
-        sx={{
-          left: '-16px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          width: '1.5rem',
-          height: '1.5rem',
-          opacity: 0.8,
-          position: 'absolute',
-          cursor: 'pointer',
-          backgroundColor: '#ec4899',
-          ...borderRadius.round,
-          '&:hover': {
-            opacity: 1,
-          },
-          zIndex: 3,
-        }}
-        onMouseEnter={() => {
-          setDragingItem((prev) => {
-            if (!prev) {
-              return prev;
-            }
-            return { ...prev, target: data };
-          });
-        }}
-        onMouseLeave={() => {
-          setDragingItem((prev) => {
-            if (!prev) {
-              return prev;
-            }
-            return { ...prev, target: undefined };
-          });
-        }}
-      />
-    );
-
-  const TreeItem = ({
-    data,
-    index,
-  }: {
-    data: File | Folder;
-    index: number;
-  }) => {
-    if (data instanceof Folder) {
+  const TreeItem = ({ data }: { data: File | Folder }) => {
+    const children = getChildren(data.id, files);
+    if (data.type === 'folder') {
       const isCollapsed = !uncollapsedFolders.find((item) => item === data.id);
       return (
         <>
@@ -254,7 +210,6 @@ export default function Explorer() {
               menu.popup({ window: remote.getCurrentWindow() });
             }}
           >
-            {dragingItem && rederDragingComponent(data)}
             <Stack direction='row' spacing={0}>
               {!isCollapsed ? (
                 <>
@@ -301,10 +256,10 @@ export default function Explorer() {
           </Stack>
           {!isCollapsed && (
             <Stack sx={{ pl: 4 }} spacing={1}>
-              {data.children
+              {children
                 .sort((a, b) => a.order - b.order)
                 .map((item, i) => {
-                  return <TreeItem key={item.id} data={item} index={i} />;
+                  return <TreeItem key={item.id} data={item} />;
                 })}
             </Stack>
           )}
@@ -371,7 +326,6 @@ export default function Explorer() {
           dragListen(dom as any, data);
         }}
       >
-        {dragingItem && rederDragingComponent(data)}
         <ArticleIcon />
         {editingItem === data.id && (
           <TextField
@@ -418,10 +372,11 @@ export default function Explorer() {
       }}
     >
       <Stack spacing={1}>
-        {fileTree
+        {files
+          .filter((item) => !item.parentId)
           .sort((a, b) => a.order - b.order)
           .map((file, i) => {
-            return <TreeItem key={file.id} data={file} index={i} />;
+            return <TreeItem key={file.id} data={file} />;
           })}
       </Stack>
       {dragingItem && (

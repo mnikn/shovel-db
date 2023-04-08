@@ -3,7 +3,14 @@ import { maxBy } from 'lodash';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Event, eventEmitter } from '.';
 import { RawJson } from '../../type';
-import { buildFileTree, File, Folder } from '../models/explorer';
+import {
+  createFile,
+  createFolder,
+  File,
+  Folder,
+  getChildren,
+  getRootParent,
+} from '../models/explorer';
 
 export function getDeepChildren(currentFolder: any, files: any[]): any[] {
   let res: any[] = [];
@@ -19,23 +26,11 @@ export function getDeepChildren(currentFolder: any, files: any[]): any[] {
   return res;
 }
 
-export function getRootParent(parentId: string, files: any[]): any {
-  const item = files.find((d) => d.id === parentId);
-  if (!item.parentId) {
-    return item;
-  }
-  return getRootParent(item.parentId, files);
-}
-
 export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
   const [currentOpenFile, setCurrentOpenFile] = useState<File | null>(null);
-  const [files, setFiles] = useState<RawJson[]>([]);
-  const filesRef = useRef<RawJson[]>(files);
+  const [files, setFiles] = useState<Array<File | Folder>>([]);
+  const filesRef = useRef<Array<File | Folder>>(files);
   filesRef.current = files;
-
-  const fileTree = useMemo(() => {
-    return buildFileTree(Object.values(files));
-  }, [files]);
 
   useEffect(() => {
     setFiles([
@@ -68,7 +63,7 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
 
   const openFile = useCallback((file: File | null) => {
     setCurrentOpenFile(file);
-    const rootParent = getRootParent(file?.parent?.id || '', filesRef.current);
+    const rootParent = getRootParent(file?.parentId || '', filesRef.current);
     if (rootParent.id === 'story') {
       eventEmitter.emit(Event.OpenStorylet, file?.id);
     }
@@ -94,7 +89,7 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
 
   const newFile = useCallback((parentId: string) => {
     const prev = filesRef.current;
-    const val = new File().toJson();
+    const val = createFile();
     val.name = 'Untitled';
     const parent = prev.find((item) => item.id === parentId);
     if (!parent) {
@@ -116,7 +111,7 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
 
   const newFolder = useCallback((parentId: string) => {
     setFiles((prev) => {
-      const val = new Folder().toJson();
+      const val = createFolder();
       val.name = 'Untitled';
       const parent = prev.find((item) => item.id === parentId);
       if (!parent) {
@@ -144,7 +139,7 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
     }
 
     if (file.type === 'folder') {
-      const children = getDeepChildren(file, files).map((item) => item.id);
+      const children = getChildren(file.id, files).map((item) => item.id);
       setFiles(
         files.filter((item) => !children.includes(item.id) && item.id !== id)
       );
@@ -189,7 +184,6 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
 
   return {
     files,
-    fileTree,
     currentOpenFile,
     openFile,
     newFile,
