@@ -3,6 +3,7 @@ import * as url from 'url';
 import fs from 'fs';
 import {
   DELETE_FILE,
+  OPEN_PROJECT,
   READ_FILE,
   SAVE_FILE,
   SHOW_PROJET_SETTINGS,
@@ -68,9 +69,12 @@ const menuTemplate: any = [
       },
       {
         label: 'Open Project...',
-        // click: () => {
-        //   console.log('Save File Clicked');
-        // },
+        click: () => {
+          if (!mainWindow) {
+            return;
+          }
+          mainWindow.webContents.send(OPEN_PROJECT);
+        },
       },
       {
         type: 'separator',
@@ -78,7 +82,6 @@ const menuTemplate: any = [
       {
         label: 'Project settings',
         click: () => {
-          console.log('dd');
           if (!mainWindow) {
             return;
           }

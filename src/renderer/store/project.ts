@@ -10,7 +10,7 @@ import { dialog } from '@electron/remote';
 import { LANG } from '../../constants/i18n';
 import { PROJECT_ROOT_PATH } from '../../constants/storage';
 import { ipcRenderer } from 'electron';
-import { READ_FILE, SAVE_FILE } from '../../constants/events';
+import { OPEN_PROJECT, READ_FILE, SAVE_FILE } from '../../constants/events';
 import { join } from 'path';
 import { ipcSend } from '../electron/ipc';
 import csv from 'csvtojson';
@@ -178,6 +178,25 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
     },
     [projectPath, projectSettings]
   );
+
+  useEffect(() => {
+    const openProject = () => {
+      const result = dialog.showOpenDialogSync({
+        title: 'Select project path',
+        properties: ['openDirectory', 'createDirectory'],
+      });
+
+      if (result) {
+        setProjectPath(result[0]);
+        localStorage.setItem(PROJECT_ROOT_PATH, result[0]);
+        window.location.reload();
+      }
+    };
+    ipcRenderer.on(OPEN_PROJECT, openProject);
+    return () => {
+      ipcRenderer.off(OPEN_PROJECT, openProject);
+    };
+  }, []);
 
   return {
     projectSettings,
