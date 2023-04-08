@@ -108,6 +108,7 @@ export default function Explorer() {
             key={data.id}
             direction='row'
             spacing={0.5}
+            draggable={!editingItem}
             sx={{
               p: 0.5,
               position: 'relative',
