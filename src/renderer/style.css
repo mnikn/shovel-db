@@ -1,3 +1,11 @@
 .MuiOutlinedInput-root {
   background: white;
 }
+
+.monaco-editor {
+  border-radius: 24px;
+}
+
+.monaco-editor > div {
+  border-radius: 24px;
+}
