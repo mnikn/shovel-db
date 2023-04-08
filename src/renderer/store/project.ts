@@ -16,6 +16,7 @@ import { ipcSend } from '../electron/ipc';
 import csv from 'csvtojson';
 import { parse as jsonParseCsv } from 'json2csv';
 import { Event, eventEmitter } from '.';
+import { getRootParent } from '../models/explorer';
 
 interface ProjectSettings {
   i18n: LANG[];
@@ -44,7 +45,6 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
     const load = async () => {
       const projectFilePath = join(cacheProjectPath, 'project.json');
       const res = await ipcSend(READ_FILE, { filePath: projectFilePath });
-      // console.log('rr: ', res);
       const settingsData = JSON.parse(res);
       setProjectSettings({ i18n: settingsData.i18n });
       eventEmitter.emit(Event.UpdateExplorer, settingsData.files);
@@ -58,8 +58,8 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       const storyRes = JSON.parse(
         await ipcSend(READ_FILE, { filePath: storyFilePath })
       );
-      // console.log('ewds: ', storyRes);
       eventEmitter.emit(Event.UpdateStory, storyRes.story);
+      eventEmitter.emit(Event.UpdateStoryFiles, storyRes.files);
       eventEmitter.emit(Event.UpdateStoryActors, storyRes.actors);
       eventEmitter.emit(Event.UpdateStoryNodeSettings, storyRes.nodeSettings);
 
@@ -82,7 +82,6 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
           });
         });
       }
-      // console.log('dsc: ', translations);
       eventEmitter.emit(Event.UpdateStoryTranslations, translations);
 
       setTimeout(() => {
@@ -150,6 +149,9 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
         data: JSON.stringify(
           {
             story: storeStory,
+            files: files.filter(
+              (item) => getRootParent(item.id, files).id === 'story'
+            ),
             actors: storyActors,
             nodeSettings: storyNodeSettings,
           },

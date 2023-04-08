@@ -7,7 +7,7 @@ import { ipcRenderer } from 'electron';
 import { SHOW_PROJET_SETTINGS } from '../../../constants/events';
 import ProjectSettings from './components/project_settings';
 import { Mode, useEditorStore } from '../../store/editor';
-import { getFullPath } from '../../models/explorer';
+import { getRootParent } from '../../models/explorer';
 
 export default function Main({ children }: { children?: any }) {
   const { currentOpenFile, files } = useExplorerStore();
@@ -30,9 +30,9 @@ export default function Main({ children }: { children?: any }) {
     <Box
       sx={{ flexGrow: 1, background: 'rgb(75 85 99)', position: 'relative' }}
     >
-      {getFullPath(currentOpenFile, files)?.split('.')?.[0] ===
+      {getRootParent(currentOpenFile?.id || '', files)?.id ===
         'static-data' && <StaticData />}
-      {getFullPath(currentOpenFile, files)?.split('.')?.[0] === 'story' && (
+      {getRootParent(currentOpenFile?.id || '', files)?.id === 'story' && (
         <Story />
       )}
       {projectSettingsOpen && (
