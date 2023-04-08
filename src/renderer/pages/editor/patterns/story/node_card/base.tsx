@@ -3,6 +3,7 @@ import { clipboard } from 'electron';
 import * as d3 from 'd3';
 import React, { useCallback, useRef, useLayoutEffect, useState } from 'react';
 import { grey } from '@mui/material/colors';
+import MonacoEditor from 'react-monaco-editor/lib/editor';
 import {
   StoryletBranchNode,
   StoryletNode,
@@ -42,6 +43,7 @@ export default function BaseNodeCard({
     insertSiblingNode,
     moveSelection,
     deleteNode,
+    translations,
     updateTranslateKeyAll,
     getTranslationsForKey,
     trackCurrentState,
@@ -80,17 +82,17 @@ export default function BaseNodeCard({
 
       e.preventDefault();
 
-      const duplicateNode = () => {
-        const newNode = node.clone();
+      const duplicateNode = (targetNode: StoryletNode<StoryletNodeData>) => {
+        const newNode = targetNode.clone();
         if (
           (newNode instanceof StoryletSentenceNode ||
             newNode instanceof StoryletBranchNode) &&
-          (node instanceof StoryletSentenceNode ||
-            node instanceof StoryletBranchNode)
+          (targetNode instanceof StoryletSentenceNode ||
+            targetNode instanceof StoryletBranchNode)
         ) {
           updateTranslateKeyAll(
             newNode.data.content,
-            getTranslationsForKey(node.data.content)
+            getTranslationsForKey(targetNode.data.content)
           );
         }
         return newNode;
@@ -122,7 +124,7 @@ export default function BaseNodeCard({
 
       if (e.code === 'KeyD' && e.ctrlKey) {
         const insertNodeFn = e.shiftKey ? insertSiblingNode : insertChildNode;
-        const newNode = duplicateNode();
+        const newNode = duplicateNode(node);
         insertNodeFn(newNode, node);
         return;
       }
@@ -134,11 +136,10 @@ export default function BaseNodeCard({
 
       if (e.code === 'KeyV' && e.ctrlKey) {
         const nodeJson = clipboard.readText();
-        console.log('dsd');
-        const newNode = Storylet.fromNodeJson({
+        const originNode = Storylet.fromNodeJson({
           ...JSON.parse(nodeJson),
-          id: undefined,
         });
+        const newNode = duplicateNode(originNode);
         insertChildNode(newNode, node);
         return;
       }
@@ -154,6 +155,8 @@ export default function BaseNodeCard({
         selectNode(null);
 
         setEditOpen(true);
+        setIsHover(false);
+        setIsDraging(false);
         setMode(Mode.Popup);
         return;
       }
@@ -167,6 +170,7 @@ export default function BaseNodeCard({
       insertSiblingNode,
       moveSelection,
       deleteNode,
+      translations,
       updateTranslateKeyAll,
       getTranslationsForKey,
       setMode,
@@ -174,11 +178,36 @@ export default function BaseNodeCard({
     ]
   );
 
-  const renderPopupItem = (content) => {
+  const renderCodePopupItem = (label, content) => {
     return (
       <>
-        <Grid2 xs sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>
-          {content}
+        <Grid2 xs>
+          <Stack
+            sx={{ height: '100%', width: '100%', alignItems: 'center' }}
+            spacing={1}
+          >
+            <Box sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>{label}</Box>
+            <Box sx={{ flexGrow: 1, width: '100%' }}>
+              <MonacoEditor
+                width='100%'
+                height='90%'
+                language='python'
+                theme='vs-dark'
+                value={content}
+                options={{
+                  insertSpaces: true,
+                  autoIndent: 'full',
+                  readOnly: true,
+                  tabSize: 2,
+                  fontSize: 28,
+                  scrollbar: {
+                    horizontal: 'auto',
+                    vertical: 'auto',
+                  },
+                }}
+              />
+            </Box>
+          </Stack>
         </Grid2>
       </>
     );
@@ -195,6 +224,9 @@ export default function BaseNodeCard({
         }
 
         viewRef.current = dom as HTMLElement;
+        if (!currentStorylet.getNodeSingleParent(node.id)) {
+          return;
+        }
         const dragListener = d3
           .drag()
           .on('drag', (d) => {
@@ -228,8 +260,8 @@ export default function BaseNodeCard({
         ...borderRadius.larger,
         fontSize: '2rem',
         transform: `translate(${pos.y}px,${pos.x}px)`,
-        height: '200px',
-        width: '400px',
+        height: '220px',
+        width: '500px',
         textOverflow: 'ellipsis',
         wordBreak: 'break-all',
         outline: 'none',
@@ -273,10 +305,10 @@ export default function BaseNodeCard({
           sx={{
             p: 2,
             position: 'absolute',
-            top: '-350px',
-            height: '250px',
+            top: '-600px',
+            height: '500px',
             background: 'white',
-            width: '600px',
+            width: '1000px',
             ...borderRadius.larger,
             left: '50%',
             transform: 'translateX(-50%)',
@@ -284,11 +316,12 @@ export default function BaseNodeCard({
             justifyContent: 'center',
           }}
         >
-          <Grid2 container spacing={4}>
-            {node.data.enableCheck && renderPopupItem('Enable check')}
+          <Grid2 sx={{ height: '100%', width: '100%' }} container spacing={4}>
+            {node.data.enableCheck &&
+              renderCodePopupItem('Enable check', node.data.enableCheck)}
             {node instanceof StoryletActionNode &&
               node.data.process &&
-              renderPopupItem('Process')}
+              renderCodePopupItem('Process', node.data.process)}
           </Grid2>
         </Stack>
       )}
@@ -320,6 +353,8 @@ export default function BaseNodeCard({
           open={editOpen}
           close={() => {
             setEditOpen(false);
+            setIsHover(false);
+            setIsDraging(false);
             setMode(Mode.Normal);
             setTimeout(() => {
               selectNode(node.id);

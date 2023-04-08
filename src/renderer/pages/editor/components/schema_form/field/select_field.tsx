@@ -67,6 +67,10 @@ function FieldSelect({
           sx={{
             width: '100%',
           }}
+          inputProps={{
+            tabIndex: -1,
+          }}
+          tabIndex={-1}
         >
           {schema.config.options.map((item: any) => {
             return (
@@ -105,6 +109,10 @@ function FieldSelect({
             }}
             sx={{
               width: '100%',
+            }}
+            tabIndex={-1}
+            inputProps={{
+              tabIndex: -1,
             }}
           >
             {childOptions.map((item: any) => {

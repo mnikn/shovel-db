@@ -393,6 +393,13 @@ export default function EditDialog({
           onClick={() => {
             updateTranslations(formTranslations);
             node.data = { ...node.data, ...formNodeData };
+            if (
+              (node instanceof StoryletSentenceNode ||
+                node instanceof StoryletBranchNode) &&
+              !node.data.actor?.id
+            ) {
+              node.data.actor = null;
+            }
             updateNode(node);
             trackCurrentState();
             close();

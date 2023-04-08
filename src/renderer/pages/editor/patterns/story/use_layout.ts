@@ -23,6 +23,8 @@ import { useStoryStore } from '../../../../store';
 //   return res;
 // }
 
+const initialScale = 0.4;
+const initialPos = [2500, 1000];
 export default function useLayout({
   zoomDom,
   dragingNode,
@@ -171,8 +173,6 @@ export default function useLayout({
     if (!elm) {
       return;
     }
-    let initialScale = 0.5;
-    let initialPos = [1500, 600];
 
     const onZoom = function () {
       let transformRes = d3.zoomTransform(elm);
@@ -223,12 +223,27 @@ export default function useLayout({
     });
   }, []);
 
+  const resetZoom = useCallback(() => {
+    const elm = document.querySelector('#main-content');
+    if (!elm || !zoomDom) {
+      return;
+    }
+    d3.zoom().translateTo(d3.select(elm), initialPos[0], initialPos[1]);
+    d3.zoom().scaleTo(d3.select(elm), initialScale);
+    const transformRes = d3.zoomTransform(elm);
+    setZoom(transformRes.k);
+    d3.select(zoomDom).style(
+      'transform',
+      `translate(${transformRes.x}px,${transformRes.y}px) scale(${transformRes.k})`
+    );
+    // d3.select(zoomDom).style(
+    //   'transform',
+    //   `translate(${initialPos[0]}px,${initialPos[1]}px) scale(${initialScale})`
+    // );
+  }, [zoomDom]);
+
   useEffect(() => {
     refresh();
-    // eventBus.on(Event.REFRESH_NODE_VIEW, refresh);
-    // return () => {
-    //   eventBus.off(Event.REFRESH_NODE_VIEW, refresh);
-    // };
   }, [refresh]);
 
   return {
@@ -236,5 +251,6 @@ export default function useLayout({
     treeData,
     linkData,
     refresh,
+    resetZoom,
   };
 }

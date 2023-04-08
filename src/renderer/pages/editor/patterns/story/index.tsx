@@ -1,6 +1,12 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Box } from '@mui/material';
-import { useStoryStore } from '../../../../store';
+import { useExplorerStore, useStoryStore } from '../../../../store';
 import useLayout from './use_layout';
 import NodeCard from './node_card';
 import { borderRadius } from '../../../../theme';
@@ -23,6 +29,7 @@ const i18nSchema = new SchemaFieldSelect({
 export default function Story() {
   const [zoomDom, setZoomDom] = useState<HTMLDivElement | null>(null);
   const [dragingNode, setDragingNode] = useState<any>(null);
+  const { currentOpenFile } = useExplorerStore();
   const {
     currentStorylet,
     selectNode,
@@ -36,10 +43,14 @@ export default function Story() {
   dragingNodeRef.current = dragingNode;
   const dragTargetRef = useRef<any>(null);
 
-  const { zoom, treeData, linkData, refresh } = useLayout({
+  const { zoom, treeData, resetZoom, refresh } = useLayout({
     zoomDom,
     dragingNode,
   });
+
+  useEffect(() => {
+    resetZoom();
+  }, [currentOpenFile, resetZoom]);
 
   const onDomMounted = useCallback((dom: HTMLDivElement) => {
     if (dom) {
@@ -84,6 +95,7 @@ export default function Story() {
               return (
                 <div key={item.id}>
                   {dragingNode &&
+                    nodeData &&
                     item.id !== dragingNode.id &&
                     !!currentStorylet.getNodeSingleParent(nodeData.id) && (
                       <Box
@@ -119,7 +131,7 @@ export default function Story() {
                   {dragingNode && item.id !== dragingNode.id && (
                     <Box
                       sx={{
-                        left: item.y + 370,
+                        left: item.y + 450,
                         top: item.x + 10,
                         width: '8rem',
                         height: '8rem',
@@ -184,10 +196,12 @@ export default function Story() {
 
           <svg
             id='dialogue-tree-links-container'
-            className='absolute w-full h-full'
             style={{
+              position: 'absolute',
               overflow: 'inherit',
               pointerEvents: 'none',
+              width: '100%',
+              height: '100%',
             }}
           />
         </Box>
