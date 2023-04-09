@@ -330,7 +330,14 @@ export default function EditDialog({
   }, [close, submitForm]);
 
   const basicDataSchema = useMemo(() => {
-    const res = generateSchema(node);
+    /* const res = generateSchema(node); */
+    const basicsDataMap = {
+      root: buildSchema(JSON.parse(nodeSettings.root.basicDataSchema)),
+      sentence: buildSchema(JSON.parse(nodeSettings.sentence.basicDataSchema)),
+      branch: buildSchema(JSON.parse(nodeSettings.branch.basicDataSchema)),
+      action: buildSchema(JSON.parse(nodeSettings.action.basicDataSchema)),
+    };
+    const res = basicsDataMap[node.data.type] as SchemaFieldObject;
     // handle actor options
     const actorField = res.fields.find((field) => {
       return field.id === 'actor';
@@ -397,7 +404,7 @@ export default function EditDialog({
       }
     });
     return res;
-  }, [node, storyActors, tr, submitForm, close]);
+  }, [node, storyActors, tr, submitForm, close, nodeSettings]);
 
   const renderSchemaForm = (
     schemaObj: SchemaFieldObject,

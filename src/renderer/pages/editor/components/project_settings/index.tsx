@@ -154,7 +154,7 @@ const editorDidMount = (_, monaco: any) => {
         range: range,
       },
       {
-        label: 'arrayField', // 用户键入list2d_basic的任意前缀即可触发自动补全，选择该项即可触发添加代码片段
+        label: 'arrayField',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
         insertText: formatInnerField({
@@ -169,7 +169,7 @@ const editorDidMount = (_, monaco: any) => {
         range: range,
       },
       {
-        label: 'objectField', // 用户键入list2d_basic的任意前缀即可触发自动补全，选择该项即可触发添加代码片段
+        label: 'objectField',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
         insertText: formatInnerField({
@@ -184,10 +184,10 @@ const editorDidMount = (_, monaco: any) => {
         range: range,
       },
       {
-        label: 'field', // 用户键入list2d_basic的任意前缀即可触发自动补全，选择该项即可触发添加代码片段
+        label: 'field',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        insertText: formatInnerField(fieldObj), // ${i:j}，其中i表示按tab切换的顺序编号，j表示默认串
+        insertText: formatInnerField(fieldObj),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -275,19 +275,19 @@ export default function ProjectSettings({
         {basicSchemaSettingsOpen[nodeKey] && (
           <CodeSettings
             open={basicSchemaSettingsOpen[nodeKey]}
-            value={nodeSettings[nodeKey].extendBasicSchema}
+            value={nodeSettings[nodeKey].basicDataSchema}
             onValueChange={(val) => {
               setNodeSettings((prev) => {
                 return {
                   ...prev,
                   [nodeKey]: {
                     ...nodeSettings[nodeKey],
-                    extendBasicSchema: val,
+                    basicDataSchema: val,
                   },
                 };
               });
             }}
-            lang='javascript'
+            lang='json'
             onEditorMounted={editorDidMount}
             close={() => {
               setBasicSchemaSettingsOpen((prev) => {

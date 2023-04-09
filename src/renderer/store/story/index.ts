@@ -34,9 +34,222 @@ export interface StoryActor {
 }
 
 export interface NodeSettings {
-  extendBasicSchema?: string;
+  basicDataSchema: string;
   extraDataSchema?: string;
 }
+
+const rootBasicDataSchemaConfig = {
+  type: 'object',
+  fields: {
+    customNodeId: {
+      name: 'Custom node id',
+      config: {
+        colSpan: 4,
+        defaultValue: '',
+        type: 'singleline',
+      },
+      type: 'string',
+    },
+    enableCheck: {
+      name: 'Enable check',
+      config: {
+        colSpan: 12,
+        defaultValue: '',
+        type: 'code',
+        codeLang: 'python',
+      },
+      type: 'string',
+    },
+  },
+  config: {
+    colSpan: 12,
+    initialExpand: true,
+    summary: '{{___key}}',
+  },
+};
+
+const sentenceBasicDataSchemaConfig = {
+  type: 'object',
+  fields: {
+    customNodeId: {
+      name: 'Custom node id',
+      config: {
+        colSpan: 4,
+        defaultValue: '',
+        type: 'singleline',
+      },
+      type: 'string',
+    },
+    actor: {
+      name: 'Actor',
+      config: {
+        colSpan: 8,
+        groupConfig: {
+          group: {
+            valueKey: 'id',
+            label: 'id',
+          },
+          child: {
+            valueKey: 'portrait',
+            label: 'portrait',
+          },
+        },
+      },
+      type: 'select',
+    },
+    content: {
+      name: 'Content',
+      config: {
+        colSpan: 12,
+        autoFocus: true,
+        needI18n: true,
+        type: 'multiline',
+      },
+      type: 'string',
+    },
+    enableCheck: {
+      name: 'Enable check',
+      config: {
+        colSpan: 12,
+        defaultValue: '',
+        type: 'code',
+        codeLang: 'python',
+      },
+      type: 'string',
+    },
+  },
+  config: {
+    colSpan: 12,
+    initialExpand: true,
+    summary: '{{___key}}',
+  },
+};
+
+const branchBasicDataSchemaConfig = {
+  type: 'object',
+  fields: {
+    customNodeId: {
+      name: 'Custom node id',
+      config: {
+        colSpan: 4,
+        defaultValue: '',
+        type: 'singleline',
+      },
+      type: 'string',
+    },
+    actor: {
+      name: 'Actor',
+      config: {
+        colSpan: 8,
+        groupConfig: {
+          group: {
+            valueKey: 'id',
+            label: 'id',
+          },
+          child: {
+            valueKey: 'portrait',
+            label: 'portrait',
+          },
+        },
+      },
+      type: 'select',
+    },
+    content: {
+      name: 'Content',
+      config: {
+        colSpan: 12,
+        autoFocus: true,
+        needI18n: true,
+        type: 'multiline',
+      },
+      type: 'string',
+    },
+    enableCheck: {
+      name: 'Enable check',
+      config: {
+        colSpan: 12,
+        defaultValue: '',
+        type: 'code',
+        codeLang: 'python',
+      },
+      type: 'string',
+    },
+  },
+  config: {
+    colSpan: 12,
+    initialExpand: true,
+    summary: '{{___key}}',
+  },
+};
+
+const actionBasicDataSchema = {
+  type: 'object',
+  fields: {
+    customNodeId: {
+      name: 'Custom node id',
+      config: {
+        colSpan: 4,
+        defaultValue: '',
+        type: 'singleline',
+      },
+      type: 'string',
+    },
+    actionType: {
+      name: 'Action type',
+      config: {
+        colSpan: 4,
+        options: [
+          {
+            label: 'code',
+            value: 'code',
+          },
+          {
+            label: 'jumpToNode',
+            value: 'jumpToNode',
+          },
+        ],
+        defaultValue: 'code',
+      },
+      type: 'select',
+    },
+    targetNode: {
+      name: 'Target node',
+      config: {
+        colSpan: 4,
+        defaultValue: '',
+        type: 'singleline',
+        enableWhen: "(v) => v.actionType === 'jumpToNode'",
+      },
+      type: 'string',
+    },
+    process: {
+      name: 'Process code',
+      config: {
+        colSpan: 12,
+        defaultValue: '',
+        type: 'code',
+        codeLang: 'python',
+        enableWhen: "(v) => v.actionType === 'code'",
+      },
+      type: 'string',
+    },
+    enableCheck: {
+      name: 'Enable check',
+      config: {
+        colSpan: 12,
+        defaultValue: '',
+        type: 'code',
+        codeLang: 'python',
+      },
+      type: 'string',
+    },
+  },
+  config: {
+    colSpan: 12,
+    initialExpand: true,
+    summary: '{{___key}}',
+  },
+};
 
 export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
   const [story, setStory] = useState<{ [key: string]: Storylet }>({});
@@ -50,19 +263,19 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     action: NodeSettings;
   }>({
     root: {
-      extendBasicSchema: '(prevSchema) => { return prevSchema; }',
+      basicDataSchema: JSON.stringify(rootBasicDataSchemaConfig, null, 2),
       extraDataSchema: JSON.stringify(DEFAULT_CONFIG_JSON.OBJECT_JSON, null, 2),
     },
     sentence: {
-      extendBasicSchema: '(prevSchema) => { return prevSchema; }',
+      basicDataSchema: JSON.stringify(sentenceBasicDataSchemaConfig, null, 2),
       extraDataSchema: JSON.stringify(DEFAULT_CONFIG_JSON.OBJECT_JSON, null, 2),
     },
     branch: {
-      extendBasicSchema: '(prevSchema) => { return prevSchema; }',
+      basicDataSchema: JSON.stringify(branchBasicDataSchemaConfig, null, 2),
       extraDataSchema: JSON.stringify(DEFAULT_CONFIG_JSON.OBJECT_JSON, null, 2),
     },
     action: {
-      extendBasicSchema: '(prevSchema) => { return prevSchema; }',
+      basicDataSchema: JSON.stringify(actionBasicDataSchema, null, 2),
       extraDataSchema: JSON.stringify(DEFAULT_CONFIG_JSON.OBJECT_JSON, null, 2),
     },
   });
