@@ -41,24 +41,49 @@ export default function SentenceNodeCard({
         }}
       >
         {node.data.actor && (
-          <img
-            style={{
-              objectFit: 'contain',
-              backgroundColor: grey[800],
-              width: '100px',
-              height: '100px',
-              padding: '12px',
-              alignSelf: 'center',
-              ...borderRadius.large,
-            }}
-            src={
-              (
-                storyActors.find((item: any) => item.id === node.data.actor?.id)
-                  ?.portraits || []
-              ).find((p: any) => p.id === node.data.actor?.portrait)?.pic || ''
-            }
-            alt=''
-          />
+          <>
+            {node.data.actor.portrait && (
+              <img
+                style={{
+                  objectFit: 'contain',
+                  backgroundColor: grey[800],
+                  width: '100px',
+                  height: '100px',
+                  padding: '12px',
+                  alignSelf: 'center',
+                  ...borderRadius.large,
+                }}
+                src={
+                  (
+                    storyActors.find(
+                      (item: any) => item.id === node.data.actor?.id
+                    )?.portraits || []
+                  ).find((p: any) => p.id === node.data.actor?.portrait)?.pic ||
+                  ''
+                }
+                alt=''
+              />
+            )}
+            {!node.data.actor.portrait && (
+              <Box
+                sx={{
+                  backgroundColor: grey[800],
+                  width: '200px',
+                  height: '100px',
+                  padding: '12px',
+                  alignSelf: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'common.white',
+                  fontSize: '1.3rem',
+                  ...borderRadius.large,
+                }}
+              >
+                {node.data.actor.id}
+              </Box>
+            )}
+          </>
         )}
         <Box
           sx={{

@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+} from 'react';
 import { Box, Tabs, Tab, Modal, Stack, Button, Container } from '@mui/material';
 import { borderRadius } from '../../../../../theme';
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
@@ -242,6 +248,8 @@ export default function EditDialog({
     tr,
   } = useStoryStore();
   const [formNodeData, setFormNodeData] = useState(cloneDeep(node.data));
+  const formNodeDataRef = useRef(formNodeData);
+  formNodeDataRef.current = formNodeData;
 
   const parent = useMemo(() => {
     if (!currentStorylet) {
@@ -289,7 +297,7 @@ export default function EditDialog({
 
   const submitForm = useCallback(() => {
     updateTranslations(formTranslations);
-    node.data = { ...node.data, ...formNodeData };
+    node.data = { ...node.data, ...formNodeDataRef.current };
     if (
       (node instanceof StoryletSentenceNode ||
         node instanceof StoryletBranchNode) &&

@@ -88,7 +88,6 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
         const lastRecentOpenFile =
           settingsData.recentOpenFiles[settingsData.recentOpenFiles.length - 1];
         if (lastRecentOpenFile) {
-          console.log('dsd: ', lastRecentOpenFile);
           eventEmitter.emit(Event.OpenFile, lastRecentOpenFile);
         }
       }, 0);

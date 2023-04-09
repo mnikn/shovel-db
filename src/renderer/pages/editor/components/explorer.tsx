@@ -14,7 +14,7 @@ import {
   getPathParents,
   getRootParent,
 } from '../../../models/explorer';
-import { useExplorerStore } from '../../../store';
+import { Mode, useEditorStore, useExplorerStore } from '../../../store';
 import { animation, borderRadius } from '../../../theme';
 
 let cacheDragingData: File | Folder | null = null;
@@ -35,6 +35,8 @@ export default function Explorer() {
     moveFile,
   } = useExplorerStore();
 
+  const { setMode } = useEditorStore();
+
   useEffect(() => {
     if (!currentOpenFile) {
       return;
@@ -43,6 +45,10 @@ export default function Explorer() {
     const parents = getPathParents(currentOpenFile.id, files);
     setUncollapsedFolders(parents);
   }, [currentOpenFile, files]);
+
+  useEffect(() => {
+    setMode(editingItem ? Mode.Popup : Mode.Normal);
+  }, [editingItem, setMode]);
 
   const fileContextMenu = [
     {
