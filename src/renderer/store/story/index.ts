@@ -198,12 +198,12 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
 
     const nodeView = document.querySelector(`#${nodeId}`) as HTMLElement;
     if (nodeView) {
-      nodeView.onblur = () => {
-        if (selectionRef.current?.nodeId === nodeId) {
-          nodeView.focus();
-          nodeView.onblur = null;
-        }
-      };
+      // nodeView.onblur = () => {
+      //   if (selectionRef.current?.nodeId === nodeId) {
+      //     nodeView.focus();
+      //     nodeView.onblur = null;
+      //   }
+      // };
       nodeView.focus();
     }
   }, []);

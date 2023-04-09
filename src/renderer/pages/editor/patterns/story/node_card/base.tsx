@@ -1,7 +1,13 @@
 import { Box, Container, Divider, Stack } from '@mui/material';
 import { clipboard } from 'electron';
 import * as d3 from 'd3';
-import React, { useCallback, useRef, useLayoutEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useRef,
+  useLayoutEffect,
+  useState,
+  useEffect,
+} from 'react';
 import { grey } from '@mui/material/colors';
 import MonacoEditor from 'react-monaco-editor/lib/editor';
 import {
@@ -74,8 +80,8 @@ export default function BaseNodeCard({
     selectNode(node.id);
   }, [node.id, editOpen]);
 
-  const onKeyDown = useCallback(
-    (e) => {
+  useEffect(() => {
+    const onKeyDown = (e) => {
       if (!isSelecting || editOpen || mode === Mode.Popup) {
         return;
       }
@@ -162,22 +168,25 @@ export default function BaseNodeCard({
       }
 
       moveSelection(e.key);
-    },
-    [
-      editOpen,
-      isSelecting,
-      insertChildNode,
-      insertSiblingNode,
-      moveSelection,
-      deleteNode,
-      translations,
-      updateTranslateKeyAll,
-      getTranslationsForKey,
-      mode,
-      setMode,
-      trackCurrentState,
-    ]
-  );
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [
+    editOpen,
+    isSelecting,
+    insertChildNode,
+    insertSiblingNode,
+    moveSelection,
+    deleteNode,
+    translations,
+    updateTranslateKeyAll,
+    getTranslationsForKey,
+    mode,
+    setMode,
+    trackCurrentState,
+  ]);
 
   const renderCodePopupItem = (label, content) => {
     return (
@@ -272,7 +281,6 @@ export default function BaseNodeCard({
         zIndex: isHover ? 10 : isSelecting ? 2 : 1,
       }}
       onClick={onSelect}
-      onKeyDown={onKeyDown}
       onMouseEnter={() => {
         if (!isDraging) {
           setIsHover(true);
