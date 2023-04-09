@@ -38,7 +38,6 @@ export default function SentenceNodeCard({
           overflow: 'hidden',
           width: '100%',
           height: '100%',
-          alignItems: 'center',
         }}
       >
         {node.data.actor && (
@@ -49,6 +48,7 @@ export default function SentenceNodeCard({
               width: '100px',
               height: '100px',
               padding: '12px',
+              alignSelf: 'center',
               ...borderRadius.large,
             }}
             src={

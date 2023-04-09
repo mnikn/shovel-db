@@ -37,7 +37,6 @@ export default function BranchNodeCard({
           overflow: 'hidden',
           width: '100%',
           height: '100%',
-          alignItems: 'center',
         }}
       >
         {node.data.actor && (
@@ -48,6 +47,7 @@ export default function BranchNodeCard({
               width: '100px',
               height: '100px',
               padding: '12px',
+              alignSelf: 'center',
               ...borderRadius.large,
             }}
             src={
