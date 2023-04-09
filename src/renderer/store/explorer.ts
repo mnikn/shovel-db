@@ -111,27 +111,31 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
     setFiles([...files]);
   };
 
-  const newFile = useCallback((parentId: string) => {
-    const prev = filesRef.current;
-    const val = createFile();
-    val.name = 'Untitled';
-    const parent = prev.find((item) => item.id === parentId);
-    if (!parent) {
-      return;
-    }
-    val.parentId = parentId;
-    val.order =
-      maxBy(
-        prev.filter((item) => item.parentId === parentId),
-        'order'
-      )?.order || -1 + 1;
-    const res = prev.concat(val);
-    setFiles(res);
-    const rootFolder = getRootParent(parentId, res);
-    if (rootFolder.id === 'story') {
-      eventEmitter.emit(Event.CreateStorylet, val);
-    }
-  }, []);
+  const newFile = useCallback(
+    (parentId: string, name?: string): File | null => {
+      const prev = filesRef.current;
+      const val = createFile();
+      val.name = name || 'Untitled';
+      const parent = prev.find((item) => item.id === parentId);
+      if (!parent) {
+        return null;
+      }
+      val.parentId = parentId;
+      val.order =
+        maxBy(
+          prev.filter((item) => item.parentId === parentId),
+          'order'
+        )?.order || -1 + 1;
+      const res = prev.concat(val);
+      setFiles(res);
+      const rootFolder = getRootParent(parentId, res);
+      if (rootFolder.id === 'story') {
+        eventEmitter.emit(Event.CreateStorylet, val);
+      }
+      return val;
+    },
+    []
+  );
 
   const newFolder = useCallback((parentId: string) => {
     setFiles((prev) => {

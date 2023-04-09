@@ -9,6 +9,7 @@ import { borderRadius } from '../../theme';
 import Explorer from './components/explorer';
 import Main from './main';
 import SearchPanel from './components/search_panel';
+import CommandPanel from './components/command_panel';
 
 export default function Editor() {
   const { undo, redo } = useTrackStore();
@@ -27,15 +28,32 @@ export default function Editor() {
   const searchPanelOpenRef = useRef(searchPanelOpen);
   searchPanelOpenRef.current = searchPanelOpen;
 
+  const [commandPanelOpen, setCommandPanelOpen] = useState(false);
+  const commandPanelOpenRef = useRef(commandPanelOpen);
+  commandPanelOpenRef.current = commandPanelOpen;
+
   useEffect(() => {
     const handle = async (e) => {
       if (e.code === 'KeyP' && e.ctrlKey) {
-        if (mode === Mode.Popup && !searchPanelOpenRef.current) {
+        if (
+          mode === Mode.Popup &&
+          !(searchPanelOpenRef.current || commandPanelOpenRef.current)
+        ) {
           return;
         }
-        e.preventDefault();
-        setMode(searchPanelOpenRef.current ? Mode.Normal : Mode.Popup);
-        setSearchPanelOpen((prev) => !prev);
+        if (e.shiftKey) {
+          if (!searchPanelOpenRef.current) {
+            e.preventDefault();
+            setMode(commandPanelOpenRef.current ? Mode.Normal : Mode.Popup);
+            setCommandPanelOpen((prev) => !prev);
+          }
+        } else {
+          if (!commandPanelOpenRef.current) {
+            e.preventDefault();
+            setMode(searchPanelOpenRef.current ? Mode.Normal : Mode.Popup);
+            setSearchPanelOpen((prev) => !prev);
+          }
+        }
       }
 
       if (mode !== Mode.Normal) {
@@ -117,6 +135,14 @@ export default function Editor() {
           <SearchPanel
             close={() => {
               setSearchPanelOpen(false);
+              setMode(Mode.Normal);
+            }}
+          />
+        )}
+        {commandPanelOpen && (
+          <CommandPanel
+            close={() => {
+              setCommandPanelOpen(false);
               setMode(Mode.Normal);
             }}
           />

@@ -68,9 +68,11 @@ export default function SentenceNodeCard({
               <Box
                 sx={{
                   backgroundColor: grey[800],
-                  width: '200px',
+                  width: '150px',
                   height: '100px',
-                  padding: '12px',
+                  p: 1,
+                  flexGrow: 0,
+                  flexShrink: 0,
                   alignSelf: 'center',
                   display: 'flex',
                   alignItems: 'center',

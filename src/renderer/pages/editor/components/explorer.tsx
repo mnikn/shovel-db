@@ -232,6 +232,7 @@ export default function Explorer() {
                   }
 
                   if (e.key === 'Escape') {
+                    e.preventDefault();
                     setEditingItem(null);
                     setEditingName(null);
                   }
@@ -337,6 +338,7 @@ export default function Explorer() {
                 setEditingName(null);
               }
               if (e.key === 'Escape') {
+                e.preventDefault();
                 setEditingItem(null);
                 setEditingName(null);
               }
