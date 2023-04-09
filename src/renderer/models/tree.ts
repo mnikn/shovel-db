@@ -174,6 +174,33 @@ export class Tree<T> {
     });
   }
 
+  public getAllNodeChildrenRelations(id: string): {
+    nodes: { [key: string]: Node<T> };
+    links: { [key: string]: NodeLink };
+  } {
+    const targetNode = this.nodes[id];
+    if (!targetNode) {
+      return { nodes: {}, links: {} };
+    }
+
+    const result = { nodes: {}, links: {} };
+    result.nodes[id] = targetNode;
+
+    const matchLinkIds = Object.keys(this.links).filter((linkId) => {
+      return linkId.split('-')[0] === id;
+    });
+    matchLinkIds.forEach((linkId) => {
+      result.links[linkId] = this.links[linkId];
+      const childResult = this.getAllNodeChildrenRelations(
+        this.links[linkId].target.id
+      );
+      result.nodes = { ...result.nodes, ...childResult.nodes };
+      result.links = { ...result.links, ...childResult.links };
+    });
+
+    return result;
+  }
+
   public toJson(): any {
     return {
       nodes: Object.keys(this.nodes).reduce((res: any, k) => {

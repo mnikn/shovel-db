@@ -352,6 +352,58 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     ]
   );
 
+  const batchInsertChildNode = useCallback(
+    (
+      data: { nodes: StoryletNode<StoryletNodeData>[]; links: NodeLink[] },
+      rootChildId: string,
+      parentId: string
+    ) => {
+      if (!currentStorylet) {
+        return;
+      }
+      const newVal = currentStorylet.clone();
+      const parent = newVal.nodes[parentId];
+      if (!parent) {
+        return;
+      }
+
+      console.log('dsew: ', data);
+      data.nodes.forEach((node) => {
+        newVal.upsertNode(node);
+        if (
+          (node instanceof StoryletSentenceNode ||
+            node instanceof StoryletBranchNode) &&
+          !translationModule.hasTranslateKey(node.data.content)
+        ) {
+          translationModule.updateTranslateKey(node.data.content, '');
+        }
+        if (parent instanceof StoryletBranchNode) {
+          node.data.option = {
+            name: 'option_' + UUID(),
+            controlType: 'visible',
+            controlCheck: '',
+          };
+          translationModule.updateTranslateKey(node.data.option.name, '');
+        } else {
+          delete node.data.option;
+        }
+      });
+
+      data.links.forEach((link) => {
+        newVal.links[formatNodeLinkId(link.source.id, link.target.id)] = link;
+      });
+      newVal.upsertLink(parent.id, rootChildId);
+
+      setCurrentStorylet(newVal);
+      currentStoryletRef.current = newVal;
+    },
+    [
+      currentStorylet,
+      translationModule.updateTranslateKey,
+      translationModule.hasTranslateKey,
+    ]
+  );
+
   const insertSiblingNode = useCallback(
     (
       needInsert: StoryletNode<StoryletNodeData>,
@@ -692,6 +744,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     insertSiblingNode,
     deleteNode,
     updateNode,
+    batchInsertChildNode,
     moveStoryletNode,
     moveSelection,
     trackCurrentState,

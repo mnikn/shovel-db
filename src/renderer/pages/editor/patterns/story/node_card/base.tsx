@@ -25,6 +25,7 @@ import { trackState } from '../../../../../store/track';
 import { animation, borderRadius } from '../../../../../theme';
 import EditDialog from '../edit_dialog';
 import Grid2 from '@mui/material/Unstable_Grid2';
+import { formatNodeLinkId, NodeLink } from '../../../../../models/tree';
 
 export default function BaseNodeCard({
   pos,
@@ -46,6 +47,7 @@ export default function BaseNodeCard({
     selection,
     selectNode,
     insertChildNode,
+    batchInsertChildNode,
     insertSiblingNode,
     moveSelection,
     deleteNode,
@@ -136,17 +138,56 @@ export default function BaseNodeCard({
       }
 
       if (e.code === 'KeyC' && e.ctrlKey) {
-        clipboard.writeText(JSON.stringify(node.toJson()));
+        if (e.shiftKey) {
+          const relations = currentStorylet.getAllNodeChildrenRelations(
+            node.id
+          );
+          const needCopy = { nodes: {}, links: {}, rootChildId: node.id };
+          Object.keys(relations.nodes).forEach((k) => {
+            needCopy.nodes[k] = relations.nodes[k].toJson();
+          });
+          Object.keys(relations.links).forEach((k) => {
+            needCopy.links[k] = relations.links[k].toJson();
+          });
+          clipboard.writeText(JSON.stringify(needCopy));
+        } else {
+          clipboard.writeText(JSON.stringify(node.toJson()));
+        }
         return;
       }
 
       if (e.code === 'KeyV' && e.ctrlKey) {
-        const nodeJson = clipboard.readText();
-        const originNode = Storylet.fromNodeJson({
-          ...JSON.parse(nodeJson),
-        });
-        const newNode = duplicateNode(originNode);
-        insertChildNode(newNode, node);
+        const copyJson = JSON.parse(clipboard.readText());
+        if ('nodes' in copyJson) {
+          const idMap = {};
+          const nodes: { [key: string]: StoryletNode<StoryletNodeData> } = {};
+          const links: NodeLink[] = [];
+          Object.keys(copyJson.nodes).forEach((k) => {
+            const node = Storylet.fromNodeJson(copyJson.nodes[k]);
+            const newNode = duplicateNode(node);
+            idMap[copyJson.nodes[k].id] = newNode.id;
+            nodes[newNode.id] = newNode;
+          });
+          Object.keys(copyJson.links).forEach((k) => {
+            const originLinkData = copyJson.links[k];
+            const newLink = new NodeLink(
+              nodes[idMap[originLinkData.sourceId]],
+              nodes[idMap[originLinkData.targetId]]
+            );
+            links.push(newLink);
+          });
+          batchInsertChildNode(
+            { nodes: Object.values(nodes), links },
+            idMap[copyJson.rootChildId],
+            node.id
+          );
+        } else {
+          const originNode = Storylet.fromNodeJson({
+            ...copyJson,
+          });
+          const newNode = duplicateNode(originNode);
+          insertChildNode(newNode, node);
+        }
         return;
       }
 
@@ -177,6 +218,7 @@ export default function BaseNodeCard({
     editOpen,
     isSelecting,
     insertChildNode,
+    batchInsertChildNode,
     insertSiblingNode,
     moveSelection,
     deleteNode,
