@@ -170,6 +170,12 @@ export class StoryletActionNode extends StoryletNode<StoryletActionNodeData> {
     instance.data = { ...json.data };
     return instance;
   }
+
+  public clone(): StoryletActionNode {
+    const instance = new StoryletActionNode();
+    instance.data = cloneDeep(this.data);
+    return instance;
+  }
 }
 
 export class Storylet extends Tree<StoryletNodeData> {
