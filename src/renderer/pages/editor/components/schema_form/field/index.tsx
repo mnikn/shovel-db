@@ -82,6 +82,7 @@ export default function Field({
             }
             return (
               <Field
+                key={field.data.config.fieldId}
                 schema={field.data}
                 value={get(value, field.id)}
                 onValueChange={(v) => {
@@ -260,7 +261,7 @@ export function FieldArray({
         >
           {list.map((item, i) => {
             return (
-              <Stack sx={{ position: 'relative' }}>
+              <Stack key={item.id} sx={{ position: 'relative' }}>
                 <Stack
                   direction='row'
                   sx={{
