@@ -367,7 +367,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
         return;
       }
 
-      console.log('dsew: ', data);
+      console.log('batch insert data: ', data);
       data.nodes.forEach((node) => {
         newVal.upsertNode(node);
         if (
@@ -510,7 +510,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       });
 
       Object.keys(newVal.links).forEach((item) => {
-        if (item.includes(id) && newVal) {
+        if (item.includes(id)) {
           delete newVal.links[item];
         }
       });
@@ -686,6 +686,14 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       const res = {};
       Object.keys(val).forEach((key) => {
         res[key] = Storylet.fromJson(val[key]);
+        Object.keys(res[key].links)
+          .filter(
+            (k: any) => !res[key].links[k].source || !res[key].links[k].target
+          )
+          .forEach((l) => {
+            console.warn('fing miss link: ', l);
+            delete res[key].links[l];
+          });
       });
       setStory(res);
     };

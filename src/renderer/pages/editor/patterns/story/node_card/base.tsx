@@ -181,6 +181,7 @@ export default function BaseNodeCard({
             idMap[copyJson.rootChildId],
             node.id
           );
+          return;
         } else {
           const originNode = Storylet.fromNodeJson({
             ...copyJson,

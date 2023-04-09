@@ -223,7 +223,7 @@ export class Tree<T> {
         const isSource =
           Object.values(this.links).length === 0 ||
           Object.values(this.links).find(
-            (item2) => item2.source.id === item.id
+            (item2) => item2.source?.id === item.id
           );
         const notTarget = !Object.values(this.links).find(
           (item2) => item2.target.id === item.id
@@ -239,7 +239,7 @@ export class Tree<T> {
 
   private buildHierarchy(node: RawJson, links: RawJson[]) {
     const children: RawJson[] = Object.values(links)
-      .filter((item) => item.source.id === node.id)
+      .filter((item) => item.source?.id === node.id)
       .map((item) => {
         return {
           id: item.target.id,

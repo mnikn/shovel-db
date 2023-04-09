@@ -6,6 +6,7 @@ import FolderIcon from '@mui/icons-material/Folder';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { Box, Container, Stack, TextField } from '@mui/material';
 import * as d3 from 'd3';
+import { uniq } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   File,
@@ -44,6 +45,9 @@ export default function Explorer() {
 
     const parents = getPathParents(currentOpenFile.id, files);
     setUncollapsedFolders(parents);
+    /* setUncollapsedFolders((prev) => {
+     *   return uniq([...prev, ...parents]);
+     * }); */
   }, [currentOpenFile, files]);
 
   useEffect(() => {
