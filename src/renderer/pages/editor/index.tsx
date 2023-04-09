@@ -30,6 +30,9 @@ export default function Editor() {
   useEffect(() => {
     const handle = async (e) => {
       if (e.code === 'KeyP' && e.ctrlKey) {
+        if (mode === Mode.Popup && !searchPanelOpenRef.current) {
+          return;
+        }
         e.preventDefault();
         setMode(searchPanelOpenRef.current ? Mode.Normal : Mode.Popup);
         setSearchPanelOpen((prev) => !prev);

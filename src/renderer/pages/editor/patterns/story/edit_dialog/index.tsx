@@ -382,8 +382,14 @@ export default function EditDialog({
         },
       };
     }
+    res.allChildFields.forEach((item) => {
+      if (item instanceof SchemaFieldString && item.config.type === 'code') {
+        item.config.submitForm = submitForm;
+        item.config.cancelSubmitForm = close;
+      }
+    });
     return res;
-  }, [node, storyActors, tr]);
+  }, [node, storyActors, tr, submitForm, close]);
 
   const renderSchemaForm = (
     schemaObj: SchemaFieldObject,

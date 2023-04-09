@@ -140,7 +140,45 @@ function FieldString({
                 onValueChange(v);
               }
             }}
-            editorDidMount={schema.config?.editorMounted || (() => {})}
+            editorDidMount={(val, monaco: any) => {
+              monaco.editor.getEditors().forEach((editor) => {
+                if (schema.config.submitForm) {
+                  editor.addAction({
+                    id: 'submit-form',
+                    label: 'Submit form',
+                    keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+                    precondition: null,
+                    keybindingContext: null,
+                    contextMenuGroupId: 'navigation',
+                    contextMenuOrder: 1.5,
+                    run: function () {
+                      schema.config.submitForm();
+                    },
+                  });
+                }
+                if (schema.config.cancelSubmitForm) {
+                  editor.addAction({
+                    id: 'cancel-submit-form',
+                    label: 'Cancel submit form',
+                    keybindings: [
+                      monaco.KeyMod.CtrlCmd |
+                        monaco.KeyMod.Shift |
+                        monaco.KeyCode.Enter,
+                    ],
+                    precondition: null,
+                    keybindingContext: null,
+                    contextMenuGroupId: 'navigation',
+                    contextMenuOrder: 1.5,
+                    run: function (ed) {
+                      schema.config.cancelSubmitForm();
+                    },
+                  });
+                }
+              });
+              if (schema.config?.editorMounted) {
+                return schema.config?.editorMounted(val, monaco);
+              }
+            }}
           />
         </Stack>
       )}

@@ -421,6 +421,17 @@ export class SchemaFieldObject extends SchemaField {
     return SchemaFieldType.Object;
   }
 
+  get allChildFields(): SchemaField[] {
+    return this.fields
+      .map((item) => {
+        if (item.data instanceof SchemaFieldObject) {
+          return item.data.allChildFields;
+        }
+        return item.data;
+      })
+      .flat();
+  }
+
   get configDefaultValue() {
     return this._getConfigDefaultValue(this);
   }
