@@ -497,7 +497,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
           };
         }
         val.links[formatNodeLinkId(parent.id, sourceId)] = newLinkItem;
-        child.order = maxBy(val.getNodeChildren(parent.id), 'order') + 1;
+        child.order = maxBy(val.getNodeChildren(parent.id), 'order').order + 1;
       } else if (type === 'parent') {
         const child = val.nodes[sourceId];
         const newParentId =

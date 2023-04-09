@@ -9,6 +9,7 @@ import { UUID } from '../../../../../../utils/uuid';
 import {
   SchemaField,
   SchemaFieldArray,
+  SchemaFieldBoolean,
   SchemaFieldFile,
   SchemaFieldObject,
   SchemaFieldSelect,
@@ -22,6 +23,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import RemoveIcon from '@mui/icons-material/Remove';
 import FieldSelect from './select_field';
+import FieldBoolean from './boolean_field';
 
 const getContainerLabelStyle = (label) => ({
   m: 1,
@@ -119,6 +121,16 @@ export default function Field({
             onValueChange={onValueChange}
             translations={translations}
             currentLang={currentLang}
+            label={label}
+          />
+        </Grid>
+      )}
+      {schema instanceof SchemaFieldBoolean && (
+        <Grid xs={schema.config.colSpan}>
+          <FieldBoolean
+            schema={schema}
+            value={value}
+            onValueChange={onValueChange}
             label={label}
           />
         </Grid>
