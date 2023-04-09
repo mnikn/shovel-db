@@ -153,6 +153,9 @@ export default function ActorSettings({
             justifyContent: 'center',
           }}
         >
+          <Button variant='outlined' onClick={close}>
+            Cancel
+          </Button>
           <Button
             variant='contained'
             onClick={() => {
@@ -163,9 +166,6 @@ export default function ActorSettings({
             }}
           >
             Confirm
-          </Button>
-          <Button variant='outlined' onClick={close}>
-            Cancel
           </Button>
         </Stack>
       </Stack>

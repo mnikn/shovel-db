@@ -112,6 +112,9 @@ export default function CodeSettings({
             justifyContent: 'center',
           }}
         >
+          <Button variant='outlined' onClick={close}>
+            Cancel
+          </Button>
           <Button
             variant='contained'
             onClick={() => {
@@ -120,9 +123,6 @@ export default function CodeSettings({
             }}
           >
             Confirm
-          </Button>
-          <Button variant='outlined' onClick={close}>
-            Cancel
           </Button>
         </Stack>
       </Stack>

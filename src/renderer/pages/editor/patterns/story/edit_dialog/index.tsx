@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Box, Tabs, Tab, Modal, Stack, Button, Container } from '@mui/material';
 import { borderRadius } from '../../../../../theme';
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
@@ -283,15 +283,43 @@ export default function EditDialog({
     setCurrentTab(tabs[0]?.id || '');
   }, [tabs]);
 
-  /* useEffect(() => {
-   *     if (currentTab === 'basic') {
-   *         setFormNodeData(cloneDeep(node.data));
-   *     }
-   * }, [node.data, currentTab]); */
-
   const formTranslations = useMemo(() => {
     return cloneDeep(translations);
   }, [translations, currentTab]);
+
+  const submitForm = useCallback(() => {
+    updateTranslations(formTranslations);
+    node.data = { ...node.data, ...formNodeData };
+    if (
+      (node instanceof StoryletSentenceNode ||
+        node instanceof StoryletBranchNode) &&
+      !node.data.actor?.id
+    ) {
+      node.data.actor = null;
+    }
+    updateNode(node);
+    trackCurrentState();
+    close();
+  }, [node, formTranslations, updateNode, trackCurrentState, close]);
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.code === 'Enter' && e.ctrlKey) {
+        if (e.shiftKey) {
+          close();
+        } else {
+          submitForm();
+        }
+        e.preventDefault();
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [close, submitForm]);
 
   const basicDataSchema = useMemo(() => {
     const res = generateSchema(node);
@@ -388,27 +416,16 @@ export default function EditDialog({
           justifyContent: 'center',
         }}
       >
+        <Button variant='outlined' onClick={close}>
+          Cancel
+        </Button>
         <Button
           variant='contained'
           onClick={() => {
-            updateTranslations(formTranslations);
-            node.data = { ...node.data, ...formNodeData };
-            if (
-              (node instanceof StoryletSentenceNode ||
-                node instanceof StoryletBranchNode) &&
-              !node.data.actor?.id
-            ) {
-              node.data.actor = null;
-            }
-            updateNode(node);
-            trackCurrentState();
-            close();
+            submitForm();
           }}
         >
           Confirm
-        </Button>
-        <Button variant='outlined' onClick={close}>
-          Cancel
         </Button>
       </Stack>
     </Stack>
