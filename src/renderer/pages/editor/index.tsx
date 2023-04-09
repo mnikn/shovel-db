@@ -1,6 +1,10 @@
 import { Box, Stack, CircularProgress, FormLabel } from '@mui/material';
 import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
-import { useExplorerStore, useStoryStore } from '../../store';
+import {
+  useExplorerStore,
+  useStaticDataStore,
+  useStoryStore,
+} from '../../store';
 import { Mode, useEditorStore } from '../../store/editor';
 import { useProjectStore } from '../../store/project';
 import { useTrackStore } from '../../store/track';
@@ -22,6 +26,10 @@ export default function Editor() {
     storyActors,
   } = useStoryStore();
   const { files, recentOpenFiles } = useExplorerStore();
+  const {
+    schemaConfigs: staticDataSchemaConfigs,
+    translations: staticDataTranslations,
+  } = useStaticDataStore();
   const { save } = useProjectStore();
   const [saving, setSaving] = useState(false);
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
@@ -76,7 +84,8 @@ export default function Editor() {
           storyNodeSettings: nodeSettings,
           files,
           recentOpenFiles,
-          staticData: {},
+          staticDataSchemaConfigs,
+          staticDataTranslations,
         });
         setTimeout(() => {
           setSaving(false);

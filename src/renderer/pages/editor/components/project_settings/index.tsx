@@ -14,7 +14,12 @@ import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
 import ActorSettings from './actor_settings';
 import { grey } from '@mui/material/colors';
 import CodeSettings from './code_settings';
-import { useProjectStore, useStoryStore } from '../../../../store';
+import {
+  useExplorerStore,
+  useProjectStore,
+  useStaticDataStore,
+  useStoryStore,
+} from '../../../../store';
 import { DEFAULT_CONFIG, DEFAULT_CONFIG_JSON } from '../../../../models/schema';
 
 enum TAB {
@@ -223,6 +228,10 @@ export default function ProjectSettings({
 }) {
   const [currentTab, setCurrentTab] = useState(TAB.Story);
   const [actorSettingsOpen, setActorSettingsOpen] = useState(false);
+  const [
+    staticDataCurrentFileSchemaSettingsOpen,
+    setStaticDataCurrentFileSchemaSettingsOpen,
+  ] = useState(false);
   const [basicSchemaSettingsOpen, setBasicSchemaSettingsOpen] = useState<{
     [key: string]: boolean;
   }>({
@@ -320,6 +329,12 @@ export default function ProjectSettings({
       </Stack>
     );
   };
+
+  const { schemaConfigs, updateSchema } = useStaticDataStore();
+  const { currentOpenFile } = useExplorerStore();
+  const currentFileSchema =
+    schemaConfigs[currentOpenFile?.id || ''] ||
+    JSON.stringify(DEFAULT_CONFIG_JSON.ARR_OBJ_JSON, null, 2);
   return (
     <Modal open={open}>
       <Stack
@@ -365,7 +380,44 @@ export default function ProjectSettings({
             return <Tab key={item} label={item} value={item} />;
           })}
         </Tabs>
-        {currentTab === TAB.StaticData && <div>fdfd</div>}
+        {currentTab === TAB.StaticData && (
+          <Stack spacing={2}>
+            <Stack
+              direction='row'
+              spacing={2}
+              sx={{
+                alignItems: 'center',
+              }}
+            >
+              <FormLabel>Current file:</FormLabel>
+              <Button
+                variant='outlined'
+                onClick={() => {
+                  setStaticDataCurrentFileSchemaSettingsOpen(true);
+                }}
+              >
+                Edit schema
+              </Button>
+            </Stack>
+            {staticDataCurrentFileSchemaSettingsOpen && (
+              <CodeSettings
+                lang='json'
+                open
+                value={currentFileSchema}
+                onValueChange={(val) => {
+                  if (!currentOpenFile) {
+                    return;
+                  }
+                  updateSchema(currentOpenFile.id, val);
+                }}
+                onEditorMounted={editorDidMount}
+                close={() => {
+                  setStaticDataCurrentFileSchemaSettingsOpen(false);
+                }}
+              />
+            )}
+          </Stack>
+        )}
         {currentTab === TAB.Story && (
           <Stack spacing={2}>
             <Stack

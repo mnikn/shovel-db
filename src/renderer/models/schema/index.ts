@@ -373,6 +373,15 @@ export const DEFAULT_CONFIG_JSON = {
     fieldSchema: null,
     config: DEFAULT_CONFIG.ARRAY_CONFIG_DEFAULT,
   },
+  ARR_OBJ_JSON: {
+    type: 'array',
+    fieldSchema: {
+      type: 'object',
+      fields: {},
+      config: DEFAULT_CONFIG.OBJECT_CONFIG_DEFAULT,
+    },
+    config: DEFAULT_CONFIG.ARRAY_CONFIG_DEFAULT,
+  },
   SELECT_JSON: {
     type: 'select',
     config: DEFAULT_CONFIG.SELECT_CONFIG_DEFAULT,

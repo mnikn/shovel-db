@@ -7,8 +7,8 @@ import {
   validateValue,
 } from '../../../../models/schema';
 import Field from './field';
-import { Translation } from '../../../../store/story/translation';
 import { LANG } from '../../../../../constants/i18n';
+import { Translation } from '../../../../store/common/translation';
 
 export default function SchemaForm({
   formData,

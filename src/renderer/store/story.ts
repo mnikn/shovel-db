@@ -1,27 +1,21 @@
-import {
-  useLayoutEffect,
-  useCallback,
-  useState,
-  useRef,
-  useEffect,
-} from 'react';
 import { createGlobalStore } from 'hox';
 import { cloneDeep, maxBy } from 'lodash';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { LANG } from '../../constants/i18n';
+import { RawJson } from '../../type';
+import { UUID } from '../../utils/uuid';
+import { Event, eventEmitter } from '../events';
+import { DEFAULT_CONFIG_JSON } from '../models/schema';
 import {
   Storylet,
   StoryletBranchNode,
   StoryletNode,
   StoryletNodeData,
   StoryletSentenceNode,
-} from '../../models/story/storylet';
-import useTranslation from './translation';
-import { getTrackStore, trackState } from '../track';
-import { RawJson } from '../../../type';
-import { LANG } from '../../../constants/i18n';
-import { UUID } from '../../../utils/uuid';
-import { formatNodeLinkId, NodeLink } from '../../models/tree';
-import { Event, eventEmitter } from '../../events';
-import { DEFAULT_CONFIG, DEFAULT_CONFIG_JSON } from '../../models/schema';
+} from '../models/story/storylet';
+import { formatNodeLinkId, NodeLink } from '../models/tree';
+import useTranslation from './common/translation';
+import { getTrackStore, trackState } from './track';
 
 interface NodeSelection {
   nodeId: string;

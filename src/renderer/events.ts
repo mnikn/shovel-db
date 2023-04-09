@@ -14,6 +14,10 @@ export enum Event {
   UpdateRecentOpenFiles = 'updateRecentOpenFiles',
   OpenFile = 'openFile',
   OpenProjectSettings = 'openProjectSettings',
+
+  UpdateStaticDataSchema = 'updateStaticDataSchema',
+  UpdateStaticDataAllSchema = 'updateStaticDataAllSchema',
+  UpdateStaticDataTranslations = 'updateStaticDataTranslations',
 }
 
 export const eventEmitter = new EventEmitter();

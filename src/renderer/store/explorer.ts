@@ -132,6 +132,9 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
       if (rootFolder.id === 'story') {
         eventEmitter.emit(Event.CreateStorylet, val);
       }
+      if (rootFolder.id === 'static-data') {
+        eventEmitter.emit(Event.UpdateStaticDataSchema, val);
+      }
       return val;
     },
     []

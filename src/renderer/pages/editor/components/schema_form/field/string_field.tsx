@@ -1,10 +1,10 @@
-import { Box, Container, TextField, Stack, FormLabel } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { Box, FormLabel, Stack, TextField } from '@mui/material';
 import { get, set } from 'lodash';
+import React, { useEffect, useState } from 'react';
 import MonacoEditor from 'react-monaco-editor/lib/editor';
 import { LANG } from '../../../../../../constants/i18n';
 import { SchemaFieldString } from '../../../../../models/schema';
-import { Translation } from '../../../../../store/story/translation';
+import { Translation } from '../../../../../store/common/translation';
 
 function FieldString({
   label,

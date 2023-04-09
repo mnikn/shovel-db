@@ -44,10 +44,9 @@ export default function Explorer() {
     }
 
     const parents = getPathParents(currentOpenFile.id, files);
-    setUncollapsedFolders(parents);
-    /* setUncollapsedFolders((prev) => {
-     *   return uniq([...prev, ...parents]);
-     * }); */
+    setUncollapsedFolders((prev) => {
+      return uniq([...prev, ...parents]);
+    });
   }, [currentOpenFile, files]);
 
   useEffect(() => {

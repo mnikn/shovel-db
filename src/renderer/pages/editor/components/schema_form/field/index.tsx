@@ -15,7 +15,6 @@ import {
   SchemaFieldSelect,
   SchemaFieldString,
 } from '../../../../../models/schema';
-import { Translation } from '../../../../../store/story/translation';
 import { borderRadius } from '../../../../../theme';
 import FieldFile from './file_field';
 import FieldString from './string_field';
@@ -24,6 +23,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import RemoveIcon from '@mui/icons-material/Remove';
 import FieldSelect from './select_field';
 import FieldBoolean from './boolean_field';
+import { Translation } from '../../../../../store/common/translation';
 
 const getContainerLabelStyle = (label) => ({
   m: 1,
@@ -40,7 +40,7 @@ const getContainerLabelStyle = (label) => ({
     /* width: '-webkit-fill-available', */
     width: '40%',
     zIndex: 'auto',
-    background: 'white',
+    background: 'inherit',
     overflow: 'hidden',
   },
 });
@@ -72,6 +72,7 @@ export default function Field({
           sx={{
             ...gridStyle,
             alignItems: 'center',
+            background: '#fff',
             width: '-webkit-fill-available',
           }}
         >
@@ -306,7 +307,7 @@ export function FieldArray({
           })}
         </Stack>
         <Button
-          variant='outlined'
+          variant='contained'
           sx={{
             marginTop: 'auto',
           }}

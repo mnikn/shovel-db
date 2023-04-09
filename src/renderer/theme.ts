@@ -1,4 +1,4 @@
-import { grey } from '@mui/material/colors';
+import { blue, blueGrey, grey, indigo, lightBlue } from '@mui/material/colors';
 import { createTheme } from '@mui/material/styles';
 
 export const borderRadius = {
@@ -17,12 +17,12 @@ export const animation = {
 // https://mui.com/customization/theming/
 const theme = createTheme({
   palette: {
-    // primary: {
-    //   light: 'rgb(249 250 251)',
-    //   500: 'rgb(107 114 128)',
-    //   main: 'rgb(249 250 251)',
-    //   contrastText: '#000',
-    // },
+    primary: {
+      // light: 'rgb(249 250 251)',
+      light: grey[300],
+      main: grey[500],
+      contrastText: '#fff',
+    },
     secondary: {
       light: grey[50],
       main: grey[200],

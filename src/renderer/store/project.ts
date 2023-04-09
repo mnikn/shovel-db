@@ -78,6 +78,42 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       }
       eventEmitter.emit(Event.UpdateStoryTranslations, translations);
 
+      const staticDataPath = join(cacheProjectPath, 'static-data');
+      const staticDataFilePath = join(staticDataPath, 'static-data.json');
+      const staticRawData = JSON.parse(
+        await ipcSend(READ_FILE, { filePath: staticDataFilePath })
+      );
+      eventEmitter.emit(
+        Event.UpdateStaticDataAllSchema,
+        staticRawData.schemaConfigs
+      );
+      const staticDataTranslationsPath = join(
+        staticDataPath,
+        'translations.csv'
+      );
+      const staticDataTranslationsRes = await ipcSend(READ_FILE, {
+        filePath: staticDataTranslationsPath,
+      });
+      const staticDataTranslations: any = {};
+      if (staticDataTranslationsRes) {
+        const str = await csv({
+          output: 'csv',
+        }).fromString(staticDataTranslationsRes);
+        str.forEach((s, i) => {
+          s.forEach((s2, j) => {
+            if (j === 0) {
+              staticDataTranslations[s2] = {};
+            } else {
+              staticDataTranslations[s[0]][settingsData.i18n[j - 1]] = s2;
+            }
+          });
+        });
+      }
+      eventEmitter.emit(
+        Event.UpdateStaticDataTranslations,
+        staticDataTranslations
+      );
+
       setTimeout(() => {
         const lastRecentOpenFile =
           settingsData.recentOpenFiles[settingsData.recentOpenFiles.length - 1];
@@ -100,7 +136,8 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       storyNodeSettings,
       recentOpenFiles,
       files,
-      staticData,
+      staticDataSchemaConfigs,
+      staticDataTranslations,
     }: any) => {
       let rootPath = projectPath;
       if (!projectPath) {
@@ -121,6 +158,7 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       }
 
       const storyPath = join(rootPath, 'story');
+      const staticDataPath = join(rootPath, 'static-data');
       const projectFilePath = join(rootPath, 'project.json');
 
       await ipcSend(SAVE_FILE, {
@@ -169,6 +207,34 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       await ipcSend(SAVE_FILE, {
         filePath: storyTranslationsFilePath,
         data: translationData,
+      });
+
+      const staticDataFilePath = join(staticDataPath, 'static-data.json');
+      const storeStaticData = {
+        schemaConfigs: staticDataSchemaConfigs,
+      };
+      await ipcSend(SAVE_FILE, {
+        filePath: staticDataFilePath,
+        data: JSON.stringify(storeStaticData, null, 2),
+      });
+      const staticDatatranslationRawData: any[] = [];
+      Object.keys(staticDataTranslations).forEach((key) => {
+        staticDatatranslationRawData.push({
+          keys: key,
+          ...staticDataTranslations[key],
+        });
+      });
+      const staticDataTranslationData = jsonParseCsv(
+        staticDatatranslationRawData,
+        translateOptions
+      );
+      const staticDataTranslationsFilePath = join(
+        staticDataPath,
+        'translations.csv'
+      );
+      await ipcSend(SAVE_FILE, {
+        filePath: staticDataTranslationsFilePath,
+        data: staticDataTranslationData,
       });
     },
     [projectPath, projectSettings]
