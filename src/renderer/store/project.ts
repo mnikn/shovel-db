@@ -1,21 +1,15 @@
-import {
-  useEffect,
-  useCallback,
-  useState,
-  useRef,
-  useLayoutEffect,
-} from 'react';
-import { createGlobalStore } from 'hox';
 import { dialog } from '@electron/remote';
+import csv from 'csvtojson';
+import { ipcRenderer } from 'electron';
+import { createGlobalStore } from 'hox';
+import { parse as jsonParseCsv } from 'json2csv';
+import { join } from 'path';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { OPEN_PROJECT, READ_FILE, SAVE_FILE } from '../../constants/events';
 import { LANG } from '../../constants/i18n';
 import { PROJECT_ROOT_PATH } from '../../constants/storage';
-import { ipcRenderer } from 'electron';
-import { OPEN_PROJECT, READ_FILE, SAVE_FILE } from '../../constants/events';
-import { join } from 'path';
 import { ipcSend } from '../electron/ipc';
-import csv from 'csvtojson';
-import { parse as jsonParseCsv } from 'json2csv';
-import { Event, eventEmitter } from '.';
+import { Event, eventEmitter } from '../events';
 import { getRootParent } from '../models/explorer';
 
 interface ProjectSettings {

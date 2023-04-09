@@ -129,6 +129,10 @@ function FieldString({
             options={{
               insertSpaces: true,
               autoIndent: 'full',
+              automaticLayout: true,
+              minimap: {
+                enabled: false,
+              },
               tabSize: 2,
               scrollbar: {
                 horizontal: 'auto',

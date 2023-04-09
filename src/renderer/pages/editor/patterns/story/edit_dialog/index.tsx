@@ -383,12 +383,27 @@ export default function EditDialog({
               .find((item) => item.id === p)
               ?.portraits.find((z) => z.id === c);
             return (
-              <Stack direction='row' spacing={2} sx={{ alignItems: 'center' }}>
+              <Stack direction='row' sx={{ alignItems: 'center', px: 2 }}>
                 {p && c && (
-                  <img
-                    style={{ width: '24px', height: 'auto' }}
-                    src={tr(portraitItem?.pic || '')}
-                  />
+                  <Box
+                    sx={{
+                      marginRight: '12px',
+                      backgroundColor: grey[800],
+                      ...borderRadius.normal,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      p: 0.5,
+                    }}
+                  >
+                    <img
+                      style={{
+                        width: '24px',
+                        height: 'auto',
+                      }}
+                      src={tr(portraitItem?.pic || '')}
+                    />
+                  </Box>
                 )}
                 {portraitItem?.id || item?.label}
               </Stack>

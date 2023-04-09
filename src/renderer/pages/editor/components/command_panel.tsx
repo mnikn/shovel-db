@@ -14,7 +14,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { getFullPath, File } from '../../../models/explorer';
+import { Event, eventEmitter } from '../../../events';
 import { useExplorerStore } from '../../../store';
 import { borderRadius, animation } from '../../../theme';
 
@@ -65,6 +65,17 @@ export default function CommandPanel({ close }: { close: () => void }) {
               openFile(file);
             }, 0);
           }
+        },
+      },
+      {
+        id: 'open-project-settings',
+        label: 'Open project settings',
+        enabled: () => {
+          return true;
+        },
+        needInputText: false,
+        fn: () => {
+          eventEmitter.emit(Event.OpenProjectSettings);
         },
       },
     ],
@@ -206,6 +217,7 @@ export default function CommandPanel({ close }: { close: () => void }) {
                       }
 
                       item.fn(commandInputText);
+                      close();
                     }}
                   >
                     <Stack

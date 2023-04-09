@@ -20,7 +20,7 @@ import { RawJson } from '../../../type';
 import { LANG } from '../../../constants/i18n';
 import { UUID } from '../../../utils/uuid';
 import { formatNodeLinkId, NodeLink } from '../../models/tree';
-import { Event, eventEmitter } from '..';
+import { Event, eventEmitter } from '../../events';
 import { DEFAULT_CONFIG, DEFAULT_CONFIG_JSON } from '../../models/schema';
 
 interface NodeSelection {

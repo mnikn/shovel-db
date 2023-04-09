@@ -8,6 +8,7 @@ import { SHOW_PROJET_SETTINGS } from '../../../constants/events';
 import ProjectSettings from './components/project_settings';
 import { Mode, useEditorStore } from '../../store/editor';
 import { getRootParent } from '../../models/explorer';
+import { Event, eventEmitter } from '../../events';
 
 export default function Main({ children }: { children?: any }) {
   const { currentOpenFile, files } = useExplorerStore();
@@ -20,9 +21,11 @@ export default function Main({ children }: { children?: any }) {
       setMode(Mode.Popup);
     };
     ipcRenderer.on(SHOW_PROJET_SETTINGS, showProjectSettings);
+    eventEmitter.on(Event.OpenProjectSettings, showProjectSettings);
 
     return () => {
       ipcRenderer.off(SHOW_PROJET_SETTINGS, showProjectSettings);
+      eventEmitter.off(Event.OpenProjectSettings, showProjectSettings);
     };
   }, [setMode]);
 

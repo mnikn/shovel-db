@@ -1,7 +1,7 @@
 import { createGlobalStore } from 'hox';
 import { maxBy } from 'lodash';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Event, eventEmitter } from '.';
+import { Event, eventEmitter } from '../events';
 import { RawJson } from '../../type';
 import {
   createFile,

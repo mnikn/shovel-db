@@ -31,7 +31,11 @@ function FieldSelect({
     )?.children || [];
 
   return (
-    <Stack direction='row' sx={{ width: '100%' }} spacing={1}>
+    <Stack
+      direction='row'
+      sx={{ width: '100%', alignItems: 'center' }}
+      spacing={1}
+    >
       <FormControl sx={{ flexGrow: 1 }}>
         <InputLabel id={schema.config.fieldId}>
           {isGrouping ? schema.config.groupConfig?.group?.label : label}

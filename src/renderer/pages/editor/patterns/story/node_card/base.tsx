@@ -209,6 +209,9 @@ export default function BaseNodeCard({
                   autoIndent: 'full',
                   readOnly: true,
                   tabSize: 2,
+                  minimap: {
+                    enabled: false,
+                  },
                   fontSize: 28,
                   scrollbar: {
                     horizontal: 'auto',
