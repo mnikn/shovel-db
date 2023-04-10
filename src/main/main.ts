@@ -5,6 +5,7 @@ import {
   DELETE_FILE,
   OPEN_PROJECT,
   READ_FILE,
+  RENAME_FILE,
   SAVE_FILE,
   SHOW_PROJET_SETTINGS,
 } from '../constants/events';
@@ -140,6 +141,17 @@ ipcMain.on(READ_FILE, (event, arg) => {
 ipcMain.on(DELETE_FILE, (_, arg) => {
   const { filePath } = arg;
   fs.rmSync(filePath);
+});
+
+ipcMain.on(RENAME_FILE, (event, arg) => {
+  const { oldFilePath, newFilePath } = arg;
+  ensureDirExists(newFilePath);
+  try {
+    const res = fs.renameSync(oldFilePath, newFilePath);
+    event.sender.send(RENAME_FILE + '-response', res);
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 app.on('activate', () => {

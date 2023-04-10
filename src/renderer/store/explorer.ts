@@ -9,6 +9,7 @@ import {
   File,
   Folder,
   getChildren,
+  getFullPath,
   getRootParent,
 } from '../models/explorer';
 
@@ -99,12 +100,21 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
       return;
     }
 
+    const oldPath = getFullPath(file, files);
     file.name = val.name;
+    const newPath = getFullPath(val, files);
 
     if (file.type === 'file') {
       const rootParent = getRootParent(file?.parentId || '', filesRef.current);
       if (rootParent.id === 'story') {
         eventEmitter.emit(Event.UpdateStoryletName, id, val.name);
+      }
+      if (rootParent.id === 'static-data') {
+        eventEmitter.emit(
+          Event.RenameStaticDataFile,
+          oldPath?.replace('static-data.', '') + '.json',
+          newPath?.replace('static-data.', '') + '.json'
+        );
       }
     }
 
@@ -134,6 +144,11 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
       }
       if (rootFolder.id === 'static-data') {
         eventEmitter.emit(Event.UpdateStaticDataSchema, val);
+        eventEmitter.emit(
+          Event.UpdateStaticDataFile,
+          getFullPath(val, filesRef.current)?.replace('static-data.', '') +
+            '.json'
+        );
       }
       return val;
     },

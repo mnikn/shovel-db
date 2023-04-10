@@ -5,7 +5,12 @@ import { createGlobalStore } from 'hox';
 import { parse as jsonParseCsv } from 'json2csv';
 import { join } from 'path';
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { OPEN_PROJECT, READ_FILE, SAVE_FILE } from '../../constants/events';
+import {
+  OPEN_PROJECT,
+  READ_FILE,
+  RENAME_FILE,
+  SAVE_FILE,
+} from '../../constants/events';
 import { LANG } from '../../constants/i18n';
 import { PROJECT_ROOT_PATH } from '../../constants/storage';
 import { ipcSend } from '../electron/ipc';
@@ -258,6 +263,39 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       ipcRenderer.off(OPEN_PROJECT, openProject);
     };
   }, []);
+
+  useEffect(() => {
+    const updateStaticDataFile = async (filePath: string, data = []) => {
+      if (!projectPath) {
+        return;
+      }
+      const staticDataPath = join(projectPath, 'static-data');
+      const fullPath = join(staticDataPath, filePath);
+      await ipcSend(SAVE_FILE, {
+        filePath: fullPath,
+        data: JSON.stringify(data, null, 2),
+      });
+    };
+    const renameFile = async (originFilePath: string, newFilePath: string) => {
+      if (!projectPath) {
+        return;
+      }
+      const staticDataPath = join(projectPath, 'static-data');
+      const oldFullPath = join(staticDataPath, originFilePath);
+      const newFullPath = join(staticDataPath, newFilePath);
+      console.log('fddf:', oldFullPath, ' ', newFullPath);
+      await ipcSend(RENAME_FILE, {
+        oldFilePath: oldFullPath,
+        newFilePath: newFullPath,
+      });
+    };
+    eventEmitter.on(Event.UpdateStaticDataFile, updateStaticDataFile);
+    eventEmitter.on(Event.RenameStaticDataFile, renameFile);
+    return () => {
+      eventEmitter.off(Event.UpdateStaticDataFile, updateStaticDataFile);
+      eventEmitter.off(Event.RenameStaticDataFile, renameFile);
+    };
+  }, [projectPath]);
 
   return {
     projectSettings,

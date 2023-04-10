@@ -11,6 +11,13 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
       [key: string]: string;
     }>({});
 
+    const [fileData, setFileData] = useState<{
+      [key: string]: {
+        schema: string;
+        data: any[];
+      };
+    }>({});
+
     const updateSchema = useCallback((fileId: string, schema: string) => {
       setSchemaConfigs((prev) => {
         const newVal = { ...prev };

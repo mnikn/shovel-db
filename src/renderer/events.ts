@@ -18,6 +18,8 @@ export enum Event {
   UpdateStaticDataSchema = 'updateStaticDataSchema',
   UpdateStaticDataAllSchema = 'updateStaticDataAllSchema',
   UpdateStaticDataTranslations = 'updateStaticDataTranslations',
+  UpdateStaticDataFile = 'updateStaticDataFile',
+  RenameStaticDataFile = 'renameStaticDataFile',
 }
 
 export const eventEmitter = new EventEmitter();

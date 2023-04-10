@@ -228,8 +228,7 @@ export default function Explorer() {
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    data.name = editingName || '';
-                    updateItem(data.id, data);
+                    updateItem(data.id, { ...data, name: editingName || '' });
                     setEditingItem(null);
                     setEditingName(null);
                   }
@@ -335,8 +334,7 @@ export default function Explorer() {
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                data.name = editingName || '';
-                updateItem(data.id, data);
+                updateItem(data.id, { ...data, name: editingName || '' });
                 setEditingItem(null);
                 setEditingName(null);
               }

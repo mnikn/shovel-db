@@ -15,8 +15,11 @@ export default function StaticData() {
   const { schemaConfigs } = useStaticDataStore();
   const { currentOpenFile } = useExplorerStore();
   const currentFileSchema = useMemo(() => {
-    return (buildSchema(JSON.parse(schemaConfigs[currentOpenFile?.id || ''])) ||
-      buildSchema(DEFAULT_CONFIG_JSON.ARR_OBJ_JSON)) as SchemaFieldArray;
+    const config = schemaConfigs[currentOpenFile?.id || ''];
+    if (!config) {
+      return buildSchema(DEFAULT_CONFIG_JSON.ARR_OBJ_JSON) as SchemaFieldArray;
+    }
+    return buildSchema(JSON.parse(config)) as SchemaFieldArray;
   }, [schemaConfigs, currentOpenFile]);
   return (
     <Stack sx={{ p: 6, height: '100%' }}>
