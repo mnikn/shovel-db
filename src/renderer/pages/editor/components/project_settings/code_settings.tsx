@@ -48,7 +48,7 @@ export default function CodeSettings({
       colSpan: 12,
       type: 'code',
       codeLang: lang,
-      height: '500px',
+        /* height: '500px', */
       editorMounted: onEditorMounted,
     });
   }, [lang, onEditorMounted]);

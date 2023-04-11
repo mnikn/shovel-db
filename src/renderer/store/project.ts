@@ -88,10 +88,7 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       const staticRawData = JSON.parse(
         await ipcSend(READ_FILE, { filePath: staticDataFilePath })
       );
-      eventEmitter.emit(
-        Event.UpdateStaticDataAllSchema,
-        staticRawData.schemaConfigs
-      );
+      eventEmitter.emit(Event.UpdateStaticDataAllData, staticRawData.fileData);
       const staticDataTranslationsPath = join(
         staticDataPath,
         'translations.csv'
@@ -141,7 +138,7 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       storyNodeSettings,
       recentOpenFiles,
       files,
-      staticDataSchemaConfigs,
+      staticDataFileData,
       staticDataTranslations,
     }: any) => {
       let rootPath = projectPath;
@@ -216,7 +213,7 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
 
       const staticDataFilePath = join(staticDataPath, 'static-data.json');
       const storeStaticData = {
-        schemaConfigs: staticDataSchemaConfigs,
+        fileData: staticDataFileData,
       };
       await ipcSend(SAVE_FILE, {
         filePath: staticDataFilePath,

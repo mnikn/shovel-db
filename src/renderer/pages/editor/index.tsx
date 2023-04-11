@@ -26,10 +26,8 @@ export default function Editor() {
     storyActors,
   } = useStoryStore();
   const { files, recentOpenFiles } = useExplorerStore();
-  const {
-    schemaConfigs: staticDataSchemaConfigs,
-    translations: staticDataTranslations,
-  } = useStaticDataStore();
+  const { fileData: staticDataFileData, translations: staticDataTranslations } =
+    useStaticDataStore();
   const { save } = useProjectStore();
   const [saving, setSaving] = useState(false);
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
@@ -42,7 +40,7 @@ export default function Editor() {
 
   useEffect(() => {
     const handle = async (e) => {
-      if (e.code === 'KeyP' && e.ctrlKey) {
+      if (e.code === 'KeyP' && (e.ctrlKey || e.metaKey)) {
         if (
           mode === Mode.Popup &&
           !(searchPanelOpenRef.current || commandPanelOpenRef.current)
@@ -67,7 +65,7 @@ export default function Editor() {
       if (mode !== Mode.Normal) {
         return;
       }
-      if (e.code === 'KeyZ' && e.ctrlKey) {
+      if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) {
         if (e.shiftKey) {
           redo();
         } else {
@@ -75,7 +73,7 @@ export default function Editor() {
         }
       }
 
-      if (e.code === 'KeyS' && e.ctrlKey) {
+      if (e.code === 'KeyS' && (e.ctrlKey || e.metaKey)) {
         setSaving(true);
         await save({
           story,
@@ -84,7 +82,7 @@ export default function Editor() {
           storyNodeSettings: nodeSettings,
           files,
           recentOpenFiles,
-          staticDataSchemaConfigs,
+          staticDataFileData,
           staticDataTranslations,
         });
         setTimeout(() => {
@@ -107,6 +105,8 @@ export default function Editor() {
     nodeSettings,
     storyTranslations,
     files,
+    staticDataFileData,
+    staticDataTranslations,
   ]);
 
   return (

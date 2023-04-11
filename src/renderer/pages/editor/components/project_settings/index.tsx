@@ -330,10 +330,10 @@ export default function ProjectSettings({
     );
   };
 
-  const { schemaConfigs, updateSchema } = useStaticDataStore();
+  const { fileData, updateSchema } = useStaticDataStore();
   const { currentOpenFile } = useExplorerStore();
   const currentFileSchema =
-    schemaConfigs[currentOpenFile?.id || ''] ||
+    fileData?.[currentOpenFile?.id || '']?.schema ||
     JSON.stringify(DEFAULT_CONFIG_JSON.ARR_OBJ_JSON, null, 2);
   return (
     <Modal open={open}>

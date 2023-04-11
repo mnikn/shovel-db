@@ -118,7 +118,7 @@ export default function BaseNodeCard({
       if (insertFn) {
         let newNode: StoryletNode<StoryletNodeData> =
           new StoryletSentenceNode();
-        if (e.ctrlKey) {
+        if (e.ctrlKey || e.metaKey) {
           newNode = new StoryletBranchNode();
           if (e.shiftKey) {
             newNode = new StoryletActionNode();
@@ -130,14 +130,14 @@ export default function BaseNodeCard({
         return;
       }
 
-      if (e.code === 'KeyD' && e.ctrlKey) {
+      if (e.code === 'KeyD' && (e.ctrlKey || e.metaKey)) {
         const insertNodeFn = e.shiftKey ? insertSiblingNode : insertChildNode;
         const newNode = duplicateNode(node);
         insertNodeFn(newNode, node);
         return;
       }
 
-      if (e.code === 'KeyC' && e.ctrlKey) {
+      if (e.code === 'KeyC' && (e.ctrlKey || e.metaKey)) {
         if (e.shiftKey) {
           const relations = currentStorylet.getAllNodeChildrenRelations(
             node.id
@@ -156,7 +156,7 @@ export default function BaseNodeCard({
         return;
       }
 
-      if (e.code === 'KeyV' && e.ctrlKey) {
+      if (e.code === 'KeyV' && (e.ctrlKey || e.metaKey)) {
         const copyJson = JSON.parse(clipboard.readText());
         if ('nodes' in copyJson) {
           const idMap = {};

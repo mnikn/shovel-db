@@ -1,7 +1,6 @@
 import { createGlobalStore } from 'hox';
 import { useCallback, useEffect, useState } from 'react';
 import { Event, eventEmitter } from '../events';
-import { SchemaFieldArray } from '../models/schema';
 import useTranslation from './common/translation';
 
 export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
@@ -24,16 +23,24 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
         newVal[fileId] = schema;
         return newVal;
       });
+      setFileData((prev) => {
+        const newVal = prev ? { ...prev } : {};
+        if (!(fileId in newVal)) {
+          newVal[fileId] = { schema: '', data: [] };
+        }
+        newVal[fileId].schema = schema;
+        return newVal;
+      });
     }, []);
 
     useEffect(() => {
-      eventEmitter.on(Event.UpdateStaticDataAllSchema, setSchemaConfigs);
+      eventEmitter.on(Event.UpdateStaticDataAllData, setFileData);
       eventEmitter.on(
         Event.UpdateStaticDataTranslations,
         translationModule.updateTranslations
       );
       return () => {
-        eventEmitter.off(Event.UpdateStaticDataTranslations, setSchemaConfigs);
+        eventEmitter.off(Event.UpdateStaticDataAllData, setFileData);
         eventEmitter.off(
           Event.UpdateStaticDataTranslations,
           translationModule.updateTranslations
@@ -43,6 +50,7 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
 
     return {
       ...translationModule,
+      fileData,
       updateSchema,
       schemaConfigs,
     };
