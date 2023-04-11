@@ -6,6 +6,8 @@ import { LANG } from '../../../../../../constants/i18n';
 import { SchemaFieldString } from '../../../../../models/schema';
 import { Translation } from '../../../../../store/common/translation';
 
+const isInjectTable = new Set<string>();
+
 function FieldString({
   label,
   schema,
@@ -180,6 +182,43 @@ function FieldString({
                   });
                 }
               });
+
+              if (
+                schema.config.codeSnippets &&
+                !isInjectTable.has(JSON.stringify(schema.config.codeSnippets))
+              ) {
+                const createDependencyProposals = (range) => {
+                  return schema.config.codeSnippets.map((item) => {
+                    return {
+                      label: item.label,
+                      kind: monaco.languages.CompletionItemKind.Snippet,
+                      insertText: item.code,
+                      insertTextRules:
+                        monaco.languages.CompletionItemInsertTextRule
+                          .InsertAsSnippet,
+                      range: range,
+                    };
+                  });
+                };
+                monaco.languages.registerCompletionItemProvider(
+                  schema.config.codeLang,
+                  {
+                    provideCompletionItems: (model, position) => {
+                      var word = model.getWordUntilPosition(position);
+                      var range = {
+                        startLineNumber: position.lineNumber,
+                        endLineNumber: position.lineNumber,
+                        startColumn: word.startColumn,
+                        endColumn: word.endColumn,
+                      };
+                      return {
+                        suggestions: createDependencyProposals(range),
+                      };
+                    },
+                  }
+                );
+                isInjectTable.add(JSON.stringify(schema.config.codeSnippets));
+              }
               if (schema.config?.editorMounted) {
                 return schema.config?.editorMounted(val, monaco);
               }
