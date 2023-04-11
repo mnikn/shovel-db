@@ -116,6 +116,7 @@ function FieldString({
           sx={{
             width: '100%',
             height: schema.config.height || '300px',
+            flexGrow: schema.config.flexGrow || 0,
             position: 'relative',
           }}
         >

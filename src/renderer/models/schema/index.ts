@@ -343,7 +343,7 @@ export const DEFAULT_CONFIG = {
     type: 'img',
     fieldId: `field_${UUID()}`,
   },
-  FILE_DEFAULT: {
+  FILE_CONFIG_DEFAULT: {
     colSpan: 4,
     defaultValue: '',
     type: 'img',
@@ -385,6 +385,10 @@ export const DEFAULT_CONFIG_JSON = {
   SELECT_JSON: {
     type: 'select',
     config: DEFAULT_CONFIG.SELECT_CONFIG_DEFAULT,
+  },
+  FILE_JSON: {
+    type: 'file',
+    config: DEFAULT_CONFIG.FILE_CONFIG_DEFAULT,
   },
 };
 

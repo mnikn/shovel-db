@@ -1,5 +1,5 @@
 import { Stack } from '@mui/material';
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { LANG } from '../../../../../constants/i18n';
 import {
   DEFAULT_CONFIG_JSON,
@@ -12,26 +12,46 @@ import { useExplorerStore, useStaticDataStore } from '../../../../store';
 import SchemaForm from '../../components/schema_form';
 
 export default function StaticData() {
-  const { fileData } = useStaticDataStore();
+  const {
+    fileData,
+    updateData,
+    currentLang,
+    translations,
+    updateTranslations,
+  } = useStaticDataStore();
+  const [formTranslations, setFormTranslations] = useState(translations);
   const { currentOpenFile } = useExplorerStore();
+  const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema;
   const currentFileSchema = useMemo(() => {
     if (!fileData) {
       return new SchemaFieldArray(new SchemaFieldObject());
     }
-    const config = fileData[currentOpenFile?.id || '']?.schema;
+    const config = schemaConfig;
     if (!config) {
       return buildSchema(DEFAULT_CONFIG_JSON.ARR_OBJ_JSON) as SchemaFieldArray;
     }
     return buildSchema(JSON.parse(config)) as SchemaFieldArray;
-  }, [fileData, currentOpenFile]);
+  }, [schemaConfig]);
+
+  useEffect(() => {
+    setFormTranslations(translations);
+  }, [translations]);
+
+  const formData = fileData?.[currentOpenFile?.id || '']?.data || [];
   return (
     <Stack sx={{ p: 6, height: '100%' }}>
       <SchemaForm
-        formData={[] as any}
+        formData={formData}
         schema={currentFileSchema}
-        currentLang={LANG.ZH_CN}
-        translations={{}}
-        onValueChange={(val) => {}}
+        currentLang={currentLang}
+        translations={translations}
+        onValueChange={(val) => {
+          if (!fileData || !currentOpenFile) {
+            return;
+          }
+          updateData(currentOpenFile.id, val);
+          updateTranslations(formTranslations);
+        }}
       />
     </Stack>
   );

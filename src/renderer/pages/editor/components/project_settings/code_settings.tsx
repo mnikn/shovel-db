@@ -48,7 +48,8 @@ export default function CodeSettings({
       colSpan: 12,
       type: 'code',
       codeLang: lang,
-        /* height: '500px', */
+      /* height: '500px', */
+      flexGrow: 1,
       editorMounted: onEditorMounted,
     });
   }, [lang, onEditorMounted]);
@@ -67,6 +68,7 @@ export default function CodeSettings({
           bgcolor: 'background.paper',
           outline: 'none',
           boxShadow: 24,
+          flexGrow: 1,
           p: 4,
           ...borderRadius.large,
         }}

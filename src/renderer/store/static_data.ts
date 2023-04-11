@@ -33,6 +33,17 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
       });
     }, []);
 
+    const updateData = useCallback((fileId: string, val: any[]) => {
+      setFileData((prev) => {
+        const newVal = prev ? { ...prev } : {};
+        if (!(fileId in newVal)) {
+          newVal[fileId] = { schema: '', data: [] };
+        }
+        newVal[fileId].data = val;
+        return newVal;
+      });
+    }, []);
+
     useEffect(() => {
       eventEmitter.on(Event.UpdateStaticDataAllData, setFileData);
       eventEmitter.on(
@@ -52,6 +63,7 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
       ...translationModule,
       fileData,
       updateSchema,
+      updateData,
       schemaConfigs,
     };
   }

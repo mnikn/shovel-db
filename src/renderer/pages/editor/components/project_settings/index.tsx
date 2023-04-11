@@ -99,6 +99,15 @@ const editorDidMount = (_, monaco: any) => {
         range: range,
       },
       {
+        label: 'file',
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.FILE_JSON, null, 2),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
         label: 'numberField',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
@@ -182,6 +191,21 @@ const editorDidMount = (_, monaco: any) => {
           your_field: {
             ...fieldObj.your_field,
             ...DEFAULT_CONFIG_JSON.OBJECT_JSON,
+          },
+        }),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range,
+      },
+      {
+        label: 'fileField',
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: 'object field',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.FILE_JSON,
           },
         }),
         insertTextRules:
