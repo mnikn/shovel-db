@@ -23,8 +23,6 @@ function FieldString({
   currentLang?: LANG;
   onValueChange?: (value: any) => void;
 }) {
-  //   const { updateTranslateKey, translations, currentLang } = useStoryStore();
-
   const [contentValue, setContentValue] = useState(
     schema.config.needI18n
       ? get(translations, `${value}.${currentLang}`) || ''

@@ -19,6 +19,7 @@ export enum Event {
   UpdateStaticDataAllData = 'updateStaticDataAllData',
   UpdateStaticDataTranslations = 'updateStaticDataTranslations',
   UpdateStaticDataFile = 'updateStaticDataFile',
+  DeleteStaticDataFile = 'deleteStaticDataFile',
   RenameStaticDataFile = 'renameStaticDataFile',
 }
 

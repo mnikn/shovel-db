@@ -6,6 +6,7 @@ import { parse as jsonParseCsv } from 'json2csv';
 import { join } from 'path';
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
+  DELETE_FILE,
   OPEN_PROJECT,
   READ_FILE,
   RENAME_FILE,
@@ -280,16 +281,28 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       const staticDataPath = join(projectPath, 'static-data');
       const oldFullPath = join(staticDataPath, originFilePath);
       const newFullPath = join(staticDataPath, newFilePath);
-      console.log('fddf:', oldFullPath, ' ', newFullPath);
       await ipcSend(RENAME_FILE, {
         oldFilePath: oldFullPath,
         newFilePath: newFullPath,
       });
     };
+
+    const deleteStaticDataFile = async (filePath: string) => {
+      if (!projectPath) {
+        return;
+      }
+      const staticDataPath = join(projectPath, 'static-data');
+      const fullPath = join(staticDataPath, filePath);
+      await ipcSend(DELETE_FILE, {
+        filePath: fullPath,
+      });
+    };
     eventEmitter.on(Event.UpdateStaticDataFile, updateStaticDataFile);
+    eventEmitter.on(Event.DeleteStaticDataFile, deleteStaticDataFile);
     eventEmitter.on(Event.RenameStaticDataFile, renameFile);
     return () => {
       eventEmitter.off(Event.UpdateStaticDataFile, updateStaticDataFile);
+      eventEmitter.off(Event.DeleteStaticDataFile, deleteStaticDataFile);
       eventEmitter.off(Event.RenameStaticDataFile, renameFile);
     };
   }, [projectPath]);

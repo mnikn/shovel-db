@@ -11,6 +11,7 @@ import {
   SchemaFieldArray,
   SchemaFieldBoolean,
   SchemaFieldFile,
+  SchemaFieldNumber,
   SchemaFieldObject,
   SchemaFieldSelect,
   SchemaFieldString,
@@ -24,6 +25,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import FieldSelect from './select_field';
 import FieldBoolean from './boolean_field';
 import { Translation } from '../../../../../store/common/translation';
+import FieldNumber from './number_field';
 
 const getContainerLabelStyle = (label) => ({
   m: 1,
@@ -129,6 +131,16 @@ export default function Field({
       {schema instanceof SchemaFieldBoolean && (
         <Grid xs={schema.config.colSpan}>
           <FieldBoolean
+            schema={schema}
+            value={value}
+            onValueChange={onValueChange}
+            label={label}
+          />
+        </Grid>
+      )}
+      {schema instanceof SchemaFieldNumber && (
+        <Grid xs={schema.config.colSpan}>
+          <FieldNumber
             schema={schema}
             value={value}
             onValueChange={onValueChange}
