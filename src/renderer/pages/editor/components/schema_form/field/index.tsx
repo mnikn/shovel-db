@@ -1,4 +1,13 @@
-import { Button, Box, Stack, IconButton } from '@mui/material';
+import {
+  Button,
+  Box,
+  Stack,
+  IconButton,
+  Card,
+  CardHeader,
+  Collapse,
+  CardContent,
+} from '@mui/material';
 import { grey } from '@mui/material/colors';
 import Grid from '@mui/material/Unstable_Grid2';
 import { get } from 'lodash';
@@ -16,7 +25,7 @@ import {
   SchemaFieldSelect,
   SchemaFieldString,
 } from '../../../../../models/schema';
-import { borderRadius } from '../../../../../theme';
+import { borderRadius, animation } from '../../../../../theme';
 import FieldFile from './file_field';
 import FieldString from './string_field';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -62,48 +71,60 @@ export default function Field({
   onValueChange?: (value: any) => void;
   label?: string;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const gridStyle = label ? getContainerLabelStyle(label) : {};
 
   return (
     <>
       {schema instanceof SchemaFieldObject && (
         <Grid
-          container
-          spacing={2}
           xs={schema.config.colSpan}
           sx={{
             ...gridStyle,
-            alignItems: 'center',
             background: '#fff',
             width: '-webkit-fill-available',
           }}
         >
-          {schema.fields.map((field) => {
-            if (field.data.config.enableWhen) {
-              const fn = eval(field.data.config.enableWhen);
-              if (!fn(value)) {
-                return null;
-              }
-            }
-            return (
-              <Field
-                key={field.data.config.fieldId}
-                schema={field.data}
-                value={get(value, field.id)}
-                onValueChange={(v) => {
-                  if (onValueChange) {
-                    onValueChange({
-                      ...value,
-                      [field.id]: v,
-                    });
+          <Grid
+            container
+            spacing={2}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            {schema.fields
+              .filter((field) => {
+                if (field.data.config.enableWhen) {
+                  const fn = eval(field.data.config.enableWhen);
+                  console.log('dd: ', fn(value));
+                  if (!fn(value)) {
+                    return false;
                   }
-                }}
-                label={field.name}
-                translations={translations}
-                currentLang={currentLang}
-              />
-            );
-          })}
+                }
+                return true;
+              })
+              .map((field) => {
+                return (
+                  <Field
+                    key={field.data.config.fieldId}
+                    schema={field.data}
+                    value={get(value, field.id)}
+                    onValueChange={(v) => {
+                      if (onValueChange) {
+                        onValueChange({
+                          ...value,
+                          [field.id]: v,
+                        });
+                      }
+                    }}
+                    label={field.name}
+                    translations={translations}
+                    currentLang={currentLang}
+                  />
+                );
+              })}
+          </Grid>
         </Grid>
       )}
       {schema instanceof SchemaFieldArray && (
@@ -191,6 +212,7 @@ export function FieldArray({
     (value || []).map((item) => {
       return {
         id: UUID(),
+        expanded: false,
         value: item,
       };
     })
@@ -250,9 +272,7 @@ export function FieldArray({
 
   const onItemChange = (v: any, i: number) => {
     setList((prev) => {
-      return prev.map((item, j) =>
-        j === i ? { id: item.id, value: v } : item
-      );
+      return prev.map((item, j) => (j === i ? { ...item, value: v } : item));
     });
   };
 
@@ -286,35 +306,49 @@ export function FieldArray({
         >
           {list.map((item, i) => {
             return (
-              <Stack key={item.id} sx={{ position: 'relative' }}>
-                <Stack
-                  direction='row'
+              <Card key={item.id}>
+                <CardHeader
+                  subheader={`#${i + 1}`}
+                  action={
+                    <>
+                      <IconButton onClick={() => moveUpItem(i)}>
+                        <ArrowUpwardIcon />
+                      </IconButton>
+                      <IconButton onClick={() => moveDownItem(i)}>
+                        <ArrowDownwardIcon />
+                      </IconButton>
+                      <IconButton onClick={() => deleteItem(i)}>
+                        <RemoveIcon />
+                      </IconButton>
+                    </>
+                  }
                   sx={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '12px',
-                    zIndex: 10,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: grey[100],
+                      ...animation.autoFade,
+                    },
                   }}
-                >
-                  <IconButton onClick={() => moveUpItem(i)}>
-                    <ArrowUpwardIcon />
-                  </IconButton>
-                  <IconButton onClick={() => moveDownItem(i)}>
-                    <ArrowDownwardIcon />
-                  </IconButton>
-                  <IconButton onClick={() => deleteItem(i)}>
-                    <RemoveIcon />
-                  </IconButton>
-                </Stack>
-                <Field
-                  translations={translations}
-                  currentLang={currentLang}
-                  schema={schema.fieldSchema as SchemaField}
-                  value={item.value}
-                  label={`#${i + 1}`}
-                  onValueChange={(v) => onItemChange(v, i)}
+                  onClick={() => {
+                    setList((prev) => {
+                      return prev.map((item, j) =>
+                        j === i ? { ...item, expanded: !item.expanded } : item
+                      );
+                    });
+                  }}
                 />
-              </Stack>
+                <Collapse in={item.expanded} timeout='auto'>
+                  <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Field
+                      translations={translations}
+                      currentLang={currentLang}
+                      schema={schema.fieldSchema as SchemaField}
+                      value={item.value}
+                      onValueChange={(v) => onItemChange(v, i)}
+                    />
+                  </CardContent>
+                </Collapse>
+              </Card>
             );
           })}
         </Stack>

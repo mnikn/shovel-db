@@ -18,9 +18,8 @@ export const animation = {
 const theme = createTheme({
   palette: {
     primary: {
-      // light: 'rgb(249 250 251)',
-      light: grey[300],
-      main: grey[500],
+      light: grey[600],
+      main: grey[700],
       contrastText: '#fff',
     },
     secondary: {
