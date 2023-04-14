@@ -97,7 +97,6 @@ export default function Field({
               .filter((field) => {
                 if (field.data.config.enableWhen) {
                   const fn = eval(field.data.config.enableWhen);
-                  console.log('dd: ', fn(value));
                   if (!fn(value)) {
                     return false;
                   }
@@ -304,10 +303,81 @@ export function FieldArray({
           }}
         >
           {list.map((item, i) => {
+            const headerItems: React.ReactNode[] = [];
+            schema.fieldSchema?.config?.summary?.replace(
+              /\{\{[A-Za-z0-9_.\[\]]+\}\}/g,
+              (all) => {
+                const word = all.substring(2, all.length - 2);
+                if (word === '___key') {
+                  headerItems.push(<div>{label}</div>);
+                  return all;
+                }
+                if (word === '___index') {
+                  headerItems.push(<div>#{i + 1}</div>);
+                  return all;
+                }
+                if (word === '___value') {
+                  headerItems.push(<div>{item.value}</div>);
+                  return all;
+                }
+                const v = get(item.value, word, '');
+                if (v != null && v.includes && v.includes('.png')) {
+                  headerItems.push(
+                    <Box
+                      sx={{
+                        backgroundColor: grey[700],
+                        ...borderRadius.large,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '80px',
+                        height: '80px',
+                      }}
+                    >
+                      <img
+                        style={{
+                          marginLeft: '2px',
+                          marginRight: '2px',
+                          width: '64px',
+                          height: '64px',
+                          objectFit: 'cover',
+                        }}
+                        src={v}
+                        alt=''
+                      />
+                    </Box>
+                  );
+
+                  return all;
+                }
+                if (
+                  v &&
+                  translations &&
+                  currentLang &&
+                  typeof v === 'string' &&
+                  v in translations
+                ) {
+                  headerItems.push(<div>{translations[v]?.[currentLang]}</div>);
+                  return all;
+                }
+                headerItems.push(<div>{v}</div>);
+                return all;
+              }
+            );
             return (
               <Card key={item.id}>
                 <CardHeader
-                  subheader={`#${i + 1}`}
+                  subheader={
+                    <Stack
+                      direction='row'
+                      spacing={2}
+                      sx={{
+                        alignItems: 'center',
+                      }}
+                    >
+                      {headerItems}
+                    </Stack>
+                  }
                   action={
                     <>
                       <IconButton onClick={() => moveUpItem(i)}>

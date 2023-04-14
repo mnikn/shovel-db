@@ -85,7 +85,7 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       eventEmitter.emit(Event.UpdateStoryTranslations, translations);
 
       const staticDataPath = join(cacheProjectPath, 'static-data');
-      const staticDataFilePath = join(staticDataPath, 'static-data.json');
+      const staticDataFilePath = join(staticDataPath, '.static-data.json');
       const staticRawData = JSON.parse(
         await ipcSend(READ_FILE, { filePath: staticDataFilePath })
       );
@@ -212,10 +212,18 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
         data: translationData,
       });
 
-      const staticDataFilePath = join(staticDataPath, 'static-data.json');
+      const staticDataFilePath = join(staticDataPath, '.static-data.json');
       const storeStaticData = {
         fileData: staticDataFileData,
       };
+      for (const fileId of Object.keys(staticDataFileData)) {
+        const fileName = files.find((item) => item.id === fileId).name;
+        const dataFilePath = join(staticDataPath, `${fileName}.json`);
+        await ipcSend(SAVE_FILE, {
+          filePath: dataFilePath,
+          data: JSON.stringify(staticDataFileData[fileId].data, null, 2),
+        });
+      }
       await ipcSend(SAVE_FILE, {
         filePath: staticDataFilePath,
         data: JSON.stringify(storeStaticData, null, 2),
