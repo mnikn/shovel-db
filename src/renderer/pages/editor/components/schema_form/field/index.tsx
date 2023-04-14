@@ -298,9 +298,8 @@ export function FieldArray({
         <Stack
           spacing={2}
           sx={{
-            overflow: 'auto',
             flexGrow: 1,
-            maxHeight: label ? schema.config.height || '300px' : 'inherit',
+            // maxHeight: label ? schema.config.height || '300px' : 'inherit',
             pt: label ? 3 : 0,
           }}
         >
