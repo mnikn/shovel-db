@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, nativeImage } from 'electron';
 import * as url from 'url';
 import fs from 'fs';
 import {
@@ -30,6 +30,9 @@ function createWindow() {
     width: 1100,
     height: 700,
     backgroundColor: '#f2f2f2',
+    icon: nativeImage.createFromPath(
+      path.join(__dirname, '../../static/avatar.png')
+    ),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,

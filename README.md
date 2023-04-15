@@ -9,7 +9,7 @@
 ![](./screenshots/shove-db-3.png)
 ![](./screenshots/shove-db-4.png)
 ![](./screenshots/shove-db-5.png)
-<video src="./screenshots/shove-db-video.mp4" />
+![](./screenshots/shove-db-6.png)
 
 ### story 的各项操作快捷键
 
