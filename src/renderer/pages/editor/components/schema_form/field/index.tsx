@@ -50,8 +50,7 @@ const getContainerLabelStyle = (label) => ({
     top: '12px',
     color: grey[500],
     content: `"${label}"`,
-    /* width: '-webkit-fill-available', */
-    width: '40%',
+    width: '-webkit-fill-available',
     zIndex: 'auto',
     background: 'inherit',
     overflow: 'hidden',
@@ -83,6 +82,7 @@ export default function Field({
           xs={schema.config.colSpan}
           sx={{
             ...gridStyle,
+            width: '-webkit-fill-available',
             background: '#fff',
           }}
         >
@@ -90,6 +90,7 @@ export default function Field({
             container
             spacing={2}
             sx={{
+              width: '100%',
               display: 'flex',
               alignItems: 'center',
             }}
