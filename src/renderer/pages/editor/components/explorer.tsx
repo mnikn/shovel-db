@@ -359,6 +359,7 @@ export default function Explorer() {
         backgroundColor: 'rgb(249 250 251)',
         color: 'common.black',
         overflowY: 'overlay',
+        flexShrink: 0,
         p: 2,
       }}
     >
