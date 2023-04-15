@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Stack,
   Select,
@@ -10,6 +10,11 @@ import {
 } from '@mui/material';
 import { SchemaFieldSelect } from '../../../../../models/schema';
 import { get } from 'lodash';
+import {
+  useExplorerStore,
+  useStaticDataStore,
+  useStoryStore,
+} from '../../../../../store';
 
 function FieldSelect({
   label,
@@ -23,8 +28,20 @@ function FieldSelect({
   onValueChange?: (value: any) => void;
 }) {
   const isGrouping = schema.config.options.find((item: any) => !!item.children);
+
+  const storyStore = useStoryStore();
+  const staticDataStore = useStaticDataStore();
+  const explorerStore = useExplorerStore();
+
+  const options = useMemo(() => {
+    if (schema.config.dynamicOptions) {
+      const fn = eval(schema.config.dynamicOptions);
+      return fn({ storyStore, staticDataStore, explorerStore });
+    }
+    return schema.config.options;
+  }, [schema, storyStore, staticDataStore, explorerStore]);
   const childOptions =
-    schema.config.options.find(
+    options.find(
       (item: any) =>
         item.value ===
         get(value, get(schema.config, 'groupConfig.group.valueKey'))
@@ -56,15 +73,14 @@ function FieldSelect({
             } else if (onValueChange) {
               onValueChange({
                 [schema.config.groupConfig?.group?.valueKey]: e.target.value,
-                [schema.config.groupConfig?.group?.childKey]:
-                  schema.config.options.find(
-                    (item: any) =>
-                      item.value ===
-                      get(
-                        e.target.value,
-                        get(schema.config, 'groupConfig.group.valueKey')
-                      )
-                  )?.children?.[0]?.value,
+                [schema.config.groupConfig?.group?.childKey]: options.find(
+                  (item: any) =>
+                    item.value ===
+                    get(
+                      e.target.value,
+                      get(schema.config, 'groupConfig.group.valueKey')
+                    )
+                )?.children?.[0]?.value,
               });
             }
           }}
@@ -76,7 +92,7 @@ function FieldSelect({
           }}
           tabIndex={-1}
         >
-          {schema.config.options.map((item: any) => {
+          {options.map((item: any) => {
             return (
               <MenuItem key={item.value} value={item.value}>
                 {get(schema.config, 'groupConfig.group.renderMenuItem')

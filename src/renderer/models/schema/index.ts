@@ -2,6 +2,20 @@ import { uniq } from 'lodash';
 import { UUID } from '../../../utils/uuid';
 import { RawJson } from '../../../type';
 
+/* ({ storyStore, staticDataStore, explorerStore }) => {
+ *   const file = explorerStore.files.find((item) => item.name === 'enemy_actors');
+ *   if (!file) {
+ *     return [];
+ *   }
+ *   return staticDataStore.fileData[file.id].data.map((item) => {
+ *     return {
+ *       label: item.id,
+ *       value: item.id,
+ *     };
+ *   });
+ * };
+ *  */
+
 export function findChildSchema(
   schema: SchemaField | null,
   prop: string

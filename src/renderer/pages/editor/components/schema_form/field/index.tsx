@@ -38,7 +38,8 @@ import FieldNumber from './number_field';
 
 const getContainerLabelStyle = (label) => ({
   m: 1,
-  pt: 4,
+  p: 3,
+  pt: 6,
   border: `1px solid ${grey[400]}`,
   ...borderRadius.normal,
   position: 'relative',
@@ -82,7 +83,6 @@ export default function Field({
           sx={{
             ...gridStyle,
             background: '#fff',
-            width: '-webkit-fill-available',
           }}
         >
           <Grid
