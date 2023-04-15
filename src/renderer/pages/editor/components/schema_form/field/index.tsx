@@ -43,6 +43,7 @@ const getContainerLabelStyle = (label) => ({
   border: `1px solid ${grey[400]}`,
   ...borderRadius.normal,
   position: 'relative',
+  boxShadow: 'rgba(0, 0, 0, 0.1) 0px 4px 12px',
   '&:before': {
     position: 'absolute',
     left: '12px',
