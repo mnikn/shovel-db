@@ -25,6 +25,7 @@ import { trackState } from '../../../../../store/track';
 import { animation, borderRadius } from '../../../../../theme';
 import EditDialog from '../edit_dialog';
 import Grid2 from '@mui/material/Unstable_Grid2';
+import { cloneDeep } from 'lodash';
 import { formatNodeLinkId, NodeLink } from '../../../../../models/tree';
 
 export default function BaseNodeCard({
@@ -55,6 +56,7 @@ export default function BaseNodeCard({
     updateTranslateKeyAll,
     getTranslationsForKey,
     trackCurrentState,
+    updateNode,
     tr,
   } = useStoryStore();
   const viewRef = useRef<HTMLElement>();
@@ -186,8 +188,14 @@ export default function BaseNodeCard({
           const originNode = Storylet.fromNodeJson({
             ...copyJson,
           });
-          const newNode = duplicateNode(originNode);
-          insertChildNode(newNode, node);
+          if (e.shiftKey) {
+            const duplicated = duplicateNode(originNode);
+            node.data = duplicated.data;
+            updateNode(node);
+          } else {
+            const newNode = duplicateNode(originNode);
+            insertChildNode(newNode, node);
+          }
         }
         return;
       }
