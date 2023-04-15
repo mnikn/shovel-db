@@ -2,6 +2,15 @@
 
 一体化的游戏数据库，主要用来管理剧情和静态数据。
 
+### 截图
+
+![](./screenshots/shove-db-1.png)
+![](./screenshots/shove-db-2.png)
+![](./screenshots/shove-db-3.png)
+![](./screenshots/shove-db-4.png)
+![](./screenshots/shove-db-5.png)
+![](./screenshots/shove-db-video.mp4)
+
 ### story 的各项操作快捷键
 
 - 新增子 sentence 节点：Tab
