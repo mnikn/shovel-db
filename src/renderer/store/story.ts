@@ -201,18 +201,32 @@ const actionBasicDataSchema = {
             label: 'jumpToNode',
             value: 'jumpToNode',
           },
+          {
+            label: 'copyNode',
+            value: 'copyNode',
+          },
         ],
         defaultValue: 'code',
       },
       type: 'select',
     },
-    targetNode: {
-      name: 'Target node',
+    jumpTargetNode: {
+      name: 'Jump target node',
       config: {
         colSpan: 4,
         defaultValue: '',
         type: 'singleline',
         enableWhen: "(v) => v.actionType === 'jumpToNode'",
+      },
+      type: 'string',
+    },
+    copyTargetNode: {
+      name: 'Copy target node',
+      config: {
+        colSpan: 4,
+        defaultValue: '',
+        type: 'singleline',
+        enableWhen: "(v) => v.actionType === 'copyNode'",
       },
       type: 'string',
     },
