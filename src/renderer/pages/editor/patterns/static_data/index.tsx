@@ -1,5 +1,6 @@
 import { Stack } from '@mui/material';
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
+import { debounce } from 'lodash';
 import { LANG } from '../../../../../constants/i18n';
 import {
   DEFAULT_CONFIG_JSON,
@@ -38,6 +39,23 @@ export default function StaticData() {
   }, [translations]);
 
   const formData = fileData?.[currentOpenFile?.id || '']?.data || [];
+
+  const onValueChange = useCallback(
+    debounce((val: any) => {
+      if (!fileData || !currentOpenFile) {
+        return;
+      }
+      updateData(currentOpenFile.id, val);
+      updateTranslations(formTranslations);
+    }, 50),
+    [
+      updateData,
+      updateTranslations,
+      fileData,
+      formTranslations,
+      currentOpenFile,
+    ]
+  );
   return (
     <Stack sx={{ p: 6, height: '100%' }}>
       <SchemaForm
@@ -45,13 +63,7 @@ export default function StaticData() {
         schema={currentFileSchema}
         currentLang={currentLang}
         translations={translations}
-        onValueChange={(val) => {
-          if (!fileData || !currentOpenFile) {
-            return;
-          }
-          updateData(currentOpenFile.id, val);
-          updateTranslations(formTranslations);
-        }}
+        onValueChange={onValueChange}
       />
     </Stack>
   );

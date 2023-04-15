@@ -236,13 +236,13 @@ export const DEFAULT_CONFIG = {
     defaultValue: [],
     enableWhen: null,
     initialExpand: false,
-    summary: '# {{___index}}',
+    summary: '{{___index}}',
     fieldId: `field_array_${UUID()}`,
   },
   ARRAY_CONFIG_DEFAULT: {
     colSpan: 12,
     initialExpand: false,
-    summary: '# {{___index}}',
+    summary: '{{___index}}',
   },
   STRING: {
     colSpan: 3,

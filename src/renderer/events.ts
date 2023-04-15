@@ -15,6 +15,7 @@ export enum Event {
   OpenFile = 'openFile',
   OpenProjectSettings = 'openProjectSettings',
 
+  CreateStaticDataFile = 'createStaticDataFile',
   UpdateStaticDataSchema = 'updateStaticDataSchema',
   UpdateStaticDataAllData = 'updateStaticDataAllData',
   UpdateStaticDataTranslations = 'updateStaticDataTranslations',

@@ -11,7 +11,7 @@ import {
 import { grey } from '@mui/material/colors';
 import Grid from '@mui/material/Unstable_Grid2';
 import { get } from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { LANG } from '../../../../../../constants/i18n';
 import { RawJson } from '../../../../../../type';
 import { UUID } from '../../../../../../utils/uuid';
@@ -216,6 +216,21 @@ export function FieldArray({
       };
     })
   );
+  const valueRef = useRef(value);
+  valueRef.current = value;
+
+  useEffect(() => {
+    setList(
+      (valueRef.current || []).map((item) => {
+        return {
+          id: UUID(),
+          expanded: false,
+          value: item,
+        };
+      })
+    );
+  }, [schema]);
+
   const addItem = () => {
     setList((prev) => {
       return prev.concat({
@@ -304,51 +319,24 @@ export function FieldArray({
         >
           {list.map((item, i) => {
             const headerItems: React.ReactNode[] = [];
-            schema.fieldSchema?.config?.summary?.replace(
+            const summary = schema.fieldSchema?.config?.summary?.replace(
               /\{\{[A-Za-z0-9_.\[\]]+\}\}/g,
               (all) => {
                 const word = all.substring(2, all.length - 2);
                 if (word === '___key') {
-                  headerItems.push(<div>{label}</div>);
-                  return all;
+                  return label;
                 }
                 if (word === '___index') {
-                  headerItems.push(<div>#{i + 1}</div>);
-                  return all;
+                  return `<span style="font-weight: bold; margin: 0 4px">#${
+                    i + 1
+                  }</span>`;
                 }
                 if (word === '___value') {
-                  headerItems.push(<div>{item.value}</div>);
-                  return all;
+                  return `<span style="font-weight: bold; margin: 0 4px">${item.value}</span>`;
                 }
                 const v = get(item.value, word, '');
                 if (v != null && v.includes && v.includes('.png')) {
-                  headerItems.push(
-                    <Box
-                      sx={{
-                        backgroundColor: grey[700],
-                        ...borderRadius.large,
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '80px',
-                        height: '80px',
-                      }}
-                    >
-                      <img
-                        style={{
-                          marginLeft: '2px',
-                          marginRight: '2px',
-                          width: '64px',
-                          height: '64px',
-                          objectFit: 'cover',
-                        }}
-                        src={v}
-                        alt=''
-                      />
-                    </Box>
-                  );
-
-                  return all;
+                  return `<div style="display: flex; justify-content: center; align-items: center; width: 80px; height: 80px; border-radius: 12px; background: ${grey[800]}; margin-left: 4px; margin-right: 4px;"><img style="width: 64px; height: 64px; object-fit: cover;" src="${v}" alt="" /> </div>`;
                 }
                 if (
                   v &&
@@ -357,26 +345,29 @@ export function FieldArray({
                   typeof v === 'string' &&
                   v in translations
                 ) {
-                  headerItems.push(<div>{translations[v]?.[currentLang]}</div>);
-                  return all;
+                  return `<span style="font-weight: bold; margin: 0 4px">${translations[v]?.[currentLang]}</span>`;
                 }
-                headerItems.push(<div>{v}</div>);
-                return all;
+                return `<span style="font-weight: bold; margin: 0 4px">${v}</span>`;
               }
             );
             return (
-              <Card key={item.id}>
+              <Card
+                key={item.id}
+                sx={{
+                  boxShadow: 'rgba(0, 0, 0, 0.1) 0px 4px 12px',
+                }}
+              >
                 <CardHeader
                   subheader={
                     <Stack
                       direction='row'
-                      spacing={2}
                       sx={{
                         alignItems: 'center',
+                        fontWeight: 'bold',
+                        userSelect: 'none',
                       }}
-                    >
-                      {headerItems}
-                    </Stack>
+                      dangerouslySetInnerHTML={{ __html: summary }}
+                    />
                   }
                   action={
                     <Stack

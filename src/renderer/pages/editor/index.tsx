@@ -115,29 +115,28 @@ export default function Editor() {
         <Explorer />
         <Main>
           {saving ? (
-            <>
-              <Stack
-                direction='row'
-                spacing={2}
-                sx={{
-                  backgroundColor: grey[50],
-                  position: 'absolute',
-                  top: '24px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '150px',
-                  height: '50px',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  ...borderRadius.larger,
-                }}
-              >
-                <CircularProgress
-                  sx={{ height: '24px!important', width: '24px!important' }}
-                />
-                <FormLabel>Saving...</FormLabel>
-              </Stack>
-            </>
+            <Stack
+              direction='row'
+              spacing={2}
+              sx={{
+                backgroundColor: grey[50],
+                position: 'absolute',
+                top: '24px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '150px',
+                height: '50px',
+                alignItems: 'center',
+                justifyContent: 'center',
+                ...borderRadius.larger,
+                boxShadow: 'rgba(0, 0, 0, 0.1) 0px 4px 12px',
+              }}
+            >
+              <CircularProgress
+                sx={{ height: '24px!important', width: '24px!important' }}
+              />
+              <FormLabel>Saving...</FormLabel>
+            </Stack>
           ) : null}
         </Main>
         {searchPanelOpen && (

@@ -1,5 +1,6 @@
 import { Box } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { debounce } from 'lodash';
+import React, { useCallback, useEffect, useState } from 'react';
 import { RawJson } from '../../../../../type';
 import {
   SchemaFieldObject,
@@ -23,7 +24,13 @@ export default function SchemaForm({
   translations?: Translation;
   currentLang?: LANG;
 }) {
-  const [form, setForm] = useState<any>(formData);
+  const onChange = useCallback(
+    debounce((val: any) => {
+      const finalVal = validateValue(val, val, schema, {});
+      onValueChange(finalVal);
+    }, 50),
+    [onValueChange]
+  );
 
   return (
     <Box
@@ -37,14 +44,10 @@ export default function SchemaForm({
     >
       <Field
         schema={schema}
-        value={form}
+        value={formData}
         translations={translations}
         currentLang={currentLang}
-        onValueChange={(val) => {
-          const finalVal = validateValue(val, val, schema, {});
-          setForm(finalVal);
-          onValueChange(finalVal);
-        }}
+        onValueChange={onChange}
       />
     </Box>
   );
