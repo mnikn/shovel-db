@@ -379,7 +379,12 @@ export function FieldArray({
                     </Stack>
                   }
                   action={
-                    <>
+                    <Stack
+                      direction='row'
+                      sx={{
+                        alignItems: 'center',
+                      }}
+                    >
                       <IconButton onClick={() => moveUpItem(i)}>
                         <ArrowUpwardIcon />
                       </IconButton>
@@ -389,7 +394,7 @@ export function FieldArray({
                       <IconButton onClick={() => deleteItem(i)}>
                         <RemoveIcon />
                       </IconButton>
-                    </>
+                    </Stack>
                   }
                   sx={{
                     cursor: 'pointer',

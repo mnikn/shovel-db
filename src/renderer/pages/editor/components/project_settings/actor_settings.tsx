@@ -42,6 +42,7 @@ portraitSchemaItem.fields.push(
     }),
   }
 );
+portraitSchemaItem.config.summary = '{{pic}} {{id}}';
 const portraitSchema = new SchemaFieldArray(portraitSchemaItem, {
   height: '200px',
   colSpan: 12,
@@ -68,6 +69,7 @@ itemSchema.fields.push(
     data: portraitSchema,
   }
 );
+itemSchema.config.summary = '{{portraits[0].pic}} {{___index}} {{id}} {{name}}';
 const settingsSchema = new SchemaFieldArray(itemSchema, {
   fitRestHeight: true,
 });
