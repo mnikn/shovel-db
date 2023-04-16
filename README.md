@@ -26,6 +26,8 @@
 - 复制选择节点及对应子节点：Ctrl+Shift+C
 - 粘贴节点：Ctrl+V
 - 粘贴节点内容：Ctrl+Shift+V
+- 最近文件：Ctrl+P
+- 命令版：Ctrl+Shift+P
 
 ### schema API 文档
 

@@ -96,6 +96,18 @@ const menuTemplate: any = [
         type: 'separator',
       },
       {
+        label: 'Reload',
+        click: () => {
+          if (!mainWindow) {
+            return;
+          }
+          mainWindow.webContents.reload();
+        },
+      },
+      {
+        type: 'separator',
+      },
+      {
         label: 'Exit',
         role: 'quit',
       },

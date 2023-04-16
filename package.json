@@ -88,7 +88,10 @@
     "files": [
       "package.json",
       "dist/**"
-    ]
+    ],
+    "win": {
+      "icon": "static/avatar.png"
+    }
   },
   "engines": {
     "npm": ">=7.0.0",
