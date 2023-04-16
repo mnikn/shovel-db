@@ -11,6 +11,10 @@
 ![](./screenshots/shove-db-5.png)
 ![](./screenshots/shove-db-6.png)
 
+故事编辑演示：
+
+https://user-images.githubusercontent.com/12381740/232260857-d2fb2eba-518b-4b97-bf36-20a5ef8743d3.mp4
+
 ### story 的各项操作快捷键
 
 - 新增子 sentence 节点：Tab
