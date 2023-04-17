@@ -91,6 +91,9 @@
     ],
     "win": {
       "icon": "static/avatar.png"
+    },
+    "mac": {
+      "icon": "static/avatar.png"
     }
   },
   "engines": {
