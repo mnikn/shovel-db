@@ -1,22 +1,36 @@
-import { Stack } from '@mui/material';
-import React, { useMemo, useEffect, useState, useCallback } from 'react';
+import { Box, Stack } from '@mui/material';
 import { debounce } from 'lodash';
-import { LANG } from '../../../../../constants/i18n';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   DEFAULT_CONFIG_JSON,
   SchemaFieldArray,
   SchemaFieldObject,
-  SchemaFieldString,
+  SchemaFieldSelect,
 } from '../../../../models/schema';
 import { buildSchema } from '../../../../models/schema/factory';
 import { useExplorerStore, useStaticDataStore } from '../../../../store';
 import SchemaForm from '../../components/schema_form';
+import FieldSelect from '../../components/schema_form/field/select_field';
+
+const i18nSchema = new SchemaFieldSelect({
+  options: [
+    {
+      label: 'zh-cn',
+      value: 'zh-cn',
+    },
+    {
+      label: 'en',
+      value: 'en',
+    },
+  ],
+});
 
 export default function StaticData() {
   const {
     fileData,
     updateData,
     currentLang,
+    switchLang,
     translations,
     updateTranslations,
   } = useStaticDataStore();
@@ -65,6 +79,20 @@ export default function StaticData() {
         translations={translations}
         onValueChange={onValueChange}
       />
+      <Box
+        sx={{
+          position: 'absolute',
+          right: '24px',
+          top: '24px',
+          width: '120px',
+        }}
+      >
+        <FieldSelect
+          schema={i18nSchema}
+          value={currentLang}
+          onValueChange={switchLang}
+        />
+      </Box>
     </Stack>
   );
 }
