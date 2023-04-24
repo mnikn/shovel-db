@@ -1,20 +1,5 @@
-import { uniq } from 'lodash';
 import { UUID } from '../../../utils/uuid';
 import { RawJson } from '../../../type';
-
-/* ({ storyStore, staticDataStore, explorerStore }) => {
- *   const file = explorerStore.files.find((item) => item.name === 'enemy_actors');
- *   if (!file) {
- *     return [];
- *   }
- *   return staticDataStore.fileData[file.id].data.map((item) => {
- *     return {
- *       label: item.id,
- *       value: item.id,
- *     };
- *   });
- * };
- *  */
 
 export function findChildSchema(
   schema: SchemaField | null,
@@ -32,7 +17,11 @@ export function findChildSchema(
       return null;
     }
   } else if (schema instanceof SchemaFieldArray) {
-    return schema.fieldSchema;
+    let propArr = prop.split('.');
+    if (propArr[0].match(/\[(0-9)+\]/)) {
+      propArr = propArr.splice(0, 1);
+    }
+    return findChildSchema(schema.fieldSchema, propArr.join('.'));
   } else {
     return schema;
   }
