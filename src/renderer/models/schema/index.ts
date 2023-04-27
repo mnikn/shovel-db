@@ -1,5 +1,7 @@
 import { UUID } from '../../../utils/uuid';
 import { RawJson } from '../../../type';
+import { isObject } from 'util';
+import { isArray } from 'util';
 
 export function findChildSchema(
   schema: SchemaField | null,
@@ -25,6 +27,40 @@ export function findChildSchema(
   } else {
     return schema;
   }
+}
+
+export function processValueWithSchema(
+  rootSchema: SchemaField | null,
+  val: any,
+  fn: (propSchema: SchemaField, propVal: any) => any
+): any {
+  if (val == null || rootSchema === null) {
+    return val;
+  }
+  if (Array.isArray(val)) {
+    return val.map((v) =>
+      processValueWithSchema(
+        v,
+        (rootSchema as SchemaFieldArray).fieldSchema,
+        fn
+      )
+    );
+  }
+
+  if (val !== null && typeof val === 'object') {
+    return Object.keys(val).reduce((res, k) => {
+      const fieldSchemaItem = (rootSchema as SchemaFieldObject).fields.find(
+        (f) => f.id === k
+      );
+      res[k] = processValueWithSchema(
+        fieldSchemaItem?.data || null,
+        val[k],
+        fn
+      );
+      return res;
+    }, {});
+  }
+  return fn(rootSchema, val);
 }
 
 export function iterSchema(

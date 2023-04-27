@@ -10,12 +10,13 @@ import {
 } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import Grid from '@mui/material/Unstable_Grid2';
-import { get } from 'lodash';
+import { get, cloneDeep } from 'lodash';
 import React, { useEffect, useState, useRef } from 'react';
 import { LANG } from '../../../../../../constants/i18n';
 import { RawJson } from '../../../../../../type';
 import { UUID } from '../../../../../../utils/uuid';
 import {
+  processValueWithSchema,
   SchemaField,
   SchemaFieldArray,
   SchemaFieldBoolean,
@@ -31,6 +32,7 @@ import FieldString from './string_field';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import RemoveIcon from '@mui/icons-material/Remove';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FieldSelect from './select_field';
 import FieldBoolean from './boolean_field';
 import { Translation } from '../../../../../store/common/translation';
@@ -279,6 +281,30 @@ export function FieldArray({
       return prev.filter((_, j) => j !== i);
     });
   };
+  const duplicateItem = (i: number) => {
+    const targetItem = list[i].value;
+    const newVal = processValueWithSchema(
+      schema.fieldSchema,
+      targetItem,
+      (schema, val) => {
+        if (schema instanceof SchemaFieldString && schema.config.needI18n) {
+          const newContentId = UUID();
+          if (translations) {
+            translations[newContentId] = cloneDeep(translations[val]);
+          }
+          return 'string_field_' + newContentId;
+        }
+        return val;
+      }
+    );
+    setList((prev) => {
+      return prev.concat({
+        id: UUID(),
+        expanded: false,
+        value: newVal,
+      });
+    });
+  };
 
   useEffect(() => {
     if (onValueChange) {
@@ -386,6 +412,9 @@ export function FieldArray({
                       </IconButton>
                       <IconButton onClick={() => deleteItem(i)}>
                         <RemoveIcon />
+                      </IconButton>
+                      <IconButton onClick={() => duplicateItem(i)}>
+                        <ContentCopyIcon />
                       </IconButton>
                     </Stack>
                   }
