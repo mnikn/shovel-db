@@ -9,6 +9,7 @@ import {
   SchemaFieldObject,
   SchemaFieldSelect,
   SchemaFieldString,
+    SchemaFieldStringSpeed,
   SchemaFieldType,
 } from './';
 
@@ -85,6 +86,11 @@ export function buildSchema(
     }
     case SchemaFieldType.File: {
       const instance = new SchemaFieldFile();
+      instance.setup(json.config);
+      return instance;
+    }
+    case SchemaFieldType.StringSpeed: {
+      const instance = new SchemaFieldStringSpeed();
       instance.setup(json.config);
       return instance;
     }

@@ -44,6 +44,7 @@ export default function SchemaForm({
     >
       <Field
         schema={schema}
+        rootValue={formData}
         value={formData}
         translations={translations}
         currentLang={currentLang}

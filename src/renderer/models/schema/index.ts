@@ -191,6 +191,14 @@ export function validateValue(
     }
   }
 
+  if (schema.type === SchemaFieldType.StringSpeed) {
+    if (typeof value === 'object') {
+      return value;
+    } else {
+      return schema.config.defaultValue;
+    }
+  }
+
   return value;
 }
 
@@ -203,6 +211,7 @@ export enum SchemaFieldType {
   Select = 'select',
   File = 'file',
   ActorSelect = 'actor_select',
+  StringSpeed = 'string_speed',
 }
 function getDefaultConfig(type: SchemaFieldType): RawJson {
   switch (type) {
@@ -258,6 +267,16 @@ function getDefaultConfig(type: SchemaFieldType): RawJson {
         enableWhen: null,
         required: false,
         fieldId: `field_array_${UUID()}`,
+      };
+    }
+    case SchemaFieldType.StringSpeed: {
+      return {
+        colSpan: 1,
+        defaultValue: '',
+        enableWhen: null,
+        required: false,
+        targetProp: 'content',
+        fieldId: `field_string_speed_${UUID()}`,
       };
     }
   }
@@ -387,6 +406,18 @@ export const DEFAULT_CONFIG = {
     defaultValue: '',
     type: 'img',
   },
+  STRING_SPEED: {
+    enableWhen: null,
+    colSpan: 1,
+    targetProp: 'content',
+    defaultValue: {},
+    fieldId: `field_string_field_${UUID()}`,
+  },
+  STRING_SPEED_DEFAULT: {
+    colSpan: 1,
+    defaultValue: {},
+    targetprop: 'content',
+  },
 };
 
 export const DEFAULT_CONFIG_JSON = {
@@ -428,6 +459,10 @@ export const DEFAULT_CONFIG_JSON = {
   FILE_JSON: {
     type: 'file',
     config: DEFAULT_CONFIG.FILE_CONFIG_DEFAULT,
+  },
+  STRING_SPEED_JSON: {
+    type: 'string_speed',
+    config: DEFAULT_CONFIG.STRING_SPEED_DEFAULT,
   },
 };
 
@@ -517,6 +552,9 @@ export class SchemaFieldObject extends SchemaField {
       case SchemaFieldType.ActorSelect: {
         return field.config.defaultValue;
       }
+      case SchemaFieldType.StringSpeed: {
+        return field.config.defaultValue;
+      }
     }
   }
 }
@@ -565,5 +603,11 @@ export class SchemaFieldActorSelect extends SchemaField {
 
   get type(): SchemaFieldType {
     return SchemaFieldType.ActorSelect;
+  }
+}
+
+export class SchemaFieldStringSpeed extends SchemaField {
+  get type(): SchemaFieldType {
+    return SchemaFieldType.StringSpeed;
   }
 }

@@ -94,12 +94,20 @@ const sentenceBasicDataSchemaConfig = {
     content: {
       name: 'Content',
       config: {
-        colSpan: 12,
+        colSpan: 11,
         autoFocus: true,
         needI18n: true,
         type: 'multiline',
       },
       type: 'string',
+    },
+    contentSpeed: {
+      name: 'Content Speed',
+      config: {
+        colSpan: 11,
+        targetProp: 'content',
+      },
+      type: 'string_speed',
     },
     enableCheck: {
       name: 'Enable check',
@@ -151,12 +159,20 @@ const branchBasicDataSchemaConfig = {
     content: {
       name: 'Content',
       config: {
-        colSpan: 12,
+        colSpan: 11,
         autoFocus: true,
         needI18n: true,
         type: 'multiline',
       },
       type: 'string',
+    },
+    contentSpeed: {
+      name: 'Content Speed',
+      config: {
+        colSpan: 11,
+        targetProp: 'content',
+      },
+      type: 'string_speed',
     },
     enableCheck: {
       name: 'Enable check',

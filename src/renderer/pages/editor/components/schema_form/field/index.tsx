@@ -24,6 +24,7 @@ import {
   SchemaFieldNumber,
   SchemaFieldObject,
   SchemaFieldSelect,
+  SchemaFieldStringSpeed,
   SchemaFieldString,
 } from '../../../../../models/schema';
 import { borderRadius, animation } from '../../../../../theme';
@@ -37,6 +38,7 @@ import FieldSelect from './select_field';
 import FieldBoolean from './boolean_field';
 import { Translation } from '../../../../../store/common/translation';
 import FieldNumber from './number_field';
+import FieldStringSpeed from './string_speed_field';
 
 const getContainerLabelStyle = (label) => ({
   m: 1,
@@ -61,6 +63,7 @@ const getContainerLabelStyle = (label) => ({
 
 export default function Field({
   schema,
+  rootValue,
   value,
   onValueChange,
   translations,
@@ -68,13 +71,14 @@ export default function Field({
   label,
 }: {
   schema: SchemaField;
+  rootValue: any;
   value: any;
   translations?: Translation;
   currentLang?: LANG;
   onValueChange?: (value: any) => void;
   label?: string;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  /* const [expanded, setExpanded] = useState(false); */
   const gridStyle = label ? getContainerLabelStyle(label) : {};
 
   return (
@@ -121,6 +125,7 @@ export default function Field({
                         });
                       }
                     }}
+                    rootValue={rootValue}
                     label={field.name}
                     translations={translations}
                     currentLang={currentLang}
@@ -189,6 +194,21 @@ export default function Field({
             value={value}
             onValueChange={onValueChange}
             label={label}
+          />
+        </Grid>
+      )}
+      {schema instanceof SchemaFieldStringSpeed && (
+        <Grid xs={schema.config.colSpan}>
+          <FieldStringSpeed
+            schema={schema}
+            value={value}
+            currentLang={currentLang || ''}
+            targetString={
+              translations?.[get(rootValue, schema.config.targetProp)]?.[
+                currentLang || ''
+              ] || ''
+            }
+            onValueChange={onValueChange}
           />
         </Grid>
       )}
@@ -440,6 +460,7 @@ export function FieldArray({
                       currentLang={currentLang}
                       schema={schema.fieldSchema as SchemaField}
                       value={item.value}
+                      rootValue={value}
                       onValueChange={(v) => onItemChange(v, i)}
                     />
                   </CardContent>
