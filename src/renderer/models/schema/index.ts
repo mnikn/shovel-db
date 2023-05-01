@@ -40,8 +40,8 @@ export function processValueWithSchema(
   if (Array.isArray(val)) {
     return val.map((v) =>
       processValueWithSchema(
-        v,
         (rootSchema as SchemaFieldArray).fieldSchema,
+        v,
         fn
       )
     );
