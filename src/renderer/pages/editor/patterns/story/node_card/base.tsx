@@ -279,6 +279,16 @@ export default function BaseNodeCard({
   const hasPopupContent =
     !!node.data.enableCheck ||
     (node instanceof StoryletActionNode && node.data.process);
+
+  const close = useCallback(() => {
+    setEditOpen(false);
+    setIsHover(false);
+    setIsDraging(false);
+    setMode(Mode.Normal);
+    setTimeout(() => {
+      selectNode(node.id);
+    }, 0);
+  }, [selectNode, setMode]);
   return (
     <Box
       id={node.id}
@@ -414,15 +424,7 @@ export default function BaseNodeCard({
         <EditDialog
           node={node}
           open={editOpen}
-          close={() => {
-            setEditOpen(false);
-            setIsHover(false);
-            setIsDraging(false);
-            setMode(Mode.Normal);
-            setTimeout(() => {
-              selectNode(node.id);
-            }, 0);
-          }}
+          close={close}
         />
       )}
     </Box>

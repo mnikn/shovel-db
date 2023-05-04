@@ -32,11 +32,11 @@ export default function useTranslation() {
 
   const tr = useCallback(
     (key: string) => {
-      return translations[key]?.[currentLang] !== undefined
-        ? translations[key]?.[currentLang]
+      return translationsRef.current[key]?.[currentLang] !== undefined
+        ? translationsRef.current[key]?.[currentLang]
         : key;
     },
-    [currentLang, translations]
+    [currentLang]
   );
 
   const updateTranslations = useCallback((val: Translation) => {
