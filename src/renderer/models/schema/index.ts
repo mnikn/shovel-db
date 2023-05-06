@@ -65,16 +65,20 @@ export function processValueWithSchema(
 
 export function iterSchema(
   schema: SchemaField | null,
-  fn: (item: SchemaField, path: string) => void,
-  path = ''
+  fn: (item: SchemaField, path: string, label?: string) => void,
+  path = '',
+  label = ''
 ) {
   if (!schema) {
     return;
   }
-  fn(schema, path);
+  fn(schema, path, label);
+  if (schema instanceof SchemaFieldArray) {
+    iterSchema(schema.fieldSchema, fn, path, label);
+  }
   if (schema instanceof SchemaFieldObject) {
     schema.fields.forEach((f) => {
-      iterSchema(f.data, fn, path ? path + '.' + f.name : f.name);
+      iterSchema(f.data, fn, path ? path + '.' + f.id : f.id, f.name);
     });
   }
 }

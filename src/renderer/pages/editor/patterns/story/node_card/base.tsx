@@ -1,4 +1,4 @@
-import { Box, Container, Divider, Stack } from '@mui/material';
+import { Box, Container, Divider, FormLabel, Stack } from '@mui/material';
 import { clipboard } from 'electron';
 import * as d3 from 'd3';
 import React, {
@@ -7,6 +7,7 @@ import React, {
   useLayoutEffect,
   useState,
   useEffect,
+  useMemo,
 } from 'react';
 import { grey } from '@mui/material/colors';
 import MonacoEditor from 'react-monaco-editor/lib/editor';
@@ -25,8 +26,113 @@ import { trackState } from '../../../../../store/track';
 import { animation, borderRadius } from '../../../../../theme';
 import EditDialog from '../edit_dialog';
 import Grid2 from '@mui/material/Unstable_Grid2';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, get } from 'lodash';
 import { formatNodeLinkId, NodeLink } from '../../../../../models/tree';
+import { buildSchema } from '../../../../../models/schema/factory';
+import {
+  iterSchema,
+  SchemaField,
+  SchemaFieldObject,
+  SchemaFieldString,
+} from '../../../../../models/schema';
+
+function CardPopup({ node }: { node: StoryletNode<StoryletNodeData> }) {
+  const { nodeSettings } = useStoryStore();
+  const basicDataSchema = useMemo(() => {
+    const basicsDataMap = {
+      root: buildSchema(JSON.parse(nodeSettings.root.basicDataSchema)),
+      sentence: buildSchema(JSON.parse(nodeSettings.sentence.basicDataSchema)),
+      branch: buildSchema(JSON.parse(nodeSettings.branch.basicDataSchema)),
+      action: buildSchema(JSON.parse(nodeSettings.action.basicDataSchema)),
+    };
+    const res = basicsDataMap[node.data.type] as SchemaFieldObject;
+    return res;
+  }, [node, nodeSettings]);
+
+  let components: React.ReactNode[] = [];
+  iterSchema(
+    basicDataSchema,
+    (schema: SchemaField, path: string, label?: string) => {
+      if (!schema.config.showPopup || !get(node.data, path)) {
+        return;
+      }
+      if (schema instanceof SchemaFieldString) {
+        if (schema.config.type !== 'code') {
+          components.push(
+            <Grid2 xs={3}>
+              <Stack spacing={2}>
+                <FormLabel sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>
+                  {label}
+                </FormLabel>
+                <Box sx={{ flexGrow: 1, width: '100%' }}>
+                  {get(node.data, path)}
+                </Box>
+              </Stack>
+            </Grid2>
+          );
+        } else {
+          components.push(
+            <Grid2 xs={12}>
+              <Stack spacing={2}>
+                <FormLabel sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>
+                  {label}
+                </FormLabel>
+                <Box sx={{ flexGrow: 1, height: '350px' }}>
+                  <MonacoEditor
+                    width='100%'
+                    height='100%'
+                    language={schema.config.codeLang || 'python'}
+                    theme='vs-dark'
+                    value={get(node.data, path)}
+                    options={{
+                      insertSpaces: true,
+                      autoIndent: 'full',
+                      readOnly: true,
+                      tabSize: 2,
+                      minimap: {
+                        enabled: false,
+                      },
+                      fontSize: 28,
+                      scrollbar: {
+                        horizontal: 'auto',
+                        vertical: 'auto',
+                      },
+                    }}
+                  />
+                </Box>
+              </Stack>
+            </Grid2>
+          );
+        }
+      }
+    }
+  );
+
+  if (components.length <= 0) {
+    return null;
+  }
+
+  return (
+    <Grid2
+      container
+      sx={{
+        p: 4,
+        position: 'absolute',
+        top: '-600px',
+        minHeight: '500px',
+        background: 'white',
+        width: '1000px',
+        ...borderRadius.larger,
+        left: '50%',
+        transform: 'translateX(-50%)',
+      }}
+    >
+      {components.map((component) => {
+        return component;
+      })}
+    </Grid2>
+  );
+}
 
 export default function BaseNodeCard({
   pos,
@@ -57,6 +163,7 @@ export default function BaseNodeCard({
     getTranslationsForKey,
     trackCurrentState,
     updateNode,
+    nodeSettings,
     tr,
   } = useStoryStore();
   const viewRef = useRef<HTMLElement>();
@@ -239,47 +346,6 @@ export default function BaseNodeCard({
     trackCurrentState,
   ]);
 
-  const renderCodePopupItem = (label, content) => {
-    return (
-      <>
-        <Grid2 xs>
-          <Stack
-            sx={{ height: '100%', width: '100%', alignItems: 'center' }}
-            spacing={1}
-          >
-            <Box sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>{label}</Box>
-            <Box sx={{ flexGrow: 1, width: '100%' }}>
-              <MonacoEditor
-                width='100%'
-                height='90%'
-                language='python'
-                theme='vs-dark'
-                value={content}
-                options={{
-                  insertSpaces: true,
-                  autoIndent: 'full',
-                  readOnly: true,
-                  tabSize: 2,
-                  minimap: {
-                    enabled: false,
-                  },
-                  fontSize: 28,
-                  scrollbar: {
-                    horizontal: 'auto',
-                    vertical: 'auto',
-                  },
-                }}
-              />
-            </Box>
-          </Stack>
-        </Grid2>
-      </>
-    );
-  };
-  const hasPopupContent =
-    !!node.data.enableCheck ||
-    (node instanceof StoryletActionNode && node.data.process);
-
   const close = useCallback(() => {
     setEditOpen(false);
     setIsHover(false);
@@ -289,6 +355,7 @@ export default function BaseNodeCard({
       selectNode(node.id);
     }, 0);
   }, [selectNode, setMode]);
+
   return (
     <Box
       id={node.id}
@@ -373,31 +440,7 @@ export default function BaseNodeCard({
           {node.data.customNodeId}
         </Container>
       )}
-      {(isSelecting || isHover) && !editOpen && hasPopupContent && (
-        <Stack
-          sx={{
-            p: 2,
-            position: 'absolute',
-            top: '-600px',
-            height: '500px',
-            background: 'white',
-            width: '1000px',
-            ...borderRadius.larger,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Grid2 sx={{ height: '100%', width: '100%' }} container spacing={4}>
-            {node.data.enableCheck &&
-              renderCodePopupItem('Enable check', node.data.enableCheck)}
-            {node instanceof StoryletActionNode &&
-              node.data.process &&
-              renderCodePopupItem('Process', node.data.process)}
-          </Grid2>
-        </Stack>
-      )}
+      {(isSelecting || isHover) && !editOpen && <CardPopup node={node} />}
 
       {currentStorylet.getNodeSingleParent(node.id) instanceof
         StoryletBranchNode && (
@@ -420,13 +463,7 @@ export default function BaseNodeCard({
           {tr(node.data.option?.name || '')}
         </Container>
       )}
-      {editOpen && (
-        <EditDialog
-          node={node}
-          open={editOpen}
-          close={close}
-        />
-      )}
+      {editOpen && <EditDialog node={node} open={editOpen} close={close} />}
     </Box>
   );
 }

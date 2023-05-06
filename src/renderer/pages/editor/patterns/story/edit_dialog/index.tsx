@@ -330,7 +330,6 @@ export default function EditDialog({
   }, [close, submitForm]);
 
   const basicDataSchema = useMemo(() => {
-    /* const res = generateSchema(node); */
     const basicsDataMap = {
       root: buildSchema(JSON.parse(nodeSettings.root.basicDataSchema)),
       sentence: buildSchema(JSON.parse(nodeSettings.sentence.basicDataSchema)),
