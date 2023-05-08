@@ -8,6 +8,7 @@ import {
   createFolder,
   File,
   Folder,
+  formatFilesOrder,
   getChildren,
   getFullPath,
   getRootParent,
@@ -118,7 +119,9 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
       }
     }
 
-    setFiles([...files]);
+    const res = [...files];
+    formatFilesOrder(res);
+    setFiles(res);
   };
 
   const newFile = useCallback(
@@ -137,6 +140,8 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
           'order'
         )?.order || -1 + 1;
       const res = prev.concat(val);
+
+      formatFilesOrder(res);
       setFiles(res);
       const rootFolder = getRootParent(parentId, res);
       if (rootFolder.id === 'story') {
@@ -202,7 +207,6 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
   };
 
   const moveFile = useCallback((sourceId: string, targetId: string) => {
-    console.log('dsds: ', sourceId, targetId);
     setFiles((files) => {
       const newVal = [...files];
       const sourceItem = newVal.find((item) => item.id === sourceId);
@@ -231,6 +235,7 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
           });
       }
 
+      formatFilesOrder(newVal);
       return newVal;
     });
   }, []);

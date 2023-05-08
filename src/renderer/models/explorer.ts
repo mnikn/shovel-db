@@ -1,5 +1,6 @@
 import { RawJson } from '../../type';
 import { UUID } from '../../utils/uuid';
+import { cloneDeep } from 'lodash';
 
 export interface File {
   id: string;
@@ -94,4 +95,24 @@ export function getPathParents(
     return [...res, item.id];
   }
   return getPathParents(item.parentId, files, [...res, item.id]);
+}
+
+export function formatFilesOrder(
+  files: Array<File | Folder>,
+  parentId?: string
+) {
+  const children = parentId
+    ? getChildren(parentId, files)
+    : files.filter((f) => !f.parentId);
+  children
+    .sort((a, b) => a.order - b.order)
+    .forEach((item, i) => {
+      const fileItem = files.find((f) => f.id === item.id);
+      if (fileItem) {
+        fileItem.order = i + 1;
+      }
+      if (item.type === 'folder') {
+        formatFilesOrder(files, item.id);
+      }
+    });
 }

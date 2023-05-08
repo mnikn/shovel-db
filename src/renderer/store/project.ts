@@ -16,7 +16,7 @@ import { LANG } from '../../constants/i18n';
 import { PROJECT_ROOT_PATH } from '../../constants/storage';
 import { ipcSend } from '../electron/ipc';
 import { Event, eventEmitter } from '../events';
-import { getRootParent } from '../models/explorer';
+import { formatFilesOrder, getRootParent } from '../models/explorer';
 
 interface ProjectSettings {
   i18n: LANG[];
@@ -164,6 +164,7 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       const staticDataPath = join(rootPath, 'static-data');
       const projectFilePath = join(rootPath, 'project.json');
 
+      formatFilesOrder(files);
       await ipcSend(SAVE_FILE, {
         filePath: projectFilePath,
         data: JSON.stringify(
