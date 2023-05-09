@@ -1,43 +1,43 @@
-import { Box, Container, Divider, FormLabel, Stack } from '@mui/material';
-import { clipboard } from 'electron';
+import { Box, Container, FormLabel, Stack } from '@mui/material';
+import { grey } from '@mui/material/colors';
+import Grid2 from '@mui/material/Unstable_Grid2';
 import * as d3 from 'd3';
+import { clipboard } from 'electron';
+import { get } from 'lodash';
 import React, {
   useCallback,
-  useRef,
-  useLayoutEffect,
-  useState,
   useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
+  useState,
 } from 'react';
-import { grey } from '@mui/material/colors';
 import MonacoEditor from 'react-monaco-editor/lib/editor';
-import {
-  StoryletBranchNode,
-  StoryletNode,
-  StoryletNodeData,
-  StoryletRootNode,
-  StoryletSentenceNode,
-  StoryletActionNode,
-  Storylet,
-} from '../../../../../models/story/storylet';
-import { useStoryStore } from '../../../../../store';
-import { Mode, useEditorStore } from '../../../../../store/editor';
-import { trackState } from '../../../../../store/track';
-import { animation, borderRadius } from '../../../../../theme';
-import EditDialog from '../edit_dialog';
-import Grid2 from '@mui/material/Unstable_Grid2';
-import { cloneDeep, get } from 'lodash';
-import { formatNodeLinkId, NodeLink } from '../../../../../models/tree';
-import { buildSchema } from '../../../../../models/schema/factory';
 import {
   iterSchema,
   SchemaField,
   SchemaFieldObject,
   SchemaFieldString,
 } from '../../../../../models/schema';
+import { buildSchema } from '../../../../../models/schema/factory';
+import {
+  Storylet,
+  StoryletActionNode,
+  StoryletBranchNode,
+  StoryletNode,
+  StoryletNodeData,
+  StoryletRootNode,
+  StoryletSentenceNode,
+} from '../../../../../models/story/storylet';
+import { NodeLink } from '../../../../../models/tree';
+import { useStoryStore } from '../../../../../store';
+import { Mode, useEditorStore } from '../../../../../store/editor';
+import { animation, borderRadius } from '../../../../../theme';
+import EditDialog from '../edit_dialog';
 
 function CardPopup({ node }: { node: StoryletNode<StoryletNodeData> }) {
   const { nodeSettings } = useStoryStore();
+  const [height, setHeight] = useState(0);
   const basicDataSchema = useMemo(() => {
     const basicsDataMap = {
       root: buildSchema(JSON.parse(nodeSettings.root.basicDataSchema)),
@@ -112,19 +112,35 @@ function CardPopup({ node }: { node: StoryletNode<StoryletNodeData> }) {
     return null;
   }
 
+  let topHeight = -600;
+  if (height >= 500) {
+    topHeight = -1000;
+  }
+
   return (
     <Grid2
       container
       sx={{
         p: 4,
         position: 'absolute',
-        top: '-600px',
+        top: `${topHeight}px`,
         minHeight: '500px',
         background: 'white',
         width: '1000px',
+        visibility: height ? 'visible' : 'hidden',
         ...borderRadius.larger,
         left: '50%',
         transform: 'translateX(-50%)',
+      }}
+      ref={(dom) => {
+        if (!dom) {
+          return;
+        }
+
+        const resizeObserver = new ResizeObserver((entries) => {
+          setHeight(entries[0].contentRect.height);
+        });
+        resizeObserver.observe(dom);
       }}
     >
       {components.map((component) => {
