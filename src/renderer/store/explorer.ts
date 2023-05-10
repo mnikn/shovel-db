@@ -186,7 +186,16 @@ export const [useExplorerStore, getExplorerStore] = createGlobalStore(() => {
 
     const rootParent = getRootParent(file?.parentId || '', filesRef.current);
     if (rootParent.id === 'story') {
-      eventEmitter.emit(Event.DeleteStorylet, id);
+      if (file.type === 'folder') {
+        const childFiles = getChildren(file.id, files, true);
+        childFiles.forEach((c) => {
+          if (c.type === 'file') {
+            eventEmitter.emit(Event.DeleteStorylet, c.id);
+          }
+        });
+      } else {
+        eventEmitter.emit(Event.DeleteStorylet, id);
+      }
     }
     if (rootParent.id === 'static-data') {
       eventEmitter.emit(
