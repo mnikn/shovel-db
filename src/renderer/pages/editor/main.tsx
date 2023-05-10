@@ -1,33 +1,90 @@
 import { Box } from '@mui/material';
-import React, { useLayoutEffect, useState } from 'react';
-import { useExplorerStore } from '../../store';
+import React, { useLayoutEffect, useRef, useState } from 'react';
+import {
+  useExplorerStore,
+  useStaticDataStore,
+  useStoryStore,
+} from '../../store';
 import StaticData from './patterns/static_data';
 import Story from './patterns/story';
 import { ipcRenderer } from 'electron';
-import { SHOW_PROJET_SETTINGS } from '../../../constants/events';
+import {
+  SHOW_PROJET_SETTINGS,
+  REMOVE_UESLESS_TRANSLATIONS,
+} from '../../../constants/events';
 import ProjectSettings from './components/project_settings';
 import { Mode, useEditorStore } from '../../store/editor';
 import { getRootParent } from '../../models/explorer';
 import { Event, eventEmitter } from '../../events';
+import { processValueWithSchema, SchemaFieldString } from '../../models/schema';
 
 export default function Main({ children }: { children?: any }) {
+  const {
+    translations: storyTranslations,
+    story,
+    getNodeSchema,
+    setTranslations: setStoryTranslations,
+  } = useStoryStore();
   const { currentOpenFile, files } = useExplorerStore();
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
   const { setMode } = useEditorStore();
+
+  const storyStoreDataRef = useRef({
+    translations: storyTranslations,
+    story,
+  });
+  storyStoreDataRef.current = {
+    translations: storyTranslations,
+    story,
+  };
+  /* const {
+   *   translations: staticDataTranslations,
+   *   setTranslations: setStaticDataTranslations,
+   * } = useStaticDataStore();
+   * const staticDataStoreDataRef = useRef({
+   *   translations: storyTranslations,
+   * });
+   * staticDataStoreDataRef.current = {
+   *   translations: storyTranslations,
+   * }; */
 
   useLayoutEffect(() => {
     const showProjectSettings = () => {
       setProjectSettingsOpen(true);
       setMode(Mode.Popup);
     };
+    const removeUselessTranslations = () => {
+      const newStoryTranslations: any = {};
+      Object.values(storyStoreDataRef.current.story).forEach((storylet) => {
+        Object.values(storylet.nodes).forEach((node) => {
+          const schema = getNodeSchema(node);
+          processValueWithSchema(
+            schema.basicDataSchema,
+            node.data,
+            (propSchema, propVal) => {
+              if (
+                propSchema instanceof SchemaFieldString &&
+                propSchema.config.needI18n
+              ) {
+                newStoryTranslations[propVal] =
+                  storyStoreDataRef.current.translations[propVal];
+              }
+            }
+          );
+        });
+      });
+      setStoryTranslations(newStoryTranslations);
+    };
     ipcRenderer.on(SHOW_PROJET_SETTINGS, showProjectSettings);
+    ipcRenderer.on(REMOVE_UESLESS_TRANSLATIONS, removeUselessTranslations);
     eventEmitter.on(Event.OpenProjectSettings, showProjectSettings);
 
     return () => {
+      ipcRenderer.off(REMOVE_UESLESS_TRANSLATIONS, removeUselessTranslations);
       ipcRenderer.off(SHOW_PROJET_SETTINGS, showProjectSettings);
       eventEmitter.off(Event.OpenProjectSettings, showProjectSettings);
     };
-  }, [setMode]);
+  }, [setMode, setStoryTranslations]);
 
   return (
     <Box

@@ -1,11 +1,12 @@
 import { createGlobalStore } from 'hox';
 import { cloneDeep, maxBy } from 'lodash';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LANG } from '../../constants/i18n';
 import { RawJson } from '../../type';
 import { UUID } from '../../utils/uuid';
 import { Event, eventEmitter } from '../events';
-import { DEFAULT_CONFIG_JSON } from '../models/schema';
+import { DEFAULT_CONFIG_JSON, SchemaFieldObject } from '../models/schema';
+import { buildSchema } from '../models/schema/factory';
 import {
   Storylet,
   StoryletBranchNode,
@@ -321,6 +322,25 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       storyActors: storyActorsRef.current,
     });
   }, []);
+
+  const nodeSchemaMap = useMemo(() => {
+    return Object.keys(nodeSettings).reduce((res, key) => {
+      res[key] = Object.keys(nodeSettings[key]).reduce((res2, key2) => {
+        res2[key2] = buildSchema(
+          JSON.parse(nodeSettings[key][key2])
+        ) as SchemaFieldObject;
+        return res2;
+      }, {});
+      return res;
+    }, {});
+  }, [nodeSettings]);
+
+  const getNodeSchema = useCallback(
+    (node: StoryletNode<StoryletNodeData>) => {
+      return nodeSchemaMap[node.data.type];
+    },
+    [nodeSchemaMap]
+  );
 
   useEffect(() => {
     const store = getTrackStore();
@@ -784,6 +804,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     updateStoryActors,
     nodeSettings,
     setNodeSettings,
+    getNodeSchema,
     ...translationModule,
   };
 });

@@ -5,6 +5,7 @@ import {
   DELETE_FILE,
   OPEN_PROJECT,
   READ_FILE,
+  REMOVE_UESLESS_TRANSLATIONS,
   RENAME_FILE,
   SAVE_FILE,
   SHOW_PROJET_SETTINGS,
@@ -90,6 +91,18 @@ const menuTemplate: any = [
             return;
           }
           mainWindow.webContents.send(SHOW_PROJET_SETTINGS);
+        },
+      },
+      {
+        type: 'separator',
+      },
+      {
+        label: 'Remove useless translations',
+        click: () => {
+          if (!mainWindow) {
+            return;
+          }
+          mainWindow.webContents.send(REMOVE_UESLESS_TRANSLATIONS);
         },
       },
       {
