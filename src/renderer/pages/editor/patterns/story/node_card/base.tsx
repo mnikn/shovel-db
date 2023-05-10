@@ -59,7 +59,7 @@ function CardPopup({ node }: { node: StoryletNode<StoryletNodeData> }) {
       if (schema instanceof SchemaFieldString) {
         if (schema.config.type !== 'code') {
           components.push(
-            <Grid2 xs={3}>
+            <Grid2 xs={3} key={schema.config.fieldId}>
               <Stack spacing={2}>
                 <FormLabel sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>
                   {label}
@@ -72,7 +72,7 @@ function CardPopup({ node }: { node: StoryletNode<StoryletNodeData> }) {
           );
         } else {
           components.push(
-            <Grid2 xs={12}>
+            <Grid2 xs={12} key={schema.config.fieldId}>
               <Stack spacing={2}>
                 <FormLabel sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>
                   {label}
@@ -143,7 +143,7 @@ function CardPopup({ node }: { node: StoryletNode<StoryletNodeData> }) {
         resizeObserver.observe(dom);
       }}
     >
-      {components.map((component) => {
+      {components.map((component, i) => {
         return component;
       })}
     </Grid2>

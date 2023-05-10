@@ -1,12 +1,11 @@
 import { Box, FormLabel, Stack, TextField } from '@mui/material';
 import { get, set } from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import MonacoEditor from 'react-monaco-editor/lib/editor';
 import { LANG } from '../../../../../../constants/i18n';
+import { eventEmitter, Event } from '../../../../../events';
 import { SchemaFieldString } from '../../../../../models/schema';
 import { Translation } from '../../../../../store/common/translation';
-
-const isInjectTable = new Set<string>();
 
 function FieldString({
   label,
@@ -28,6 +27,8 @@ function FieldString({
       ? get(translations, `${value}.${currentLang}`) || ''
       : value
   );
+  const [isInjectSnippet, setIsInjectSnippet] = useState<boolean>(false);
+  const langRegisteration = useRef<any>(null);
 
   useEffect(() => {
     setContentValue(
@@ -82,6 +83,18 @@ function FieldString({
       }
     }
   };
+
+  useEffect(() => {
+    const reset = () => {
+      if (langRegisteration.current) {
+        langRegisteration.current.dispose();
+      }
+    };
+    eventEmitter.on(Event.CodeEditorResetLangRegisteration, reset);
+    return () => {
+      eventEmitter.off(Event.CodeEditorResetLangRegisteration, reset);
+    };
+  }, []);
 
   return (
     <Box
@@ -145,80 +158,82 @@ function FieldString({
                 onValueChange(v);
               }
             }}
-            editorDidMount={(val, monaco: any) => {
-              monaco.editor.getEditors().forEach((editor) => {
-                if (schema.config.submitForm) {
-                  editor.addAction({
-                    id: 'submit-form',
-                    label: 'Submit form',
-                    keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
-                    precondition: null,
-                    keybindingContext: null,
-                    contextMenuGroupId: 'navigation',
-                    contextMenuOrder: 1.5,
-                    run: function () {
-                      schema.config.submitForm();
-                    },
-                  });
+            editorDidMount={(editor, monaco: any) => {
+              editor.onDidFocusEditorWidget(() => {
+                if (isInjectSnippet) {
+                  return;
                 }
-                if (schema.config.cancelSubmitForm) {
-                  editor.addAction({
-                    id: 'cancel-submit-form',
-                    label: 'Cancel submit form',
-                    keybindings: [
-                      monaco.KeyMod.CtrlCmd |
-                        monaco.KeyMod.Shift |
-                        monaco.KeyCode.Enter,
-                    ],
-                    precondition: null,
-                    keybindingContext: null,
-                    contextMenuGroupId: 'navigation',
-                    contextMenuOrder: 1.5,
-                    run: function (ed) {
-                      schema.config.cancelSubmitForm();
-                    },
-                  });
+                if (schema.config.codeSnippets) {
+                  eventEmitter.emit(Event.CodeEditorResetLangRegisteration);
+                  const createDependencyProposals = (range) => {
+                    return schema.config.codeSnippets.map((item) => {
+                      return {
+                        label: item.label,
+                        kind: monaco.languages.CompletionItemKind.Snippet,
+                        insertText: item.code,
+                        insertTextRules:
+                          monaco.languages.CompletionItemInsertTextRule
+                            .InsertAsSnippet,
+                        range: range,
+                      };
+                    });
+                  };
+                  langRegisteration.current =
+                    monaco.languages.registerCompletionItemProvider(
+                      schema.config.codeLang,
+                      {
+                        provideCompletionItems: (model, position) => {
+                          var word = model.getWordUntilPosition(position);
+                          var range = {
+                            startLineNumber: position.lineNumber,
+                            endLineNumber: position.lineNumber,
+                            startColumn: word.startColumn,
+                            endColumn: word.endColumn,
+                          };
+                          return {
+                            suggestions: createDependencyProposals(range),
+                          };
+                        },
+                      }
+                    );
+                  setIsInjectSnippet(true);
                 }
               });
-
-              if (
-                schema.config.codeSnippets &&
-                !isInjectTable.has(JSON.stringify(schema.config.codeSnippets))
-              ) {
-                const createDependencyProposals = (range) => {
-                  return schema.config.codeSnippets.map((item) => {
-                    return {
-                      label: item.label,
-                      kind: monaco.languages.CompletionItemKind.Snippet,
-                      insertText: item.code,
-                      insertTextRules:
-                        monaco.languages.CompletionItemInsertTextRule
-                          .InsertAsSnippet,
-                      range: range,
-                    };
-                  });
-                };
-                monaco.languages.registerCompletionItemProvider(
-                  schema.config.codeLang,
-                  {
-                    provideCompletionItems: (model, position) => {
-                      var word = model.getWordUntilPosition(position);
-                      var range = {
-                        startLineNumber: position.lineNumber,
-                        endLineNumber: position.lineNumber,
-                        startColumn: word.startColumn,
-                        endColumn: word.endColumn,
-                      };
-                      return {
-                        suggestions: createDependencyProposals(range),
-                      };
-                    },
-                  }
-                );
-                isInjectTable.add(JSON.stringify(schema.config.codeSnippets));
+              if (schema.config.submitForm) {
+                editor.addAction({
+                  id: 'submit-form',
+                  label: 'Submit form',
+                  keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+                  precondition: undefined,
+                  keybindingContext: undefined,
+                  contextMenuGroupId: 'navigation',
+                  contextMenuOrder: 1.5,
+                  run: function () {
+                    schema.config.submitForm();
+                  },
+                });
               }
+              if (schema.config.cancelSubmitForm) {
+                editor.addAction({
+                  id: 'cancel-submit-form',
+                  label: 'Cancel submit form',
+                  keybindings: [
+                    monaco.KeyMod.CtrlCmd |
+                      monaco.KeyMod.Shift |
+                      monaco.KeyCode.Enter,
+                  ],
+                  precondition: undefined,
+                  keybindingContext: undefined,
+                  contextMenuGroupId: 'navigation',
+                  contextMenuOrder: 1.5,
+                  run: function (ed) {
+                    schema.config.cancelSubmitForm();
+                  },
+                });
+              }
+
               if (schema.config?.editorMounted) {
-                return schema.config?.editorMounted(val, monaco);
+                return schema.config?.editorMounted(editor, monaco);
               }
             }}
           />

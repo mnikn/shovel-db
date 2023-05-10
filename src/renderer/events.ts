@@ -22,6 +22,7 @@ export enum Event {
   UpdateStaticDataFile = 'updateStaticDataFile',
   DeleteStaticDataFile = 'deleteStaticDataFile',
   RenameStaticDataFile = 'renameStaticDataFile',
+  CodeEditorResetLangRegisteration = 'codeEditorResetLangRegisteration',
 }
 
 export const eventEmitter = new EventEmitter();
