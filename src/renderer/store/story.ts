@@ -773,14 +773,18 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     const openStorylet = (fileId) => {
       setCurrentStorylet(story[fileId]);
     };
-    const deleteStorylet = (fileId) => {
-      const storylet = story[fileId];
-      delete story[fileId];
-      setCurrentStorylet((prev) => {
-        if (prev && prev.id === storylet.id) {
-          return null;
-        }
-        return prev;
+    const deleteStorylet = (fileId: string) => {
+      setStory((prev) => {
+        const storylet = story[fileId];
+        setCurrentStorylet((prev2) => {
+          if (prev2 && prev2.id === storylet.id) {
+            return null;
+          }
+          return prev2;
+        });
+        const newVal = { ...prev };
+        delete newVal[fileId];
+        return newVal;
       });
     };
     const createStorylet = (file: any) => {

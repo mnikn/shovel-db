@@ -64,6 +64,7 @@ export function getChildren(
       .map((item) => {
         return getChildren(item.id, files, deep);
       })
+      .concat(children)
       .flat();
   }
   return children;
