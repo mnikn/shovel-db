@@ -52,6 +52,7 @@ const rootBasicDataSchemaConfig = {
         defaultValue: '',
         type: 'code',
         codeLang: 'python',
+        showPopup: true,
       },
       type: 'string',
     },
@@ -117,6 +118,7 @@ const sentenceBasicDataSchemaConfig = {
         defaultValue: '',
         type: 'code',
         codeLang: 'python',
+        showPopup: true,
       },
       type: 'string',
     },
@@ -182,6 +184,7 @@ const branchBasicDataSchemaConfig = {
         defaultValue: '',
         type: 'code',
         codeLang: 'python',
+        showPopup: true,
       },
       type: 'string',
     },
@@ -234,6 +237,7 @@ const actionBasicDataSchema = {
         defaultValue: '',
         type: 'singleline',
         enableWhen: "(v) => v.actionType === 'jumpToNode'",
+        showPopup: true,
       },
       type: 'string',
     },
@@ -244,6 +248,7 @@ const actionBasicDataSchema = {
         defaultValue: '',
         type: 'singleline',
         enableWhen: "(v) => v.actionType === 'copyNode'",
+        showPopup: true,
       },
       type: 'string',
     },
@@ -255,6 +260,7 @@ const actionBasicDataSchema = {
         type: 'code',
         codeLang: 'python',
         enableWhen: "(v) => v.actionType === 'code'",
+        showPopup: true,
       },
       type: 'string',
     },
@@ -265,6 +271,7 @@ const actionBasicDataSchema = {
         defaultValue: '',
         type: 'code',
         codeLang: 'python',
+        showPopup: true,
       },
       type: 'string',
     },
@@ -272,6 +279,73 @@ const actionBasicDataSchema = {
   config: {
     colSpan: 12,
     initialExpand: true,
+    summary: '{{___key}}',
+  },
+};
+
+const defaultActorSchema = {
+  type: 'array',
+  fieldSchema: {
+    type: 'object',
+    fields: {
+      id: {
+        name: 'id',
+        config: {
+          colSpan: 6,
+        },
+        type: 'string',
+      },
+      name: {
+        name: 'name',
+        config: {
+          colSpan: 6,
+          needI18n: true,
+        },
+        type: 'string',
+      },
+      portraits: {
+        name: 'portraits',
+        fieldSchema: {
+          type: 'object',
+          config: {
+            colSpan: 12,
+            summary: '{{pic}} {{id}}',
+          },
+          fields: {
+            pic: {
+              name: 'pic',
+              config: {
+                colSpan: 3,
+                type: 'img',
+              },
+              type: 'file',
+            },
+            id: {
+              name: 'id',
+              config: {
+                colSpan: 9,
+              },
+              type: 'string',
+            },
+          },
+        },
+        config: {
+          height: '200px',
+          colSpan: 12,
+        },
+        type: 'array',
+      },
+    },
+    config: {
+      colSpan: 12,
+      initialExpand: true,
+      summary: '{{___index}} {{portrais[0].pic}} {{id}} {{name}}',
+    },
+  },
+  config: {
+    colSpan: 12,
+    initialExpand: true,
+    fitRestHeight: true,
     summary: '{{___key}}',
   },
 };
@@ -304,6 +378,9 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       extraDataSchema: JSON.stringify(DEFAULT_CONFIG_JSON.OBJECT_JSON, null, 2),
     },
   });
+  const [actorSettings, setActorSettings] = useState<string>(
+    JSON.stringify(defaultActorSchema, null, 2)
+  );
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
   const currentStoryletRef = useRef(currentStorylet);
@@ -758,6 +835,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     eventEmitter.on(Event.OpenStorylet, openStorylet);
     eventEmitter.on(Event.UpdateStoryletName, updateStoryletName);
     eventEmitter.on(Event.UpdateStoryNodeSettings, setNodeSettings);
+    eventEmitter.on(Event.UpdateStoryActorSettings, setActorSettings);
     return () => {
       eventEmitter.off(Event.UpdateStory, updateStory);
       eventEmitter.off(Event.UpdateStoryActors, updateStoryActors);
@@ -767,6 +845,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       eventEmitter.off(Event.OpenStorylet, openStorylet);
       eventEmitter.off(Event.UpdateStoryletName, updateStoryletName);
       eventEmitter.off(Event.UpdateStoryNodeSettings, setNodeSettings);
+      eventEmitter.off(Event.UpdateStoryActorSettings, setActorSettings);
     };
   }, [story, translationModule.updateTranslations]);
 
@@ -805,6 +884,8 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     nodeSettings,
     setNodeSettings,
     getNodeSchema,
+    actorSettings,
+    setActorSettings,
     ...translationModule,
   };
 });

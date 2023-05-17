@@ -22,57 +22,58 @@ import { StoryActor, useStoryStore } from '../../../../store';
 import { cloneDeep } from 'lodash';
 import { RawJson } from '../../../../../type';
 import SchemaForm from '../schema_form';
+import { buildSchema } from '../../../../models/schema/factory';
 
-const itemSchema = new SchemaFieldObject();
-const portraitSchemaItem = new SchemaFieldObject();
-portraitSchemaItem.fields.push(
-  {
-    id: 'pic',
-    name: 'pic',
-    data: new SchemaFieldFile({
-      colSpan: 3,
-      type: 'img',
-    }),
-  },
-  {
-    id: 'id',
-    name: 'id',
-    data: new SchemaFieldString({
-      colSpan: 9,
-    }),
-  }
-);
-portraitSchemaItem.config.summary = '{{pic}} {{id}}';
-const portraitSchema = new SchemaFieldArray(portraitSchemaItem, {
-  height: '200px',
-  colSpan: 12,
-});
-itemSchema.fields.push(
-  {
-    id: 'id',
-    name: 'id',
-    data: new SchemaFieldString({
-      colSpan: 6,
-    }),
-  },
-  {
-    id: 'name',
-    name: 'name',
-    data: new SchemaFieldString({
-      colSpan: 6,
-      needI18n: true,
-    }),
-  },
-  {
-    id: 'portraits',
-    name: 'portraits',
-    data: portraitSchema,
-  }
-);
-itemSchema.config.summary = '{{___index}} {{portrais[0].pic}} {{id}} {{name}}';
-const settingsSchema = new SchemaFieldArray(itemSchema, {
-  fitRestHeight: true,
-});
+/* const itemSchema = new SchemaFieldObject();
+ * const portraitSchemaItem = new SchemaFieldObject();
+ * portraitSchemaItem.fields.push(
+ *   {
+ *     id: 'pic',
+ *     name: 'pic',
+ *     data: new SchemaFieldFile({
+ *       colSpan: 3,
+ *       type: 'img',
+ *     }),
+ *   },
+ *   {
+ *     id: 'id',
+ *     name: 'id',
+ *     data: new SchemaFieldString({
+ *       colSpan: 9,
+ *     }),
+ *   }
+ * );
+ * portraitSchemaItem.config.summary = '{{pic}} {{id}}';
+ * const portraitSchema = new SchemaFieldArray(portraitSchemaItem, {
+ *   height: '200px',
+ *   colSpan: 12,
+ * });
+ * itemSchema.fields.push(
+ *   {
+ *     id: 'id',
+ *     name: 'id',
+ *     data: new SchemaFieldString({
+ *       colSpan: 6,
+ *     }),
+ *   },
+ *   {
+ *     id: 'name',
+ *     name: 'name',
+ *     data: new SchemaFieldString({
+ *       colSpan: 6,
+ *       needI18n: true,
+ *     }),
+ *   },
+ *   {
+ *     id: 'portraits',
+ *     name: 'portraits',
+ *     data: portraitSchema,
+ *   }
+ * );
+ * itemSchema.config.summary = '{{___index}} {{portrais[0].pic}} {{id}} {{name}}';
+ * const settingsSchema = new SchemaFieldArray(itemSchema, {
+ *   fitRestHeight: true,
+ * }); */
 
 export default function ActorSettings({
   open,
@@ -88,12 +89,18 @@ export default function ActorSettings({
     updateTranslations,
     updateStoryActors,
     trackCurrentState,
+    actorSettings,
   } = useStoryStore();
   const [formData, setFormData] = useState<StoryActor[]>(storyActors);
 
   const formTranslations = useMemo(() => {
     return cloneDeep(translations);
   }, [translations]);
+
+  const settingsSchema = useMemo(() => {
+    return buildSchema(JSON.parse(actorSettings)) as SchemaFieldArray;
+  }, [actorSettings]);
+
   return (
     <Modal open={open}>
       <Stack

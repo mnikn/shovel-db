@@ -22,6 +22,7 @@ export default function Editor() {
   const {
     story,
     nodeSettings,
+    actorSettings,
     translations: storyTranslations,
     storyActors,
   } = useStoryStore();
@@ -80,6 +81,7 @@ export default function Editor() {
           storyActors,
           storyTranslations,
           storyNodeSettings: nodeSettings,
+          storyActorSettings: actorSettings,
           files,
           recentOpenFiles,
           staticDataFileData,
@@ -103,6 +105,7 @@ export default function Editor() {
     story,
     storyActors,
     nodeSettings,
+    actorSettings,
     storyTranslations,
     files,
     staticDataFileData,

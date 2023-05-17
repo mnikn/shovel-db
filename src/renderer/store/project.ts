@@ -62,6 +62,12 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       eventEmitter.emit(Event.UpdateStoryFiles, storyRes.files);
       eventEmitter.emit(Event.UpdateStoryActors, storyRes.actors);
       eventEmitter.emit(Event.UpdateStoryNodeSettings, storyRes.nodeSettings);
+      if (storyRes.actorSettings) {
+        eventEmitter.emit(
+          Event.UpdateStoryActorSettings,
+          storyRes.actorSettings
+        );
+      }
 
       const storyTranslationsPath = join(storyPath, 'translations.csv');
       const storyTranslationsRes = await ipcSend(READ_FILE, {
@@ -137,6 +143,7 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
       storyActors,
       storyTranslations,
       storyNodeSettings,
+      storyActorSettings,
       recentOpenFiles,
       files,
       staticDataFileData,
@@ -189,6 +196,7 @@ export const [useProjectStore, getProjectStore] = createGlobalStore(() => {
             ),
             actors: storyActors,
             nodeSettings: storyNodeSettings,
+            actorSettings: storyActorSettings,
           },
           null,
           2

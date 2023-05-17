@@ -8,6 +8,7 @@ export enum Event {
   UpdateStoryFiles = 'updateStoryFiles',
   UpdateStoryActors = 'updateStoryActors',
   UpdateStoryNodeSettings = 'updateStoryNodeSettings',
+  UpdateStoryActorSettings = 'updateStoryActorSettings',
   UpdateStoryTranslations = 'updateStoryTranslations',
   UpdateStoryletName = 'updateStoryletName',
   UpdateExplorer = 'updateExplorer',

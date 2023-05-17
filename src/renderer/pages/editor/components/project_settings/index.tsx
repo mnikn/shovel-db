@@ -8,7 +8,7 @@ import {
   Tab,
   Tabs,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { borderRadius } from '../../../../theme';
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
 import ActorSettings from './actor_settings';
@@ -21,6 +21,7 @@ import {
   useStoryStore,
 } from '../../../../store';
 import { DEFAULT_CONFIG, DEFAULT_CONFIG_JSON } from '../../../../models/schema';
+import { buildSchema } from '../../../../models/schema/factory';
 
 enum TAB {
   Story = 'Story',
@@ -252,6 +253,7 @@ export default function ProjectSettings({
 }) {
   const [currentTab, setCurrentTab] = useState(TAB.Story);
   const [actorSettingsOpen, setActorSettingsOpen] = useState(false);
+  const [actorSettingsSchemaOpen, setActorSettingsSchemaOpen] = useState(false);
   const [
     staticDataCurrentFileSchemaSettingsOpen,
     setStaticDataCurrentFileSchemaSettingsOpen,
@@ -272,7 +274,12 @@ export default function ProjectSettings({
       branch: false,
       action: false,
     });
-  const { nodeSettings, setNodeSettings } = useStoryStore();
+  const { nodeSettings, setNodeSettings, actorSettings, setActorSettings } =
+    useStoryStore();
+
+  const actorSettingsSchema = useMemo(() => {
+    return actorSettings;
+  }, [actorSettings]);
 
   const renderNodeSettingsComponent = (nodeKey: string) => {
     return (
@@ -452,20 +459,43 @@ export default function ProjectSettings({
               }}
             >
               <FormLabel id='actor-edit'>Actor settings:</FormLabel>
-              <Button
-                variant='outlined'
-                aria-labelledby='actor-edit'
-                onClick={() => {
-                  setActorSettingsOpen(true);
-                }}
-              >
-                Edit
-              </Button>
+              <Stack direction='row' spacing={2} aria-labelledby='actor-edit'>
+                <Button
+                  variant='outlined'
+                  onClick={() => {
+                    setActorSettingsOpen(true);
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant='outlined'
+                  onClick={() => {
+                    setActorSettingsSchemaOpen(true);
+                  }}
+                >
+                  Schema config
+                </Button>
+              </Stack>
               {actorSettingsOpen && (
                 <ActorSettings
                   open={actorSettingsOpen}
                   close={() => {
                     setActorSettingsOpen(false);
+                  }}
+                />
+              )}
+              {actorSettingsSchemaOpen && (
+                <CodeSettings
+                  lang='json'
+                  open
+                  value={actorSettingsSchema}
+                  onValueChange={(val) => {
+                    setActorSettings(val);
+                  }}
+                  onEditorMounted={editorDidMount}
+                  close={() => {
+                    setActorSettingsSchemaOpen(false);
                   }}
                 />
               )}
