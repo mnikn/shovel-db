@@ -10,6 +10,7 @@ import Story from './patterns/story';
 import { ipcRenderer } from 'electron';
 import {
   SHOW_PROJET_SETTINGS,
+  SHOW_ARTICLE_SUMMARY,
   REMOVE_UESLESS_TRANSLATIONS,
 } from '../../../constants/events';
 import ProjectSettings from './components/project_settings';
@@ -17,6 +18,7 @@ import { Mode, useEditorStore } from '../../store/editor';
 import { getRootParent } from '../../models/explorer';
 import { Event, eventEmitter } from '../../events';
 import { processValueWithSchema, SchemaFieldString } from '../../models/schema';
+import ArticelPanel from './components/article_panel';
 
 export default function Main({ children }: { children?: any }) {
   const {
@@ -27,6 +29,7 @@ export default function Main({ children }: { children?: any }) {
   } = useStoryStore();
   const { currentOpenFile, files } = useExplorerStore();
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
+  const [articleSummaryOpen, setArticleSummaryOpen] = useState(false);
   const { setMode } = useEditorStore();
 
   const storyStoreDataRef = useRef({
@@ -53,6 +56,10 @@ export default function Main({ children }: { children?: any }) {
       setProjectSettingsOpen(true);
       setMode(Mode.Popup);
     };
+    const showArticleSummary = () => {
+      setArticleSummaryOpen(true);
+      setMode(Mode.Popup);
+    };
     const removeUselessTranslations = () => {
       const newStoryTranslations: any = {};
       Object.values(storyStoreDataRef.current.story).forEach((storylet) => {
@@ -76,11 +83,13 @@ export default function Main({ children }: { children?: any }) {
       setStoryTranslations(newStoryTranslations);
     };
     ipcRenderer.on(SHOW_PROJET_SETTINGS, showProjectSettings);
+    ipcRenderer.on(SHOW_ARTICLE_SUMMARY, showArticleSummary);
     ipcRenderer.on(REMOVE_UESLESS_TRANSLATIONS, removeUselessTranslations);
     eventEmitter.on(Event.OpenProjectSettings, showProjectSettings);
 
     return () => {
       ipcRenderer.off(REMOVE_UESLESS_TRANSLATIONS, removeUselessTranslations);
+      ipcRenderer.off(SHOW_ARTICLE_SUMMARY, showArticleSummary);
       ipcRenderer.off(SHOW_PROJET_SETTINGS, showProjectSettings);
       eventEmitter.off(Event.OpenProjectSettings, showProjectSettings);
     };
@@ -100,6 +109,15 @@ export default function Main({ children }: { children?: any }) {
           open={projectSettingsOpen}
           close={() => {
             setProjectSettingsOpen(false);
+            setMode(Mode.Normal);
+          }}
+        />
+      )}
+      {articleSummaryOpen && (
+        <ArticelPanel
+          open={articleSummaryOpen}
+          close={() => {
+            setArticleSummaryOpen(false);
             setMode(Mode.Normal);
           }}
         />

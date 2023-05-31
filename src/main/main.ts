@@ -8,6 +8,7 @@ import {
   REMOVE_UESLESS_TRANSLATIONS,
   RENAME_FILE,
   SAVE_FILE,
+    SHOW_ARTICLE_SUMMARY,
   SHOW_PROJET_SETTINGS,
 } from '../constants/events';
 const path = require('path');
@@ -95,6 +96,15 @@ const menuTemplate: any = [
       },
       {
         type: 'separator',
+      },
+      {
+        label: 'Article Summary',
+        click: () => {
+          if (!mainWindow) {
+            return;
+          }
+          mainWindow.webContents.send(SHOW_ARTICLE_SUMMARY);
+        },
       },
       {
         label: 'Remove useless translations',
