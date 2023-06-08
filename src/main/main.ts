@@ -8,7 +8,7 @@ import {
   REMOVE_UESLESS_TRANSLATIONS,
   RENAME_FILE,
   SAVE_FILE,
-    SHOW_ARTICLE_SUMMARY,
+  SHOW_ARTICLE_SUMMARY,
   SHOW_PROJET_SETTINGS,
 } from '../constants/events';
 const path = require('path');
@@ -133,6 +133,22 @@ const menuTemplate: any = [
       {
         label: 'Exit',
         role: 'quit',
+      },
+    ],
+  },
+  {
+    label: 'Edit',
+    submenu: [
+      { label: 'Undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:' },
+      { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:' },
+      { type: 'separator' },
+      { label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:' },
+      { label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:' },
+      { label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:' },
+      {
+        label: 'Select All',
+        accelerator: 'CmdOrCtrl+A',
+        selector: 'selectAll:',
       },
     ],
   },

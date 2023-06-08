@@ -1,5 +1,6 @@
 {
   "name": "shovel-db",
+  "productName": "Shovel DB",
   "version": "0.2.0",
   "private": true,
   "description": "Lightweight game database",

@@ -6,7 +6,7 @@ import {
   Switch,
   TextField,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStoryStore } from '../../../store';
 import { borderRadius } from '../../../theme';
 import {
@@ -58,15 +58,6 @@ export default function ArticelPanel({
       node instanceof StoryletSentenceNode ||
       node instanceof StoryletBranchNode
     ) {
-      /* let content = '';
-       * if (node.data.actor?.id) {
-       *   content +=
-       *     tr(
-       *       storyActors.find((s) => s.id === node.data.actor?.id)?.name || ''
-       *     ) + '：';
-       * }
-       * content += tr(node.data.content); */
-      /* res = [content]; */
       res = [node];
     }
 
@@ -76,11 +67,13 @@ export default function ArticelPanel({
     });
 
     res = [...res, ...childRes.flat()];
-
-    /* return res.join('\n'); */
-    /* return res.join('\n'); */
     return res;
   };
+
+  /* useEffect(() => {
+   *     window.addEventListener('keydown', (e) => {
+   *     })
+   * }, []); */
 
   if (!currentStorylet || !currentStorylet.root) {
     return null;
@@ -134,8 +127,8 @@ export default function ArticelPanel({
             spacing={2}
             sx={{
               flexGrow: 1,
-                overflow: 'auto',
-                p: 2,
+              overflow: 'auto',
+              p: 2,
             }}
           >
             {doGetArticleSummary(currentStorylet.root, currentStorylet).map(
