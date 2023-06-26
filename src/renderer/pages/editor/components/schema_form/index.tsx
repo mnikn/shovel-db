@@ -25,10 +25,14 @@ export default function SchemaForm({
   currentLang?: LANG;
 }) {
   const onChange = useCallback(
-    debounce((val: any) => {
+    /* debounce((val: any) => {
+     *   const finalVal = validateValue(val, val, schema, {});
+     *   onValueChange(finalVal);
+     * }, 50), */
+    () => {
       const finalVal = validateValue(val, val, schema, {});
       onValueChange(finalVal);
-    }, 50),
+    },
     [onValueChange]
   );
 

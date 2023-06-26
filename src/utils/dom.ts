@@ -21,7 +21,7 @@ export function getEventListeners(element) {
       result[type] = [];
     }
     result[type].push(listener);
-}
+  }
   return result;
 }
 

@@ -9,7 +9,7 @@ import {
   SchemaFieldObject,
   SchemaFieldSelect,
   SchemaFieldString,
-    SchemaFieldStringSpeed,
+  SchemaFieldStringSpeed,
   SchemaFieldType,
 } from './';
 

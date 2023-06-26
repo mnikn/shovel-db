@@ -1,22 +1,22 @@
-import * as remote from "@electron/remote";
+import * as remote from '@electron/remote';
 
 const explorerFileActions = [
   {
-    label: "Rename",
+    label: 'Rename',
     click: () => {
-      console.log("Rename");
+      console.log('Rename');
     },
   },
   {
-    label: "Copy",
+    label: 'Copy',
     click: () => {
-      console.log("Copy");
+      console.log('Copy');
     },
   },
   {
-    label: "Delete",
+    label: 'Delete',
     click: () => {
-      console.log("Delete");
+      console.log('Delete');
     },
   },
 ];
@@ -34,7 +34,7 @@ explorerFileActions.forEach((item) => {
 });
 
 // Add a listener for the contextmenu event
-window.addEventListener("contextmenu", (event) => {
+window.addEventListener('contextmenu', (event) => {
   // Prevent the default context menu from appearing
   event.preventDefault();
 
