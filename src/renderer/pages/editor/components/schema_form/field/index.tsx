@@ -11,7 +11,7 @@ import {
 import { grey } from '@mui/material/colors';
 import Grid from '@mui/material/Unstable_Grid2';
 import { get, cloneDeep } from 'lodash';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { LANG } from '../../../../../../constants/i18n';
 import { RawJson } from '../../../../../../type';
 import { UUID } from '../../../../../../utils/uuid';
@@ -61,6 +61,8 @@ const getContainerLabelStyle = (label) => ({
   },
 });
 
+// the code field will reset all value, don't know why
+let originValueMap = {};
 export default function Field({
   schema,
   rootValue,
@@ -78,8 +80,9 @@ export default function Field({
   onValueChange?: (value: any) => void;
   label?: string;
 }) {
-  /* const [expanded, setExpanded] = useState(false); */
   const gridStyle = label ? getContainerLabelStyle(label) : {};
+  const valueRef = useRef(value);
+  valueRef.current = value;
 
   return (
     <>
@@ -112,19 +115,27 @@ export default function Field({
                 return true;
               })
               .map((field) => {
+                const onObjectValueChange = useCallback(
+                  (v) => {
+                    if (onValueChange) {
+                      const originValue = originValueMap[schema.config.fieldId];
+                      console.log('dsdd: ', originValue);
+                      const res = {
+                        ...(originValue || valueRef.current),
+                        [field.id]: v,
+                      };
+                      originValueMap[schema.config.fieldId] = res;
+                      onValueChange(res);
+                    }
+                  },
+                  [onValueChange, schema, value]
+                );
                 return (
                   <Field
                     key={field.data.config.fieldId}
                     schema={field.data}
                     value={get(value, field.id)}
-                    onValueChange={(v) => {
-                      if (onValueChange) {
-                        onValueChange({
-                          ...value,
-                          [field.id]: v,
-                        });
-                      }
-                    }}
+                    onValueChange={onObjectValueChange}
                     rootValue={rootValue}
                     label={field.name}
                     translations={translations}
@@ -240,6 +251,8 @@ export function FieldArray({
       };
     })
   );
+  const listRef = useRef(list);
+  listRef.current = list;
   const valueRef = useRef(value);
   valueRef.current = value;
 
@@ -256,50 +269,62 @@ export function FieldArray({
   }, [schema]);
 
   const addItem = () => {
-    setList((prev) => {
-      return prev.concat({
-        id: UUID(),
-        value: schema.fieldSchema.config.needI18n
-          ? UUID()
-          : schema.fieldSchema instanceof SchemaFieldObject
-          ? schema.fieldSchema.configDefaultValue
-          : schema.fieldSchema.config.defaultValue,
-      });
+    const prev = listRef.current;
+    const res = prev.concat({
+      id: UUID(),
+      value: schema.fieldSchema.config.needI18n
+        ? UUID()
+        : schema.fieldSchema instanceof SchemaFieldObject
+        ? schema.fieldSchema.configDefaultValue
+        : schema.fieldSchema.config.defaultValue,
     });
+    setList(res);
+    if (onValueChange) {
+      onValueChange(res.map((item) => item.value));
+    }
   };
 
   const moveUpItem = (sourceIndex: number) => {
-    setList((prev) => {
-      const targetIndex = Math.max(sourceIndex - 1, 0);
-      return prev.map((item, j) => {
-        if (j === sourceIndex) {
-          return prev[targetIndex];
-        }
-        if (j === targetIndex) {
-          return prev[sourceIndex];
-        }
-        return item;
-      }, []);
-    });
+    const prev = listRef.current;
+    const targetIndex = Math.max(sourceIndex - 1, 0);
+    const res = prev.map((item, j) => {
+      if (j === sourceIndex) {
+        return prev[targetIndex];
+      }
+      if (j === targetIndex) {
+        return prev[sourceIndex];
+      }
+      return item;
+    }, []);
+    setList(res);
+    if (onValueChange) {
+      onValueChange(res.map((item) => item.value));
+    }
   };
   const moveDownItem = (sourceIndex: number) => {
-    setList((prev) => {
-      const targetIndex = Math.min(sourceIndex + 1, prev.length - 1);
-      return prev.map((item, j) => {
-        if (j === sourceIndex) {
-          return prev[targetIndex];
-        }
-        if (j === targetIndex) {
-          return prev[sourceIndex];
-        }
-        return item;
-      }, []);
-    });
+    const prev = listRef.current;
+    const targetIndex = Math.min(sourceIndex + 1, prev.length - 1);
+    const res = prev.map((item, j) => {
+      if (j === sourceIndex) {
+        return prev[targetIndex];
+      }
+      if (j === targetIndex) {
+        return prev[sourceIndex];
+      }
+      return item;
+    }, []);
+    setList(res);
+    if (onValueChange) {
+      onValueChange(res.map((item) => item.value));
+    }
   };
   const deleteItem = (i: number) => {
-    setList((prev) => {
-      return prev.filter((_, j) => j !== i);
-    });
+    const prev = listRef.current;
+    const res = prev.filter((_, j) => j !== i);
+    setList(res);
+    if (onValueChange) {
+      onValueChange(res.map((item) => item.value));
+    }
   };
   const duplicateItem = (i: number) => {
     const targetItem = list[i].value;
@@ -317,25 +342,35 @@ export function FieldArray({
         return val;
       }
     );
-    setList((prev) => {
-      return prev.concat({
-        id: UUID(),
-        expanded: false,
-        value: newVal,
-      });
+    const prev = listRef.current;
+    const res = prev.concat({
+      id: UUID(),
+      expanded: false,
+      value: newVal,
     });
+    setList(res);
+    if (onValueChange) {
+      onValueChange(res.map((item) => item.value));
+    }
   };
 
-  useEffect(() => {
-    if (onValueChange) {
-      onValueChange(list.map((item) => item.value));
-    }
-  }, [list]);
+  /* useEffect(() => {
+     *   if (!isListInitedRef.current) {
+     *     return;
+     *   }
+
+     *   if (onValueChange) {
+     *     onValueChange(list.map((item) => item.value));
+     *   }
+     * }, [list, onValueChange]); */
 
   const onItemChange = (v: any, i: number) => {
-    setList((prev) => {
-      return prev.map((item, j) => (j === i ? { ...item, value: v } : item));
-    });
+    const prev = listRef.current;
+    const res = prev.map((item, j) => (j === i ? { ...item, value: v } : item));
+    setList(res);
+    if (onValueChange) {
+      onValueChange(res.map((item) => item.value));
+    }
   };
 
   const gridStyle = label ? getContainerLabelStyle(label) : {};

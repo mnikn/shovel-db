@@ -1,6 +1,12 @@
 import { Box, Stack } from '@mui/material';
 import { debounce } from 'lodash';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   DEFAULT_CONFIG_JSON,
   SchemaFieldArray,
@@ -37,8 +43,10 @@ export default function StaticData() {
   const [formTranslations, setFormTranslations] = useState(translations);
   const { currentOpenFile } = useExplorerStore();
   const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema;
+  const fileDataRef = useRef(fileData);
+  fileDataRef.current = fileData;
   const currentFileSchema = useMemo(() => {
-    if (!fileData) {
+    if (!fileDataRef.current) {
       return new SchemaFieldArray(new SchemaFieldObject());
     }
     const config = schemaConfig;
@@ -56,19 +64,13 @@ export default function StaticData() {
 
   const onValueChange = useCallback(
     (val) => {
-      if (!fileData || !currentOpenFile) {
+      if (!fileDataRef.current || !currentOpenFile) {
         return;
       }
       updateData(currentOpenFile.id, val);
       updateTranslations(formTranslations);
     },
-    [
-      updateData,
-      updateTranslations,
-      fileData,
-      formTranslations,
-      currentOpenFile,
-    ]
+    [updateData, updateTranslations, formTranslations, currentOpenFile]
   );
   return (
     <Stack sx={{ p: 6, height: '100%' }}>
