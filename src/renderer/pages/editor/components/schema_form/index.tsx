@@ -1,5 +1,4 @@
 import { Box } from '@mui/material';
-import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
 import { RawJson } from '../../../../../type';
 import {
@@ -25,11 +24,7 @@ export default function SchemaForm({
   currentLang?: LANG;
 }) {
   const onChange = useCallback(
-    /* debounce((val: any) => {
-     *   const finalVal = validateValue(val, val, schema, {});
-     *   onValueChange(finalVal);
-     * }, 50), */
-    () => {
+    (val) => {
       const finalVal = validateValue(val, val, schema, {});
       onValueChange(finalVal);
     },

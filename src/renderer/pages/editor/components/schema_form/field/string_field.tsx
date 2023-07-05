@@ -154,6 +154,7 @@ function FieldString({
               },
             }}
             onChange={(v) => {
+              setContentValue(v);
               if (onValueChange) {
                 onValueChange(v);
               }

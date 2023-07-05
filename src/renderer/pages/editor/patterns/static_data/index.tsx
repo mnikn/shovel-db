@@ -55,13 +55,13 @@ export default function StaticData() {
   const formData = fileData?.[currentOpenFile?.id || '']?.data || [];
 
   const onValueChange = useCallback(
-    debounce((val: any) => {
+    (val) => {
       if (!fileData || !currentOpenFile) {
         return;
       }
       updateData(currentOpenFile.id, val);
       updateTranslations(formTranslations);
-    }, 50),
+    },
     [
       updateData,
       updateTranslations,
