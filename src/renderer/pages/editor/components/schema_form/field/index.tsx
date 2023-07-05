@@ -61,8 +61,6 @@ const getContainerLabelStyle = (label) => ({
   },
 });
 
-// the code field will reset all value, don't know why
-let originValueMap = {};
 export default function Field({
   schema,
   rootValue,
@@ -118,13 +116,10 @@ export default function Field({
                 const onObjectValueChange = useCallback(
                   (v) => {
                     if (onValueChange) {
-                      const originValue = originValueMap[schema.config.fieldId];
-                      console.log('dsdd: ', originValue);
                       const res = {
-                        ...(originValue || valueRef.current),
+                        ...valueRef.current,
                         [field.id]: v,
                       };
-                      originValueMap[schema.config.fieldId] = res;
                       onValueChange(res);
                     }
                   },
@@ -353,16 +348,6 @@ export function FieldArray({
       onValueChange(res.map((item) => item.value));
     }
   };
-
-  /* useEffect(() => {
-     *   if (!isListInitedRef.current) {
-     *     return;
-     *   }
-
-     *   if (onValueChange) {
-     *     onValueChange(list.map((item) => item.value));
-     *   }
-     * }, [list, onValueChange]); */
 
   const onItemChange = (v: any, i: number) => {
     const prev = listRef.current;
