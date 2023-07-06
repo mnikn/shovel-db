@@ -244,6 +244,27 @@ function getDefaultConfig(type: SchemaFieldType): RawJson {
         fieldId: `field_string_${UUID()}`,
       };
     }
+    case SchemaFieldType.Number: {
+      return {
+        colSpan: 3,
+        defaultValue: 0,
+        enableWhen: null,
+        required: false,
+        minLen: 0,
+        maxLen: Number.MAX_SAFE_INTEGER,
+        codeLang: '',
+        fieldId: `field_number_${UUID()}`,
+      };
+    }
+    case SchemaFieldType.Boolean: {
+      return {
+        colSpan: 3,
+        defaultValue: false,
+        enableWhen: null,
+        required: false,
+        fieldId: `field_boolean_${UUID()}`,
+      };
+    }
     case SchemaFieldType.Select: {
       return {
         colSpan: 4,
