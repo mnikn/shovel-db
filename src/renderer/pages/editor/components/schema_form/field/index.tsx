@@ -11,7 +11,13 @@ import {
 import { grey } from '@mui/material/colors';
 import Grid from '@mui/material/Unstable_Grid2';
 import { get, cloneDeep } from 'lodash';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+} from 'react';
 import { LANG } from '../../../../../../constants/i18n';
 import { RawJson } from '../../../../../../type';
 import { UUID } from '../../../../../../utils/uuid';
@@ -40,7 +46,7 @@ import { Translation } from '../../../../../store/common/translation';
 import FieldNumber from './number_field';
 import FieldStringSpeed from './string_speed_field';
 
-const getContainerLabelStyle = (label) => ({
+const getContainerLabelStyle = (label: string) => ({
   m: 1,
   p: 3,
   pt: 6,
@@ -61,6 +67,88 @@ const getContainerLabelStyle = (label) => ({
   },
 });
 
+export function FieldObject({
+  schema,
+  rootValue,
+  value,
+  onValueChange,
+  translations,
+  currentLang,
+  label,
+}: {
+  schema: SchemaFieldObject;
+  rootValue: any;
+  value: any;
+  translations?: Translation;
+  currentLang?: LANG;
+  onValueChange?: (value: any) => void;
+  label?: string;
+}) {
+  const valueRef = useRef(value);
+  valueRef.current = value;
+  const gridStyle = label ? getContainerLabelStyle(label) : {};
+  const onObjectValueChange = useCallback(
+    (fieldKey: string, v: any) => {
+      if (onValueChange) {
+        const res = {
+          ...valueRef.current,
+          [fieldKey]: v,
+        };
+        onValueChange(res);
+      }
+    },
+    [onValueChange, schema, value]
+  );
+
+  const displayFields = useMemo(() => {
+    return schema.fields.filter((field) => {
+      if (field.data.config.enableWhen) {
+        const fn = eval(field.data.config.enableWhen);
+        if (!fn(value)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [schema.fields]);
+
+  return (
+    <Grid
+      xs={schema.config.colSpan}
+      sx={{
+        ...gridStyle,
+        width: '-webkit-fill-available',
+        background: '#fff',
+      }}
+    >
+      <Grid
+        container
+        spacing={2}
+        sx={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        {displayFields.map((field) => {
+          return (
+            <Field
+              key={field.data.config.fieldId}
+              schema={field.data}
+              value={get(value, field.id)}
+              onValueChange={(v) => onObjectValueChange(field.id, v)}
+              rootValue={rootValue}
+              label={field.name}
+              translations={translations}
+              currentLang={currentLang}
+            />
+          );
+        })}
+      </Grid>
+    </Grid>
+  );
+}
+
 export default function Field({
   schema,
   rootValue,
@@ -78,148 +166,102 @@ export default function Field({
   onValueChange?: (value: any) => void;
   label?: string;
 }) {
-  const gridStyle = label ? getContainerLabelStyle(label) : {};
-  const valueRef = useRef(value);
-  valueRef.current = value;
+  if (schema instanceof SchemaFieldObject) {
+    return (
+      <FieldObject
+        schema={schema}
+        value={value}
+        rootValue={rootValue}
+        onValueChange={onValueChange}
+        translations={translations}
+        currentLang={currentLang}
+        label={label}
+      />
+    );
+  }
+  if (schema instanceof SchemaFieldArray) {
+    return (
+      <FieldArray
+        schema={schema}
+        value={value}
+        onValueChange={onValueChange}
+        translations={translations}
+        currentLang={currentLang}
+        label={label}
+      />
+    );
+  }
 
-  return (
-    <>
-      {schema instanceof SchemaFieldObject && (
-        <Grid
-          xs={schema.config.colSpan}
-          sx={{
-            ...gridStyle,
-            width: '-webkit-fill-available',
-            background: '#fff',
-          }}
-        >
-          <Grid
-            container
-            spacing={2}
-            sx={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            {schema.fields
-              .filter((field) => {
-                if (field.data.config.enableWhen) {
-                  const fn = eval(field.data.config.enableWhen);
-                  if (!fn(value)) {
-                    return false;
-                  }
-                }
-                return true;
-              })
-              .map((field) => {
-                const onObjectValueChange = useCallback(
-                  (v) => {
-                    if (onValueChange) {
-                      const res = {
-                        ...valueRef.current,
-                        [field.id]: v,
-                      };
-                      onValueChange(res);
-                    }
-                  },
-                  [onValueChange, schema, value]
-                );
-                return (
-                  <Field
-                    key={field.data.config.fieldId}
-                    schema={field.data}
-                    value={get(value, field.id)}
-                    onValueChange={onObjectValueChange}
-                    rootValue={rootValue}
-                    label={field.name}
-                    translations={translations}
-                    currentLang={currentLang}
-                  />
-                );
-              })}
-          </Grid>
-        </Grid>
-      )}
-      {schema instanceof SchemaFieldArray && (
-        <FieldArray
-          schema={schema}
-          value={value}
-          onValueChange={onValueChange}
-          translations={translations}
-          currentLang={currentLang}
-          label={label}
-        />
-      )}
-      {schema instanceof SchemaFieldString && (
-        <Grid xs={schema.config.colSpan}>
-          <FieldString
-            schema={schema}
-            value={value}
-            onValueChange={onValueChange}
-            translations={translations}
-            currentLang={currentLang}
-            label={label}
-          />
-        </Grid>
-      )}
-      {schema instanceof SchemaFieldBoolean && (
-        <Grid xs={schema.config.colSpan}>
-          <FieldBoolean
-            schema={schema}
-            value={value}
-            onValueChange={onValueChange}
-            label={label}
-          />
-        </Grid>
-      )}
-      {schema instanceof SchemaFieldNumber && (
-        <Grid xs={schema.config.colSpan}>
-          <FieldNumber
-            schema={schema}
-            value={value}
-            onValueChange={onValueChange}
-            label={label}
-          />
-        </Grid>
-      )}
-      {schema instanceof SchemaFieldFile && (
-        <Grid xs={schema.config.colSpan}>
-          <FieldFile
-            schema={schema}
-            value={value}
-            onValueChange={onValueChange}
-            label={label}
-          />
-        </Grid>
-      )}
-      {schema instanceof SchemaFieldSelect && (
-        <Grid xs={schema.config.colSpan}>
-          <FieldSelect
-            schema={schema}
-            value={value}
-            onValueChange={onValueChange}
-            label={label}
-          />
-        </Grid>
-      )}
-      {schema instanceof SchemaFieldStringSpeed && (
-        <Grid xs={schema.config.colSpan}>
-          <FieldStringSpeed
-            schema={schema}
-            value={value}
-            currentLang={currentLang || ''}
-            targetString={
-              translations?.[get(rootValue, schema.config.targetProp)]?.[
-                currentLang || ''
-              ] || ''
-            }
-            onValueChange={onValueChange}
-          />
-        </Grid>
-      )}
-    </>
-  );
+  let componentContent = <></>;
+  if (schema instanceof SchemaFieldString) {
+    componentContent = (
+      <FieldString
+        schema={schema}
+        value={value}
+        onValueChange={onValueChange}
+        translations={translations}
+        currentLang={currentLang}
+        label={label}
+      />
+    );
+  }
+  if (schema instanceof SchemaFieldBoolean) {
+    componentContent = (
+      <FieldBoolean
+        schema={schema}
+        value={value}
+        onValueChange={onValueChange}
+        label={label}
+      />
+    );
+  }
+  if (schema instanceof SchemaFieldNumber) {
+    componentContent = (
+      <FieldNumber
+        schema={schema}
+        value={value}
+        onValueChange={onValueChange}
+        label={label}
+      />
+    );
+  }
+  if (schema instanceof SchemaFieldFile) {
+    componentContent = (
+      <FieldFile
+        schema={schema}
+        value={value}
+        onValueChange={onValueChange}
+        label={label}
+      />
+    );
+  }
+  if (schema instanceof SchemaFieldSelect) {
+    componentContent = (
+      <FieldSelect
+        schema={schema}
+        value={value}
+        onValueChange={onValueChange}
+        label={label}
+      />
+    );
+  }
+  if (schema instanceof SchemaFieldStringSpeed) {
+    componentContent = (
+      <FieldStringSpeed
+        schema={schema}
+        value={value}
+        currentLang={currentLang || ''}
+        targetString={
+          translations?.[get(rootValue, schema.config.targetProp)]?.[
+            currentLang || ''
+          ] || ''
+        }
+        onValueChange={onValueChange}
+      />
+    );
+  }
+
+  return <Grid xs={schema.config.colSpan}>{componentContent}</Grid>;
 }
 
 export function FieldArray({
@@ -263,7 +305,7 @@ export function FieldArray({
     );
   }, [schema]);
 
-  const addItem = () => {
+  const addItem = useCallback(() => {
     const prev = listRef.current;
     const res = prev.concat({
       id: UUID(),
@@ -277,86 +319,103 @@ export function FieldArray({
     if (onValueChange) {
       onValueChange(res.map((item) => item.value));
     }
-  };
+  }, [onValueChange]);
 
-  const moveUpItem = (sourceIndex: number) => {
-    const prev = listRef.current;
-    const targetIndex = Math.max(sourceIndex - 1, 0);
-    const res = prev.map((item, j) => {
-      if (j === sourceIndex) {
-        return prev[targetIndex];
-      }
-      if (j === targetIndex) {
-        return prev[sourceIndex];
-      }
-      return item;
-    }, []);
-    setList(res);
-    if (onValueChange) {
-      onValueChange(res.map((item) => item.value));
-    }
-  };
-  const moveDownItem = (sourceIndex: number) => {
-    const prev = listRef.current;
-    const targetIndex = Math.min(sourceIndex + 1, prev.length - 1);
-    const res = prev.map((item, j) => {
-      if (j === sourceIndex) {
-        return prev[targetIndex];
-      }
-      if (j === targetIndex) {
-        return prev[sourceIndex];
-      }
-      return item;
-    }, []);
-    setList(res);
-    if (onValueChange) {
-      onValueChange(res.map((item) => item.value));
-    }
-  };
-  const deleteItem = (i: number) => {
-    const prev = listRef.current;
-    const res = prev.filter((_, j) => j !== i);
-    setList(res);
-    if (onValueChange) {
-      onValueChange(res.map((item) => item.value));
-    }
-  };
-  const duplicateItem = (i: number) => {
-    const targetItem = list[i].value;
-    const newVal = processValueWithSchema(
-      schema.fieldSchema,
-      targetItem,
-      (schema, val) => {
-        if (schema instanceof SchemaFieldString && schema.config.needI18n) {
-          const newContentId = UUID();
-          if (translations) {
-            translations[newContentId] = cloneDeep(translations[val]);
-          }
-          return 'string_field_' + newContentId;
+  const moveUpItem = useCallback(
+    (sourceIndex: number) => {
+      const prev = listRef.current;
+      const targetIndex = Math.max(sourceIndex - 1, 0);
+      const res = prev.map((item, j) => {
+        if (j === sourceIndex) {
+          return prev[targetIndex];
         }
-        return val;
+        if (j === targetIndex) {
+          return prev[sourceIndex];
+        }
+        return item;
+      }, []);
+      setList(res);
+      if (onValueChange) {
+        onValueChange(res.map((item) => item.value));
       }
-    );
-    const prev = listRef.current;
-    const res = prev.concat({
-      id: UUID(),
-      expanded: false,
-      value: newVal,
-    });
-    setList(res);
-    if (onValueChange) {
-      onValueChange(res.map((item) => item.value));
-    }
-  };
+    },
+    [onValueChange]
+  );
+  const moveDownItem = useCallback(
+    (sourceIndex: number) => {
+      const prev = listRef.current;
+      const targetIndex = Math.min(sourceIndex + 1, prev.length - 1);
+      const res = prev.map((item, j) => {
+        if (j === sourceIndex) {
+          return prev[targetIndex];
+        }
+        if (j === targetIndex) {
+          return prev[sourceIndex];
+        }
+        return item;
+      }, []);
+      setList(res);
+      if (onValueChange) {
+        onValueChange(res.map((item) => item.value));
+      }
+    },
+    [onValueChange]
+  );
+  const deleteItem = useCallback(
+    (i: number) => {
+      const prev = listRef.current;
+      const res = prev.filter((_, j) => j !== i);
+      setList(res);
+      if (onValueChange) {
+        onValueChange(res.map((item) => item.value));
+      }
+    },
+    [onValueChange]
+  );
+  const duplicateItem = useCallback(
+    (i: number) => {
+      const targetItem = list[i].value;
+      const newVal = processValueWithSchema(
+        schema.fieldSchema,
+        targetItem,
+        (schema, val) => {
+          if (schema instanceof SchemaFieldString && schema.config.needI18n) {
+            const newContentId = UUID();
+            if (translations) {
+              translations[newContentId] = cloneDeep(translations[val]);
+            }
+            return 'string_field_' + newContentId;
+          }
+          return val;
+        }
+      );
+      const prev = listRef.current;
+      const res = prev.concat({
+        id: UUID(),
+        expanded: false,
+        value: newVal,
+      });
+      setList(res);
+      if (onValueChange) {
+        onValueChange(res.map((item) => item.value));
+      }
+    },
+    [onValueChange]
+  );
 
-  const onItemChange = (v: any, i: number) => {
-    const prev = listRef.current;
-    const res = prev.map((item, j) => (j === i ? { ...item, value: v } : item));
-    setList(res);
-    if (onValueChange) {
-      onValueChange(res.map((item) => item.value));
-    }
-  };
+  const onItemChange = useCallback(
+    (v: any, i: number) => {
+      const prev = listRef.current;
+      const res = prev.map((item, j) =>
+        j === i ? { ...item, value: v } : item
+      );
+      setList(res);
+      if (onValueChange) {
+        onValueChange(res.map((item) => item.value));
+      }
+    },
+    [onValueChange]
+  );
 
   const gridStyle = label ? getContainerLabelStyle(label) : {};
   return (
