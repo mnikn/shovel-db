@@ -7,6 +7,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { useObservable } from 'rxjs-hooks';
+import useStaticData from '../../../../data/static_data';
 import {
   DEFAULT_CONFIG_JSON,
   SchemaFieldArray,
@@ -40,8 +42,18 @@ export default function StaticData() {
     translations,
     updateTranslations,
   } = useStaticDataStore();
+
+  const { files, currentOpenFile } = useExplorerStore();
+  const { currentFileData } = useStaticData({
+    files,
+    currentFile: currentOpenFile,
+  });
+
+  currentFileData?.data.subscribe((v) => {
+    console.log('vcv: ', v);
+    return v;
+  });
   const [formTranslations, setFormTranslations] = useState(translations);
-  const { currentOpenFile } = useExplorerStore();
   const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema;
   const fileDataRef = useRef(fileData);
   fileDataRef.current = fileData;

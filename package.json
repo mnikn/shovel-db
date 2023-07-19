@@ -45,6 +45,8 @@
     "react-dom": "^18.2.0",
     "react-images-uploading": "^3.1.7",
     "react-monaco-editor": "^0.52.0",
+    "rxjs": "^7.8.1",
+    "rxjs-hooks": "^0.8.0-alpha.0",
     "upath": "^2.0.1"
   },
   "devDependencies": {
@@ -52,6 +54,7 @@
     "@types/node": "^16.11.45",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
+    "@types/rx": "^4.1.2",
     "@types/webpack-dev-server": "^4.7.2",
     "@typescript-eslint/eslint-plugin": "^5.30.7",
     "@typescript-eslint/parser": "^5.30.7",

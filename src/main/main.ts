@@ -176,7 +176,7 @@ ipcMain.on(SAVE_FILE, (event, arg) => {
   ensureDirExists(filePath);
   try {
     fs.writeFileSync(filePath, data);
-    event.sender.send(SAVE_FILE + '-response');
+    event.sender.send(SAVE_FILE + '-' + arg.channelId + '-response');
   } catch (err) {
     console.log(err);
   }
@@ -186,7 +186,7 @@ ipcMain.on(READ_FILE, (event, arg) => {
   const { filePath } = arg;
   try {
     const res = fs.readFileSync(filePath, { encoding: 'utf8' });
-    event.sender.send(READ_FILE + '-response', res);
+    event.sender.send(READ_FILE + '-' + arg.channelId + '-response', res);
   } catch (err) {
     console.log(err);
   }
@@ -202,7 +202,7 @@ ipcMain.on(RENAME_FILE, (event, arg) => {
   ensureDirExists(newFilePath);
   try {
     const res = fs.renameSync(oldFilePath, newFilePath);
-    event.sender.send(RENAME_FILE + '-response', res);
+    event.sender.send(RENAME_FILE + '-' + arg.channelId + '-response', res);
   } catch (err) {
     console.log(err);
   }
