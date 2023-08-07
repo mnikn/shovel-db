@@ -6,12 +6,13 @@ import {
   useSubscription,
 } from 'observable-hooks';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import useStaticData from '../../../../data/static_data';
+import useStaticData, { StaticData } from '../../../../data/static_data';
 import { SchemaFieldSelect } from '../../../../models/schema';
 import { useExplorerStore, useStaticDataStore } from '../../../../store';
 import SchemaForm from '../../components/schema_form';
 import FieldSelect from '../../components/schema_form/field/select_field';
 import { from, tap } from 'rxjs';
+import { Translation } from '../../../../store/common/translation';
 
 const i18nSchema = new SchemaFieldSelect({
   options: [
@@ -37,22 +38,25 @@ export default function StaticData() {
   } = useStaticDataStore();
 
   const { files, currentOpenFile } = useExplorerStore();
-  const { $currentData, currentSchema } = useStaticData({
+
+  /* const [formData] = useObservableState(() => {
+   *   return from($currentData);
+   * }, null); */
+
+  const [formData, setFormData] = useState<StaticData | null>(null);
+  const [formDataTranslations, setFormDataTranslations] = useState<Translation>(
+    {}
+  );
+  const { $currentData, $currentSchema } = useStaticData({
     files,
     currentFile: currentOpenFile,
+    $currentDataChange: useObservable(pluckFirst, [formData]),
   });
+  useSubscription($currentData, setFormData);
 
-  const [formData] = useObservableState(() => {
-    return from($currentData);
-  }, null);
-  const $formData = useObservable(pluckFirst, [formData]);
-  useSubscription($formData, (val) => {
-    console.log('ewwe: ', val);
-  });
+  const currentSchema = useObservableState($currentSchema);
 
-  const [formTranslations, setFormTranslations] = useState(translations);
-  const fileDataRef = useRef(fileData);
-  fileDataRef.current = fileData;
+  /* const [formTranslations, setFormTranslations] = useState(translations); */
   /* const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema; */
   /* const currentFileSchema = useMemo(() => {
    *   if (!fileDataRef.current) {
@@ -65,23 +69,15 @@ export default function StaticData() {
    *   return buildSchema(JSON.parse(config)) as SchemaFieldArray;
    * }, [schemaConfig]);
    */
-  useEffect(() => {
-    setFormTranslations(translations);
-  }, [translations]);
 
   /* const formData = fileData?.[currentOpenFile?.id || '']?.data || []; */
 
   const onValueChange = useCallback(
     (val) => {
-      if (!fileDataRef.current || !currentOpenFile) {
-        return;
-      }
-      console.log('yt: ', val);
-      /* setFormData(val); */
-      /* updateData(currentOpenFile.id, val); */
-      updateTranslations(formTranslations);
+      setFormData(val);
+      /* setFormDataTranslations(translations); */
     },
-    [updateData, updateTranslations, formTranslations, currentOpenFile]
+    [updateTranslations]
   );
 
   if (!currentSchema || !formData) {

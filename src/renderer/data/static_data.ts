@@ -2,9 +2,23 @@ import {
   pluckFirst,
   useObservable,
   useObservableState,
+  useSubscription,
 } from 'observable-hooks';
 import { join } from 'path';
-import { combineLatestWith, from, map, Observable, of, switchMap } from 'rxjs';
+import { isEqual } from 'lodash';
+import {
+  combineLatest,
+  combineLatestWith,
+  debounceTime,
+  distinctUntilChanged,
+  from,
+  map,
+  merge,
+  Observable,
+  of,
+  switchMap,
+  withLatestFrom,
+} from 'rxjs';
 import { READ_FILE } from '../../constants/events';
 import { PROJECT_ROOT_PATH } from '../../constants/storage';
 import { ipcSend } from '../electron/ipc';
@@ -17,18 +31,23 @@ export type StaticData = Array<any>;
 export type StaticFileData = {
   fileId: string;
   schema: SchemaFieldArray;
-  getData: () => Observable<StaticData | null>;
+  getData: () => Promise<StaticData | null>;
 };
 
 export default function useStaticData({
   files,
+  $currentDataChange,
   currentFile,
 }: {
   files: Array<File | Folder>;
+  $currentDataChange: Observable<StaticData | null>;
   currentFile: File | null;
 }) {
   const projectPath = localStorage.getItem(PROJECT_ROOT_PATH) as string | null;
-  const { currentLang } = useTranslation({ languages: PRESET_LANGS });
+  const { $currentLang } = useTranslation({
+    $langs: of(PRESET_LANGS),
+    $langChange: of(PRESET_LANGS[0]),
+  });
 
   const [totalSchemaData] = useObservableState<{
     [fileId: string]: SchemaFieldArray;
@@ -79,7 +98,7 @@ export default function useStaticData({
                     _totalSchemaTable[item.id] ||
                     new SchemaFieldArray(new SchemaFieldObject()),
                   getData: () => {
-                    return of(null);
+                    return Promise.resolve(null);
                   },
                 };
                 return res;
@@ -90,14 +109,12 @@ export default function useStaticData({
               );
               const filePath = join(projectPath, relativeFilePath + '.json');
 
-              const readFileData = () => {
-                return from(
-                  ipcSend(READ_FILE, {
-                    filePath,
-                  }).then((data) => {
-                    return JSON.parse(data) as StaticData;
-                  })
-                );
+              const readFileData = async () => {
+                return ipcSend(READ_FILE, {
+                  filePath,
+                }).then((data) => {
+                  return JSON.parse(data) as StaticData;
+                });
               };
 
               res[item.id] = {
@@ -133,38 +150,39 @@ export default function useStaticData({
   }, null);
   const $currentFileData = useObservable(pluckFirst, [currentFileData]);
 
-  const [currentData, setCurrentData] = useObservableState<StaticData | null>(
-    () => {
-      return $currentFileData.pipe(
-        switchMap((fileData) => {
+  const $currentData = useObservable(() => {
+    return merge(
+      $currentFileData.pipe(
+        switchMap(async (fileData) => {
           if (!fileData) {
-            return of(null);
+            return null;
           }
-          return fileData.getData();
+          return await fileData.getData();
         })
-      );
-    },
-    null
-  );
-  const $currentData = useObservable(pluckFirst, [currentData]);
+      ),
+      $currentDataChange.pipe(debounceTime(500))
+    ).pipe(distinctUntilChanged(isEqual));
+  });
 
-  const [currentSchema, setCurrentSchema] =
-    useObservableState<SchemaFieldArray | null>(() => {
-      return $currentFileData.pipe(
-        map((val) => {
-          return val?.schema || null;
-        })
-      );
-    });
-  const $currentSchema = useObservable(pluckFirst, [currentSchema]);
+  const $currentSchema = useObservable(() => {
+    return $currentFileData.pipe(
+      map((fileData) => {
+        return fileData?.schema || null;
+      })
+    );
+  });
+  // const [currentSchema, setCurrentSchema] =
+  //   useObservableState<SchemaFieldArray | null>(() => {
+  //     return $currentFileData.pipe(
+  //       map((val) => {
+  //         return val?.schema || null;
+  //       })
+  //     );
+  //   });
 
   return {
     $currentData,
-    currentData,
-    setCurrentData,
     $currentSchema,
-    currentSchema,
-    setCurrentSchema,
-    currentLang,
+    $currentLang,
   };
 }
