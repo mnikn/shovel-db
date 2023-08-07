@@ -1,19 +1,23 @@
+import {
+  pluckFirst,
+  useObservable,
+  useObservableState,
+} from 'observable-hooks';
 import { join } from 'path';
-import { useEffect, useState } from 'react';
-import { filter, from, map, Observable } from 'rxjs';
-import { useObservable } from 'rxjs-hooks';
+import { combineLatestWith, from, map, Observable, of, switchMap } from 'rxjs';
 import { READ_FILE } from '../../constants/events';
 import { PROJECT_ROOT_PATH } from '../../constants/storage';
 import { ipcSend } from '../electron/ipc';
 import { File, Folder, getFullPath } from '../models/explorer';
 import { SchemaFieldArray, SchemaFieldObject } from '../models/schema';
 import { buildSchema } from '../models/schema/factory';
+import useTranslation, { PRESET_LANGS } from './translation';
 
-type StaticData = any;
-type StaticFileData = {
+export type StaticData = Array<any>;
+export type StaticFileData = {
   fileId: string;
   schema: SchemaFieldArray;
-  data: Observable<StaticData>;
+  getData: () => Observable<StaticData | null>;
 };
 
 export default function useStaticData({
@@ -24,121 +28,143 @@ export default function useStaticData({
   currentFile: File | null;
 }) {
   const projectPath = localStorage.getItem(PROJECT_ROOT_PATH) as string | null;
-  const [totalSchemaData, setTotalSchemaData] = useState<{
+  const { currentLang } = useTranslation({ languages: PRESET_LANGS });
+
+  const [totalSchemaData] = useObservableState<{
     [fileId: string]: SchemaFieldArray;
-  }>({});
-
-  useEffect(() => {
+  }>(() => {
     if (!projectPath) {
-      return;
+      return of({});
     }
-    const getSchemaData = async () => {
-      const staticDataPath = join(projectPath, 'static-data');
-      const schemaDataPath = join(staticDataPath, '.static-data.json');
-      const schemaData = JSON.parse(
-        await ipcSend(READ_FILE, {
-          filePath: schemaDataPath,
-        })
-      );
-      // const schemaData = {} as any;
-      const schemaContent = schemaData?.fileData || {};
-      const schemaList = Object.keys(schemaContent).reduce((res, key) => {
-        const item = schemaContent[key];
-        res[key] = buildSchema(JSON.parse(item.schema));
-        return res;
-      }, {});
+    const staticDataPath = join(projectPath, 'static-data');
+    const schemaDataPath = join(staticDataPath, '.static-data.json');
+    return from(
+      ipcSend(READ_FILE, {
+        filePath: schemaDataPath,
+      }).then((rawData) => {
+        return JSON.parse(rawData);
+      })
+    ).pipe(
+      map((schemaData) => {
+        const schemaContent = schemaData?.fileData || {};
+        const schemaList = Object.keys(schemaContent).reduce((res, key) => {
+          const item = schemaContent[key];
+          res[key] = buildSchema(JSON.parse(item.schema));
+          return res;
+        }, {});
+        return schemaList;
+      })
+    );
+  });
+  const $totalSchemaData = useObservable(pluckFirst, [totalSchemaData]);
 
-      setTotalSchemaData(schemaList);
-    };
-    getSchemaData();
-  }, [projectPath]);
-
-  const totalFileData = useObservable<
-    {
-      [fileId: string]: StaticFileData;
-    },
-    [
-      Array<File | Folder>,
-      {
-        [fileId: string]: SchemaFieldArray;
-      }
-    ]
-  >(
-    (_, $inputs) => {
-      return $inputs.pipe(
-        filter(() => {
-          return !!projectPath;
-        }),
-        map(([_files, _totalSchemaTable]) => {
-          return _files
-            .filter((f) => {
-              return f.parentId === 'static-data';
-            })
-            .reduce(
-              (res, item) => {
-                if (!projectPath) {
-                  res[item.id] = {
-                    fileId: item.id,
-                    schema:
-                      _totalSchemaTable[item.id] ||
-                      new SchemaFieldArray(new SchemaFieldObject()),
-                    data: from(Promise.resolve([] as StaticData)),
-                  };
-                  return res;
-                }
-                const relativeFilePath = getFullPath(item, _files)?.replaceAll(
-                  '.',
-                  '/'
-                );
-                const filePath = join(projectPath, relativeFilePath + '.json');
+  const $files = useObservable(pluckFirst, [files]);
+  const [totalFileData] = useObservableState(() => {
+    return $totalSchemaData.pipe(
+      combineLatestWith($files),
+      map(([_totalSchemaTable, _files]) => {
+        if (!_totalSchemaTable) {
+          return {};
+        }
+        const res = _files
+          .filter((f) => {
+            return f.parentId === 'static-data';
+          })
+          .reduce(
+            (res, item) => {
+              if (!projectPath) {
                 res[item.id] = {
                   fileId: item.id,
                   schema:
                     _totalSchemaTable[item.id] ||
                     new SchemaFieldArray(new SchemaFieldObject()),
-                  data: from(
-                    ipcSend(READ_FILE, {
-                      filePath,
-                    }).then((data) => {
-                      return JSON.parse(data);
-                    })
-                  ),
+                  getData: () => {
+                    return of(null);
+                  },
                 };
                 return res;
-              },
-              {} as {
-                [fileId: string]: StaticFileData;
               }
-            );
-        })
-      );
-    },
-    {},
-    [files, totalSchemaData]
-  );
+              const relativeFilePath = getFullPath(item, _files)?.replaceAll(
+                '.',
+                '/'
+              );
+              const filePath = join(projectPath, relativeFilePath + '.json');
 
-  const currentFileData = useObservable<
-    StaticFileData | null,
-    [
-      {
-        [fileId: string]: StaticFileData;
-      },
-      File | null
-    ]
-  >(
-    (_, inputs$) => {
-      return inputs$.pipe(
-        map(([_totalData, _currentFile]) => {
-          return _totalData[_currentFile?.id || ''] || null;
+              const readFileData = () => {
+                return from(
+                  ipcSend(READ_FILE, {
+                    filePath,
+                  }).then((data) => {
+                    return JSON.parse(data) as StaticData;
+                  })
+                );
+              };
+
+              res[item.id] = {
+                fileId: item.id,
+                schema:
+                  _totalSchemaTable[item.id] ||
+                  new SchemaFieldArray(new SchemaFieldObject()),
+                getData: readFileData,
+              };
+              return res;
+            },
+            {} as {
+              [fileId: string]: StaticFileData;
+            }
+          );
+        return res;
+      })
+    );
+  }, {});
+  const $totalFileData = useObservable(pluckFirst, [totalFileData]);
+  const $currentFile = useObservable(pluckFirst, [currentFile]);
+
+  const [currentFileData] = useObservableState(() => {
+    return $totalFileData.pipe(
+      combineLatestWith($currentFile),
+      map(([_totalFileData, _currentFile]) => {
+        if (!_totalFileData) {
+          return null;
+        }
+        return _totalFileData[_currentFile?.id || ''] || null;
+      })
+    );
+  }, null);
+  const $currentFileData = useObservable(pluckFirst, [currentFileData]);
+
+  const [currentData, setCurrentData] = useObservableState<StaticData | null>(
+    () => {
+      return $currentFileData.pipe(
+        switchMap((fileData) => {
+          if (!fileData) {
+            return of(null);
+          }
+          return fileData.getData();
         })
       );
     },
-    null,
-    [totalFileData, currentFile]
+    null
   );
+  const $currentData = useObservable(pluckFirst, [currentData]);
+
+  const [currentSchema, setCurrentSchema] =
+    useObservableState<SchemaFieldArray | null>(() => {
+      return $currentFileData.pipe(
+        map((val) => {
+          return val?.schema || null;
+        })
+      );
+    });
+  const $currentSchema = useObservable(pluckFirst, [currentSchema]);
 
   return {
-    totalFileData,
-    currentFileData,
+    $currentData,
+    currentData,
+    setCurrentData,
+    $currentSchema,
+    currentSchema,
+    setCurrentSchema,
+    currentLang,
   };
 }

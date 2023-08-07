@@ -39,6 +39,7 @@
     "monaco-editor": "^0.36.1",
     "monaco-editor-webpack-plugin": "^7.0.1",
     "monaco-languageclient": "^5.0.1",
+    "observable-hooks": "^4.2.2",
     "react": "^18.2.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
@@ -46,7 +47,6 @@
     "react-images-uploading": "^3.1.7",
     "react-monaco-editor": "^0.52.0",
     "rxjs": "^7.8.1",
-    "rxjs-hooks": "^0.8.0-alpha.0",
     "upath": "^2.0.1"
   },
   "devDependencies": {

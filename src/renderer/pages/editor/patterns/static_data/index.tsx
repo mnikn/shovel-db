@@ -1,24 +1,17 @@
 import { Box, Stack } from '@mui/material';
-import { debounce } from 'lodash';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { useObservable } from 'rxjs-hooks';
-import useStaticData from '../../../../data/static_data';
 import {
-  DEFAULT_CONFIG_JSON,
-  SchemaFieldArray,
-  SchemaFieldObject,
-  SchemaFieldSelect,
-} from '../../../../models/schema';
-import { buildSchema } from '../../../../models/schema/factory';
+  pluckFirst,
+  useObservable,
+  useObservableState,
+  useSubscription,
+} from 'observable-hooks';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import useStaticData from '../../../../data/static_data';
+import { SchemaFieldSelect } from '../../../../models/schema';
 import { useExplorerStore, useStaticDataStore } from '../../../../store';
 import SchemaForm from '../../components/schema_form';
 import FieldSelect from '../../components/schema_form/field/select_field';
+import { from, tap } from 'rxjs';
 
 const i18nSchema = new SchemaFieldSelect({
   options: [
@@ -44,51 +37,61 @@ export default function StaticData() {
   } = useStaticDataStore();
 
   const { files, currentOpenFile } = useExplorerStore();
-  const { currentFileData } = useStaticData({
+  const { $currentData, currentSchema } = useStaticData({
     files,
     currentFile: currentOpenFile,
   });
 
-  currentFileData?.data.subscribe((v) => {
-    console.log('vcv: ', v);
-    return v;
+  const [formData] = useObservableState(() => {
+    return from($currentData);
+  }, null);
+  const $formData = useObservable(pluckFirst, [formData]);
+  useSubscription($formData, (val) => {
+    console.log('ewwe: ', val);
   });
+
   const [formTranslations, setFormTranslations] = useState(translations);
-  const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema;
   const fileDataRef = useRef(fileData);
   fileDataRef.current = fileData;
-  const currentFileSchema = useMemo(() => {
-    if (!fileDataRef.current) {
-      return new SchemaFieldArray(new SchemaFieldObject());
-    }
-    const config = schemaConfig;
-    if (!config) {
-      return buildSchema(DEFAULT_CONFIG_JSON.ARR_OBJ_JSON) as SchemaFieldArray;
-    }
-    return buildSchema(JSON.parse(config)) as SchemaFieldArray;
-  }, [schemaConfig]);
-
+  /* const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema; */
+  /* const currentFileSchema = useMemo(() => {
+   *   if (!fileDataRef.current) {
+   *     return new SchemaFieldArray(new SchemaFieldObject());
+   *   }
+   *   const config = schemaConfig;
+   *   if (!config) {
+   *     return buildSchema(DEFAULT_CONFIG_JSON.ARR_OBJ_JSON) as SchemaFieldArray;
+   *   }
+   *   return buildSchema(JSON.parse(config)) as SchemaFieldArray;
+   * }, [schemaConfig]);
+   */
   useEffect(() => {
     setFormTranslations(translations);
   }, [translations]);
 
-  const formData = fileData?.[currentOpenFile?.id || '']?.data || [];
+  /* const formData = fileData?.[currentOpenFile?.id || '']?.data || []; */
 
   const onValueChange = useCallback(
     (val) => {
       if (!fileDataRef.current || !currentOpenFile) {
         return;
       }
-      updateData(currentOpenFile.id, val);
+      console.log('yt: ', val);
+      /* setFormData(val); */
+      /* updateData(currentOpenFile.id, val); */
       updateTranslations(formTranslations);
     },
     [updateData, updateTranslations, formTranslations, currentOpenFile]
   );
+
+  if (!currentSchema || !formData) {
+    return null;
+  }
   return (
     <Stack sx={{ p: 6, height: '100%' }}>
       <SchemaForm
         formData={formData}
-        schema={currentFileSchema}
+        schema={currentSchema}
         currentLang={currentLang}
         translations={translations}
         onValueChange={onValueChange}
