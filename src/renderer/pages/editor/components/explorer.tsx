@@ -7,7 +7,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { Box, Container, Stack, TextField } from '@mui/material';
 import * as d3 from 'd3';
 import { uniq } from 'lodash';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   File,
   Folder,
@@ -17,6 +17,7 @@ import {
 } from '../../../models/explorer';
 import { Mode, useEditorStore, useExplorerStore } from '../../../store';
 import { animation, borderRadius } from '../../../theme';
+import { EditorContext } from '../context';
 
 let cacheDragingData: File | Folder | null = null;
 export default function Explorer() {
@@ -26,8 +27,8 @@ export default function Explorer() {
   const [editingName, setEditingName] = useState<string | null>(null);
 
   const {
-    currentOpenFile,
-    openFile,
+    /* currentOpenFile, */
+    /* openFile, */
     files,
     updateItem,
     deleteItem,
@@ -35,6 +36,8 @@ export default function Explorer() {
     newFolder,
     moveFile,
   } = useExplorerStore();
+
+  const { currentOpenFile, setCurrentOpenFile } = useContext(EditorContext);
 
   const { setMode } = useEditorStore();
 
@@ -287,7 +290,7 @@ export default function Explorer() {
           if (editingItem) {
             return;
           }
-          openFile(data);
+          setCurrentOpenFile(data);
         }}
         draggable={!editingItem}
         onDoubleClick={() => {

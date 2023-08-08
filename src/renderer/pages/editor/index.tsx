@@ -1,5 +1,10 @@
-import { Box, Stack, CircularProgress, FormLabel } from '@mui/material';
-import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
+import { Box, CircularProgress, FormLabel, Stack } from '@mui/material';
+import { grey } from '@mui/material/colors';
+import { useSubscription } from 'observable-hooks';
+import React, { useEffect, useRef, useState } from 'react';
+import { filter, fromEvent, tap } from 'rxjs';
+import useExplorer from '../../data/explorer';
+import useProject from '../../data/project';
 import {
   useExplorerStore,
   useStaticDataStore,
@@ -8,14 +13,12 @@ import {
 import { Mode, useEditorStore } from '../../store/editor';
 import { useProjectStore } from '../../store/project';
 import { useTrackStore } from '../../store/track';
-import { grey } from '@mui/material/colors';
 import { borderRadius } from '../../theme';
-import Explorer from './components/explorer';
-import Main from './main';
-import SearchPanel from './components/search_panel';
 import CommandPanel from './components/command_panel';
-import useProject from '../../data/project';
+import Explorer from './components/explorer';
+import SearchPanel from './components/search_panel';
 import { EditorContext } from './context';
+import Main from './main';
 
 export default function Editor() {
   const { undo, redo } = useTrackStore();
@@ -28,11 +31,19 @@ export default function Editor() {
     translations: storyTranslations,
     storyActors,
   } = useStoryStore();
-  const { files, recentOpenFiles } = useExplorerStore();
+  const { recentOpenFiles } = useExplorerStore();
   const { fileData: staticDataFileData, translations: staticDataTranslations } =
     useStaticDataStore();
   const { save } = useProjectStore();
-  const { projectPath } = useProject();
+  const { projectPath, save: saveProjectConfig } = useProject();
+  const {
+    files,
+    currentOpenFile,
+    setCurrentOpenFile,
+    save: saveExplorer,
+  } = useExplorer({
+    projectPath,
+  });
   const [saving, setSaving] = useState(false);
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
   const searchPanelOpenRef = useRef(searchPanelOpen);
@@ -41,6 +52,23 @@ export default function Editor() {
   const [commandPanelOpen, setCommandPanelOpen] = useState(false);
   const commandPanelOpenRef = useRef(commandPanelOpen);
   commandPanelOpenRef.current = commandPanelOpen;
+
+  useSubscription(
+    fromEvent(window, 'keydown').pipe(
+      filter((e: any) => {
+        return e.code === 'KeyS' && (e.ctrlKey || e.metaKey);
+      }),
+      tap(async () => {
+        console.log('save');
+        setSaving(true);
+        await saveProjectConfig();
+        await saveExplorer();
+        setTimeout(() => {
+          setSaving(false);
+        }, 500);
+      })
+    )
+  );
 
   useEffect(() => {
     const handle = async (e) => {
@@ -77,23 +105,23 @@ export default function Editor() {
         }
       }
 
-      if (e.code === 'KeyS' && (e.ctrlKey || e.metaKey)) {
-        setSaving(true);
-        await save({
-          story,
-          storyActors,
-          storyTranslations,
-          storyNodeSettings: nodeSettings,
-          storyActorSettings: actorSettings,
-          files,
-          recentOpenFiles,
-          staticDataFileData,
-          staticDataTranslations,
-        });
-        setTimeout(() => {
-          setSaving(false);
-        }, 500);
-      }
+      /* if (e.code === 'KeyS' && (e.ctrlKey || e.metaKey)) {
+       *   setSaving(true);
+       *   await save({
+       *     story,
+       *     storyActors,
+       *     storyTranslations,
+       *     storyNodeSettings: nodeSettings,
+       *     storyActorSettings: actorSettings,
+       *     files,
+       *     recentOpenFiles,
+       *     staticDataFileData,
+       *     staticDataTranslations,
+       *   });
+       *   setTimeout(() => {
+       *     setSaving(false);
+       *   }, 500);
+       * } */
     };
     window.addEventListener('keydown', handle);
     return () => {
@@ -119,6 +147,9 @@ export default function Editor() {
     <EditorContext.Provider
       value={{
         projectPath,
+        files,
+        currentOpenFile,
+        setCurrentOpenFile,
       }}
     >
       <Box>

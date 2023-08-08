@@ -5,5 +5,7 @@ export const REMOVE_UESLESS_TRANSLATIONS = 'remove_uesless_translations';
 export const SAVE_FILE = 'save_file';
 export const RENAME_FILE = 'rename_file';
 export const READ_FILE = 'read_file';
+export const WRITE_FILE = 'write_file';
+export const HAS_FILE = 'has_file';
 export const DELETE_FILE = 'delete_file';
 export const OPEN_PROJECT = 'open_project';

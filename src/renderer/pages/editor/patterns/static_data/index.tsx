@@ -37,7 +37,7 @@ const i18nSchema = new SchemaFieldSelect({
 });
 
 export default function StaticData() {
-  const { files, currentOpenFile } = useExplorerStore();
+  const { files, currentOpenFile } = useContext(EditorContext);
 
   const [formData, setFormData] = useState<StaticData | null>(null);
   const [formTranslations, setFormTranslations] = useState<Translation>({});
@@ -73,7 +73,6 @@ export default function StaticData() {
     (val) => {
       setFormData(val);
       setFormTranslations(translations);
-      /* setFormDataTranslations(translations); */
     },
     [updateTranslations]
   );

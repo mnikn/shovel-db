@@ -5,11 +5,13 @@ import {
   DELETE_FILE,
   OPEN_PROJECT,
   READ_FILE,
+  HAS_FILE,
   REMOVE_UESLESS_TRANSLATIONS,
   RENAME_FILE,
   SAVE_FILE,
   SHOW_ARTICLE_SUMMARY,
   SHOW_PROJET_SETTINGS,
+  WRITE_FILE,
 } from '../constants/events';
 const path = require('path');
 
@@ -25,6 +27,13 @@ function ensureDirExists(filePath: string) {
   }
   ensureDirExists(dirname);
   fs.mkdirSync(dirname);
+}
+
+function listen(command: string, process: (...rest) => any) {
+  ipcMain.on(command, (event, arg) => {
+    const res = process(arg);
+    event.sender.send(command + '-' + arg.channelId + '-response', res);
+  });
 }
 
 function createWindow() {
@@ -182,13 +191,41 @@ ipcMain.on(SAVE_FILE, (event, arg) => {
   }
 });
 
-ipcMain.on(READ_FILE, (event, arg) => {
+listen(HAS_FILE, (arg) => {
   const { filePath } = arg;
   try {
-    const res = fs.readFileSync(filePath, { encoding: 'utf8' });
-    event.sender.send(READ_FILE + '-' + arg.channelId + '-response', res);
+    const res = fs.existsSync(filePath);
+    return res;
   } catch (err) {
-    console.log(err);
+    console.error(err);
+  }
+});
+
+listen(READ_FILE, (arg) => {
+  const { filePath } = arg;
+  try {
+    let res = fs.readFileSync(filePath, { encoding: 'utf8' });
+    if (arg.json) {
+      res = JSON.parse(res);
+    }
+    return res;
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+listen(WRITE_FILE, (arg) => {
+  const { filePath, data } = arg;
+  ensureDirExists(filePath);
+  try {
+    let toWrite = data;
+    if (typeof toWrite === 'object') {
+      toWrite = JSON.stringify(toWrite, null, 2);
+    }
+    fs.writeFileSync(filePath, toWrite);
+    return true;
+  } catch (err) {
+    console.error(err);
   }
 });
 
