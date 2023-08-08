@@ -26,6 +26,7 @@ export default function useProject() {
   });
 
   return {
+    projectSettings,
     projectPath,
   };
 }

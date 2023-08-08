@@ -14,6 +14,8 @@ import Explorer from './components/explorer';
 import Main from './main';
 import SearchPanel from './components/search_panel';
 import CommandPanel from './components/command_panel';
+import useProject from '../../data/project';
+import { EditorContext } from './context';
 
 export default function Editor() {
   const { undo, redo } = useTrackStore();
@@ -30,6 +32,7 @@ export default function Editor() {
   const { fileData: staticDataFileData, translations: staticDataTranslations } =
     useStaticDataStore();
   const { save } = useProjectStore();
+  const { projectPath } = useProject();
   const [saving, setSaving] = useState(false);
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
   const searchPanelOpenRef = useRef(searchPanelOpen);
@@ -113,52 +116,58 @@ export default function Editor() {
   ]);
 
   return (
-    <Box>
-      <Stack direction={'row'} sx={{ height: '100%', width: '100%' }}>
-        <Explorer />
-        <Main>
-          {saving ? (
-            <Stack
-              direction='row'
-              spacing={2}
-              sx={{
-                backgroundColor: grey[50],
-                position: 'absolute',
-                top: '24px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '150px',
-                height: '50px',
-                alignItems: 'center',
-                justifyContent: 'center',
-                ...borderRadius.larger,
-                boxShadow: 'rgba(0, 0, 0, 0.1) 0px 4px 12px',
+    <EditorContext.Provider
+      value={{
+        projectPath,
+      }}
+    >
+      <Box>
+        <Stack direction={'row'} sx={{ height: '100%', width: '100%' }}>
+          <Explorer />
+          <Main>
+            {saving ? (
+              <Stack
+                direction='row'
+                spacing={2}
+                sx={{
+                  backgroundColor: grey[50],
+                  position: 'absolute',
+                  top: '24px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '150px',
+                  height: '50px',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  ...borderRadius.larger,
+                  boxShadow: 'rgba(0, 0, 0, 0.1) 0px 4px 12px',
+                }}
+              >
+                <CircularProgress
+                  sx={{ height: '24px!important', width: '24px!important' }}
+                />
+                <FormLabel>Saving...</FormLabel>
+              </Stack>
+            ) : null}
+          </Main>
+          {searchPanelOpen && (
+            <SearchPanel
+              close={() => {
+                setSearchPanelOpen(false);
+                setMode(Mode.Normal);
               }}
-            >
-              <CircularProgress
-                sx={{ height: '24px!important', width: '24px!important' }}
-              />
-              <FormLabel>Saving...</FormLabel>
-            </Stack>
-          ) : null}
-        </Main>
-        {searchPanelOpen && (
-          <SearchPanel
-            close={() => {
-              setSearchPanelOpen(false);
-              setMode(Mode.Normal);
-            }}
-          />
-        )}
-        {commandPanelOpen && (
-          <CommandPanel
-            close={() => {
-              setCommandPanelOpen(false);
-              setMode(Mode.Normal);
-            }}
-          />
-        )}
-      </Stack>
-    </Box>
+            />
+          )}
+          {commandPanelOpen && (
+            <CommandPanel
+              close={() => {
+                setCommandPanelOpen(false);
+                setMode(Mode.Normal);
+              }}
+            />
+          )}
+        </Stack>
+      </Box>
+    </EditorContext.Provider>
   );
 }

@@ -22,13 +22,14 @@ export type StaticFileData = {
 };
 
 export default function useStaticData({
+  projectPath,
   files,
   currentFile,
 }: {
+  projectPath: string | null;
   files: Array<File | Folder>;
   currentFile: File | null;
 }) {
-  const projectPath = localStorage.getItem(PROJECT_ROOT_PATH) as string | null;
   const translationModule = useTranslation({
     langs: PRESET_LANGS,
   });

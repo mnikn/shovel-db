@@ -6,7 +6,13 @@ import {
   useObservableState,
   useSubscription,
 } from 'observable-hooks';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import useStaticData, { StaticData } from '../../../../data/static_data';
 import { SchemaFieldSelect } from '../../../../models/schema';
 import { useExplorerStore, useStaticDataStore } from '../../../../store';
@@ -15,6 +21,7 @@ import FieldSelect from '../../components/schema_form/field/select_field';
 import { from, tap, map, filter } from 'rxjs';
 import { Translation } from '../../../../store/common/translation';
 import { useFormSync } from '../../../../../utils/hooks/use_form_sync';
+import { EditorContext } from '../../context';
 
 const i18nSchema = new SchemaFieldSelect({
   options: [
@@ -34,6 +41,7 @@ export default function StaticData() {
 
   const [formData, setFormData] = useState<StaticData | null>(null);
   const [formTranslations, setFormTranslations] = useState<Translation>({});
+  const { projectPath } = useContext(EditorContext);
   const {
     currentData,
     setCurrentData,
@@ -44,6 +52,7 @@ export default function StaticData() {
     updateTranslations,
   } = useStaticData({
     files,
+    projectPath,
     currentFile: currentOpenFile,
   });
 
