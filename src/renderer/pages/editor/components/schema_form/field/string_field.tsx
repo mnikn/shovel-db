@@ -2,7 +2,6 @@ import { Box, FormLabel, Stack, TextField } from '@mui/material';
 import { get, set } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import MonacoEditor from 'react-monaco-editor/lib/editor';
-import { LANG } from '../../../../../../constants/i18n';
 import { eventEmitter, Event } from '../../../../../events';
 import { SchemaFieldString } from '../../../../../models/schema';
 import { Translation } from '../../../../../store/common/translation';
@@ -19,7 +18,7 @@ function FieldString({
   schema: SchemaFieldString;
   value: any;
   translations?: Translation;
-  currentLang?: LANG;
+  currentLang?: string;
   onValueChange?: (value: any) => void;
 }) {
   const [contentValue, setContentValue] = useState(

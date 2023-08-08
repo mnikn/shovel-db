@@ -1,4 +1,5 @@
 import { Box, Stack } from '@mui/material';
+import { isEqual } from 'lodash';
 import {
   pluckFirst,
   useObservable,
@@ -11,8 +12,9 @@ import { SchemaFieldSelect } from '../../../../models/schema';
 import { useExplorerStore, useStaticDataStore } from '../../../../store';
 import SchemaForm from '../../components/schema_form';
 import FieldSelect from '../../components/schema_form/field/select_field';
-import { from, tap } from 'rxjs';
+import { from, tap, map, filter } from 'rxjs';
 import { Translation } from '../../../../store/common/translation';
+import { useFormSync } from '../../../../../utils/hooks/use_form_sync';
 
 const i18nSchema = new SchemaFieldSelect({
   options: [
@@ -28,53 +30,40 @@ const i18nSchema = new SchemaFieldSelect({
 });
 
 export default function StaticData() {
-  const {
-    fileData,
-    updateData,
-    currentLang,
-    switchLang,
-    translations,
-    updateTranslations,
-  } = useStaticDataStore();
-
   const { files, currentOpenFile } = useExplorerStore();
 
-  /* const [formData] = useObservableState(() => {
-   *   return from($currentData);
-   * }, null); */
-
   const [formData, setFormData] = useState<StaticData | null>(null);
-  const [formDataTranslations, setFormDataTranslations] = useState<Translation>(
-    {}
-  );
-  const { $currentData, $currentSchema } = useStaticData({
+  const [formTranslations, setFormTranslations] = useState<Translation>({});
+  const {
+    currentData,
+    setCurrentData,
+    currentSchema,
+    currentLang,
+    setCurrentLang,
+    translations,
+    updateTranslations,
+  } = useStaticData({
     files,
     currentFile: currentOpenFile,
-    $currentDataChange: useObservable(pluckFirst, [formData]),
   });
-  useSubscription($currentData, setFormData);
 
-  const currentSchema = useObservableState($currentSchema);
-
-  /* const [formTranslations, setFormTranslations] = useState(translations); */
-  /* const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema; */
-  /* const currentFileSchema = useMemo(() => {
-   *   if (!fileDataRef.current) {
-   *     return new SchemaFieldArray(new SchemaFieldObject());
-   *   }
-   *   const config = schemaConfig;
-   *   if (!config) {
-   *     return buildSchema(DEFAULT_CONFIG_JSON.ARR_OBJ_JSON) as SchemaFieldArray;
-   *   }
-   *   return buildSchema(JSON.parse(config)) as SchemaFieldArray;
-   * }, [schemaConfig]);
-   */
-
-  /* const formData = fileData?.[currentOpenFile?.id || '']?.data || []; */
+  useFormSync({
+    originData: currentData,
+    formData,
+    setOriginData: setCurrentData,
+    setFormData,
+  });
+  useFormSync({
+    originData: translations,
+    formData: formTranslations,
+    setOriginData: updateTranslations,
+    setFormData: setFormTranslations,
+  });
 
   const onValueChange = useCallback(
     (val) => {
       setFormData(val);
+      setFormTranslations(translations);
       /* setFormDataTranslations(translations); */
     },
     [updateTranslations]
@@ -87,9 +76,9 @@ export default function StaticData() {
     <Stack sx={{ p: 6, height: '100%' }}>
       <SchemaForm
         formData={formData}
+        translations={formTranslations}
         schema={currentSchema}
         currentLang={currentLang}
-        translations={translations}
         onValueChange={onValueChange}
       />
       <Box
@@ -103,7 +92,7 @@ export default function StaticData() {
         <FieldSelect
           schema={i18nSchema}
           value={currentLang}
-          onValueChange={switchLang}
+          onValueChange={setCurrentLang}
         />
       </Box>
     </Stack>

@@ -5,27 +5,14 @@ import {
   useSubscription,
 } from 'observable-hooks';
 import { join } from 'path';
-import { isEqual } from 'lodash';
-import {
-  combineLatest,
-  combineLatestWith,
-  debounceTime,
-  distinctUntilChanged,
-  from,
-  map,
-  merge,
-  Observable,
-  of,
-  switchMap,
-  withLatestFrom,
-} from 'rxjs';
+import { combineLatestWith, debounceTime, from, map, of } from 'rxjs';
 import { READ_FILE } from '../../constants/events';
 import { PROJECT_ROOT_PATH } from '../../constants/storage';
 import { ipcSend } from '../electron/ipc';
 import { File, Folder, getFullPath } from '../models/explorer';
 import { SchemaFieldArray, SchemaFieldObject } from '../models/schema';
 import { buildSchema } from '../models/schema/factory';
-import useTranslation, { PRESET_LANGS } from './translation';
+import useTranslation, { PRESET_LANGS } from './common/translation';
 
 export type StaticData = Array<any>;
 export type StaticFileData = {
@@ -36,17 +23,14 @@ export type StaticFileData = {
 
 export default function useStaticData({
   files,
-  $currentDataChange,
   currentFile,
 }: {
   files: Array<File | Folder>;
-  $currentDataChange: Observable<StaticData | null>;
   currentFile: File | null;
 }) {
   const projectPath = localStorage.getItem(PROJECT_ROOT_PATH) as string | null;
-  const { $currentLang } = useTranslation({
-    $langs: of(PRESET_LANGS),
-    $langChange: of(PRESET_LANGS[0]),
+  const translationModule = useTranslation({
+    langs: PRESET_LANGS,
   });
 
   const [totalSchemaData] = useObservableState<{
@@ -150,39 +134,32 @@ export default function useStaticData({
   }, null);
   const $currentFileData = useObservable(pluckFirst, [currentFileData]);
 
-  const $currentData = useObservable(() => {
-    return merge(
-      $currentFileData.pipe(
-        switchMap(async (fileData) => {
-          if (!fileData) {
-            return null;
-          }
-          return await fileData.getData();
-        })
-      ),
-      $currentDataChange.pipe(debounceTime(500))
-    ).pipe(distinctUntilChanged(isEqual));
+  const [currentData, setCurrentData] = useObservableState<StaticData | null>(
+    ($inputs) => {
+      return $inputs.pipe(debounceTime(500));
+    },
+    null
+  );
+  useSubscription($currentFileData, async (fileData) => {
+    if (!fileData) {
+      setCurrentData(null);
+      return;
+    }
+    setCurrentData(await fileData.getData());
   });
 
-  const $currentSchema = useObservable(() => {
+  const [currentSchema] = useObservableState(() => {
     return $currentFileData.pipe(
       map((fileData) => {
         return fileData?.schema || null;
       })
     );
-  });
-  // const [currentSchema, setCurrentSchema] =
-  //   useObservableState<SchemaFieldArray | null>(() => {
-  //     return $currentFileData.pipe(
-  //       map((val) => {
-  //         return val?.schema || null;
-  //       })
-  //     );
-  //   });
+  }, null);
 
   return {
-    $currentData,
-    $currentSchema,
-    $currentLang,
+    currentData,
+    setCurrentData,
+    currentSchema,
+    ...translationModule,
   };
 }
