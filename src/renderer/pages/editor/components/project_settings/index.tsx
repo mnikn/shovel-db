@@ -16,7 +16,6 @@ import { grey } from '@mui/material/colors';
 import CodeSettings from './code_settings';
 import {
   useExplorerStore,
-  useProjectStore,
   useStaticDataStore,
   useStoryStore,
 } from '../../../../store';

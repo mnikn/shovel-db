@@ -1,7 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { cloneDeep } from 'lodash';
-import { useProjectStore } from '../project';
-import { LANG } from '../../../constants/i18n';
 import { trackState } from '../track';
 
 export interface Translation {
@@ -11,13 +9,15 @@ export interface Translation {
 }
 
 export default function useTranslation() {
-  const { projectSettings } = useProjectStore();
-  const [currentLang, setCurrentLang] = useState<LANG>(projectSettings.i18n[0]);
+  const projectSettings = { i18n: ['zh-cn'] };
+  const [currentLang, setCurrentLang] = useState<string>(
+    projectSettings.i18n[0]
+  );
   const [translations, setTranslations] = useState<Translation>({});
   const translationsRef = useRef(translations);
   translationsRef.current = translations;
 
-  const switchLang = useCallback((lang: LANG) => {
+  const switchLang = useCallback((lang: string) => {
     setCurrentLang(lang);
   }, []);
 

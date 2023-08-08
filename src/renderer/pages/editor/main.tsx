@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useContext, useLayoutEffect, useRef, useState } from 'react';
 import {
   useExplorerStore,
   useStaticDataStore,
@@ -19,6 +19,7 @@ import { getRootParent } from '../../models/explorer';
 import { Event, eventEmitter } from '../../events';
 import { processValueWithSchema, SchemaFieldString } from '../../models/schema';
 import ArticelPanel from './components/article_panel';
+import { EditorContext } from './context';
 
 export default function Main({ children }: { children?: any }) {
   const {
@@ -27,7 +28,7 @@ export default function Main({ children }: { children?: any }) {
     getNodeSchema,
     setTranslations: setStoryTranslations,
   } = useStoryStore();
-  const { currentOpenFile, files } = useExplorerStore();
+  const { currentOpenFile, files } = useContext(EditorContext);
   const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
   const [articleSummaryOpen, setArticleSummaryOpen] = useState(false);
   const { setMode } = useEditorStore();

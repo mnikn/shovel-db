@@ -29,7 +29,7 @@ export default function Explorer() {
   const {
     /* currentOpenFile, */
     /* openFile, */
-    files,
+    /* files, */
     updateItem,
     deleteItem,
     newFile,
@@ -37,7 +37,8 @@ export default function Explorer() {
     moveFile,
   } = useExplorerStore();
 
-  const { currentOpenFile, setCurrentOpenFile } = useContext(EditorContext);
+  const { currentOpenFile, setCurrentOpenFile, files } =
+    useContext(EditorContext);
 
   const { setMode } = useEditorStore();
 

@@ -11,7 +11,6 @@ import {
   useStoryStore,
 } from '../../store';
 import { Mode, useEditorStore } from '../../store/editor';
-import { useProjectStore } from '../../store/project';
 import { useTrackStore } from '../../store/track';
 import { borderRadius } from '../../theme';
 import CommandPanel from './components/command_panel';
@@ -34,7 +33,6 @@ export default function Editor() {
   const { recentOpenFiles } = useExplorerStore();
   const { fileData: staticDataFileData, translations: staticDataTranslations } =
     useStaticDataStore();
-  const { save } = useProjectStore();
   const { projectPath, save: saveProjectConfig } = useProject();
   const {
     files,
@@ -131,7 +129,6 @@ export default function Editor() {
     undo,
     redo,
     mode,
-    save,
     recentOpenFiles,
     story,
     storyActors,

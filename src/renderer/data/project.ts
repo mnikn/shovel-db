@@ -60,7 +60,9 @@ export default function useProject() {
       filePath: projectConfigPath,
       json: true,
     });
-    setProjectSettings(res);
+    setProjectSettings({
+      i18n: res.i18n,
+    });
   });
 
   const save = async () => {
@@ -68,6 +70,7 @@ export default function useProject() {
       return;
     }
     const projectConfigPath = join(projectPath, 'project.json');
+    console.log('crr: ', projectConfigPath);
     await ipcSend(WRITE_FILE, {
       filePath: projectConfigPath,
       data: projectSettings,
