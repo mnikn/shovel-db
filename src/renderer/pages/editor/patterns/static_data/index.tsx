@@ -41,7 +41,7 @@ export default function StaticData() {
 
   const [formData, setFormData] = useState<StaticData | null>(null);
   const [formTranslations, setFormTranslations] = useState<Translation>({});
-  const { projectPath } = useContext(EditorContext);
+  const { projectPath, projectSettings } = useContext(EditorContext);
   const {
     currentData,
     setCurrentData,
@@ -51,6 +51,7 @@ export default function StaticData() {
     translations,
     updateTranslations,
   } = useStaticData({
+    langs: projectSettings?.i18n || [],
     files,
     projectPath,
     currentFile: currentOpenFile,

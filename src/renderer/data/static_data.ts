@@ -7,7 +7,6 @@ import {
 import { join } from 'path';
 import { combineLatestWith, debounceTime, from, map, of } from 'rxjs';
 import { READ_FILE } from '../../constants/events';
-import { PROJECT_ROOT_PATH } from '../../constants/storage';
 import { ipcSend } from '../electron/ipc';
 import { File, Folder, getFullPath } from '../models/explorer';
 import { SchemaFieldArray, SchemaFieldObject } from '../models/schema';
@@ -23,25 +22,31 @@ export type StaticFileData = {
 
 export default function useStaticData({
   projectPath,
+  langs,
   files,
   currentFile,
 }: {
   projectPath: string | null;
+  langs: string[];
   files: Array<File | Folder>;
   currentFile: File | null;
 }) {
+  const staticDataPath = projectPath && join(projectPath, 'static-data');
   const translationModule = useTranslation({
-    langs: PRESET_LANGS,
+    langs,
+    translationFilePath: staticDataPath
+      ? join(staticDataPath, 'translations.csv')
+      : '',
   });
 
   const [totalSchemaData] = useObservableState<{
     [fileId: string]: SchemaFieldArray;
   }>(() => {
-    if (!projectPath) {
+    if (!staticDataPath) {
       return of({});
     }
-    const staticDataPath = join(projectPath, 'static-data');
     const schemaDataPath = join(staticDataPath, '.static-data.json');
+
     return from(
       ipcSend(READ_FILE, {
         filePath: schemaDataPath,

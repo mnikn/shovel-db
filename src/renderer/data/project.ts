@@ -14,7 +14,7 @@ import { PRESET_LANGS } from './common/translation';
 
 export type Lang = string;
 
-type ProjectSettings = {
+export type ProjectSettings = {
   i18n: Lang[];
 };
 

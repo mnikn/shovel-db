@@ -33,7 +33,11 @@ export default function Editor() {
   const { recentOpenFiles } = useExplorerStore();
   const { fileData: staticDataFileData, translations: staticDataTranslations } =
     useStaticDataStore();
-  const { projectPath, save: saveProjectConfig } = useProject();
+  const {
+    projectPath,
+    projectSettings,
+    save: saveProjectConfig,
+  } = useProject();
   const {
     files,
     currentOpenFile,
@@ -144,6 +148,7 @@ export default function Editor() {
     <EditorContext.Provider
       value={{
         projectPath,
+        projectSettings,
         files,
         currentOpenFile,
         setCurrentOpenFile,
