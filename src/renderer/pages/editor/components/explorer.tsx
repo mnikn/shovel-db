@@ -8,6 +8,7 @@ import { Box, Container, Stack, TextField } from '@mui/material';
 import * as d3 from 'd3';
 import { uniq } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
+import { FILE_GROUP } from '../../../../common/constants';
 import {
   File,
   Folder,
@@ -16,6 +17,7 @@ import {
   getRootParent,
 } from '../../../models/explorer';
 import { Mode, useEditorStore, useExplorerStore } from '../../../store';
+import useFile from '../../../stores/file';
 import { animation, borderRadius } from '../../../theme';
 
 let cacheDragingData: File | Folder | null = null;
@@ -23,18 +25,11 @@ export default function Explorer() {
   const [uncollapsedFolders, setUncollapsedFolders] = useState<string[]>([]);
 
   const [editingItem, setEditingItem] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState<string>('');
 
-  const {
-    currentOpenFile,
-    openFile,
-    files,
-    updateItem,
-    deleteItem,
-    newFile,
-    newFolder,
-    moveFile,
-  } = useExplorerStore();
+  const { files, createFile, createFolder, deleteFile, renameFile } = useFile();
+
+  const { currentOpenFile, openFile, moveFile } = useExplorerStore();
 
   const { setMode } = useEditorStore();
 
@@ -55,6 +50,13 @@ export default function Explorer() {
 
   const fileContextMenu = [
     {
+      label: 'New File',
+      click: (file: File) => {
+        const newFile = createFile(file.id);
+        setEditingItem(newFile.id);
+      },
+    },
+    {
       label: 'Rename',
       click: (file: File) => {
         setEditingName(file.name);
@@ -70,7 +72,7 @@ export default function Explorer() {
     {
       label: 'Delete',
       click: (file: File) => {
-        deleteItem(file.id);
+        deleteFile(file.id);
       },
     },
   ];
@@ -165,34 +167,45 @@ export default function Explorer() {
                 {
                   label: 'New File',
                   click: () => {
-                    newFile(data.id);
+                    const newFile = createFile(data.id);
+                    setEditingItem(newFile.id);
                   },
                 },
                 {
                   label: 'New Folder',
                   click: () => {
-                    newFolder(data.id);
-                  },
-                },
-                {
-                  label: 'Rename',
-                  click: (folder: Folder) => {
-                    setEditingName(folder.name);
-                    setEditingItem(folder.id);
-                  },
-                },
-                {
-                  label: 'Delete',
-                  click: (folder: Folder) => {
-                    deleteItem(folder.id);
+                    const newFolder = createFolder(data.id);
+                    setEditingItem(newFolder.id);
                   },
                 },
               ];
+
+              if (
+                ![FILE_GROUP.STATIC_DATA, FILE_GROUP.STATIC_DATA].includes(
+                  data.id as any
+                )
+              ) {
+                folderContextMenu.push(
+                  {
+                    label: 'Rename',
+                    click: () => {
+                      setEditingItem(data.id);
+                      setEditingName(data.name);
+                    },
+                  },
+                  {
+                    label: 'Delete',
+                    click: () => {
+                      deleteFile(data.id);
+                    },
+                  }
+                );
+              }
               folderContextMenu.forEach((item) => {
                 menu.append(
                   new remote.MenuItem({
                     label: item.label,
-                    click: () => item.click(data),
+                    click: () => item.click(),
                   })
                 );
               });
@@ -228,15 +241,15 @@ export default function Explorer() {
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    updateItem(data.id, { ...data, name: editingName || '' });
+                    renameFile(data.id, editingName);
                     setEditingItem(null);
-                    setEditingName(null);
+                    setEditingName('');
                   }
 
                   if (e.key === 'Escape') {
                     e.preventDefault();
                     setEditingItem(null);
-                    setEditingName(null);
+                    setEditingName('');
                   }
                 }}
               />
@@ -334,14 +347,14 @@ export default function Explorer() {
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                updateItem(data.id, { ...data, name: editingName || '' });
+                renameFile(data.id, editingName);
                 setEditingItem(null);
-                setEditingName(null);
+                setEditingName('');
               }
               if (e.key === 'Escape') {
                 e.preventDefault();
                 setEditingItem(null);
-                setEditingName(null);
+                setEditingName('');
               }
             }}
           />

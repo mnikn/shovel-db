@@ -15,6 +15,14 @@ const path = require('path');
 
 const remote = require('@electron/remote/main');
 
+import ipc from './electron/ipc';
+import service from './services';
+import { IPC_API } from '../common/constants';
+import { serviceMemento } from '../common/services';
+
+ipc.init();
+service.init();
+
 remote.initialize();
 let mainWindow: Electron.BrowserWindow | null;
 
@@ -57,6 +65,15 @@ function createWindow() {
       })
     );
   }
+
+  // mainWindow.on('ready-to-show', () => {
+  //   console.log('ew: ', serviceMemento.value);
+  //   ipc.sendToRenderer(IPC_API.SYNC_SERVICE_MEMENTO, serviceMemento.value);
+  // });
+  // mainWindow.webContents.on('did-navigate', () => {
+  //   console.log('cce: ', serviceMemento.value);
+  //   ipc.sendToRenderer(IPC_API.SYNC_SERVICE_MEMENTO, serviceMemento.value);
+  // });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -160,7 +177,9 @@ Menu.setApplicationMenu(menu);
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', () => {
+  createWindow();
+});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {

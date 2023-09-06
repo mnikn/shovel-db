@@ -1,11 +1,12 @@
 import { Box, Stack, CircularProgress, FormLabel } from '@mui/material';
-import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   useExplorerStore,
   useStaticDataStore,
   useStoryStore,
 } from '../../store';
 import { Mode, useEditorStore } from '../../store/editor';
+import useEditor from '../../stores/editor';
 import { useProjectStore } from '../../store/project';
 import { useTrackStore } from '../../store/track';
 import { grey } from '@mui/material/colors';
@@ -30,7 +31,7 @@ export default function Editor() {
   const { fileData: staticDataFileData, translations: staticDataTranslations } =
     useStaticDataStore();
   const { save } = useProjectStore();
-  const [saving, setSaving] = useState(false);
+  const { saving } = useEditor();
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
   const searchPanelOpenRef = useRef(searchPanelOpen);
   searchPanelOpenRef.current = searchPanelOpen;
@@ -41,6 +42,7 @@ export default function Editor() {
 
   useEffect(() => {
     const handle = async (e) => {
+      return;
       if (e.code === 'KeyP' && (e.ctrlKey || e.metaKey)) {
         if (
           mode === Mode.Popup &&
@@ -74,23 +76,23 @@ export default function Editor() {
         }
       }
 
-      if (e.code === 'KeyS' && (e.ctrlKey || e.metaKey)) {
-        setSaving(true);
-        await save({
-          story,
-          storyActors,
-          storyTranslations,
-          storyNodeSettings: nodeSettings,
-          storyActorSettings: actorSettings,
-          files,
-          recentOpenFiles,
-          staticDataFileData,
-          staticDataTranslations,
-        });
-        setTimeout(() => {
-          setSaving(false);
-        }, 500);
-      }
+      /* if (e.code === 'KeyS' && (e.ctrlKey || e.metaKey)) {
+       *   setSaving(true);
+       *   await save({
+       *     story,
+       *     storyActors,
+       *     storyTranslations,
+       *     storyNodeSettings: nodeSettings,
+       *     storyActorSettings: actorSettings,
+       *     files,
+       *     recentOpenFiles,
+       *     staticDataFileData,
+       *     staticDataTranslations,
+       *   });
+       *   setTimeout(() => {
+       *     setSaving(false);
+       *   }, 500);
+       * } */
     };
     window.addEventListener('keydown', handle);
     return () => {

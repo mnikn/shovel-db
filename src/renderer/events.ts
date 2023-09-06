@@ -1,5 +1,10 @@
 import EventEmitter from 'eventemitter3';
 
+export enum EVENT {
+  ON_SAVE_PROJECT_START = 'on_save_project_start',
+  ON_SAVE_PROJECT_FINISHED = 'on_save_project_finished',
+}
+
 export enum Event {
   OpenStorylet = 'openStorylet',
   DeleteStorylet = 'deleteStorylet',

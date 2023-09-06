@@ -157,3 +157,5 @@ packages
 
 # Local History for Visual Studio Code
 .history/
+logs/
+appdata

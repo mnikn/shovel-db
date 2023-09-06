@@ -1,8 +1,12 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './pages/app';
+import ipc from './electron/ipc';
+import service from './services';
 import './style.css';
-/* import "./electron/context_menu"; */
+
+ipc.init();
+service.init();
 
 const rootElement = document.getElementById('root') as HTMLElement;
 const root = createRoot(rootElement);
