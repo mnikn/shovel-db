@@ -1,17 +1,15 @@
-import type { FileServiceType } from './file';
-import { File, Folder } from '../models/file';
-import {
-  buildSchema,
-  DEFAULT_CONFIG_JSON,
-  SchemaFieldArray,
-  SchemaFieldObject,
-  TEMPLATE_ARR_OBJ_SCHEMA_CONFIG,
-} from '../models/schema';
-import toml from 'toml';
 import { watch } from '@vue-reactivity/watch';
 import { computed, ref } from '@vue/reactivity';
-import ipc from '../../renderer/electron/ipc';
+import toml from 'toml';
+import type { ProjectServiceType } from '.';
 import { FILE_GROUP } from '../../common/constants';
+import ipc from '../../renderer/electron/ipc';
+import {
+  buildSchema,
+  SchemaFieldArray,
+  TEMPLATE_ARR_OBJ_SCHEMA_CONFIG,
+} from '../models/schema';
+import type { FileServiceType } from './file';
 
 // type JSONPrimitive = string | number | boolean | null;
 // type JSONArray = JSONValue[];
@@ -36,8 +34,10 @@ let fileService: FileServiceType;
 let staticFileDataTable = ref<{
   [key: string]: StaticFileData;
 }>({});
-let currentStaticFileData = ref<StaticFileData | null>(null);
+let currentStaticFileRawData = ref<StaticFileData | null>(null);
 const currentSchema = ref<SchemaFieldArray | null>(null);
+const currentData = ref<JSONData | null>(null);
+let projectService: ProjectServiceType;
 
 const memento = computed(() => {
   return {
@@ -52,8 +52,12 @@ const memento = computed(() => {
 });
 export type StaticDataServiceMemento = typeof memento.value;
 
-const init = (_fileService: FileServiceType) => {
+const init = (
+  _fileService: FileServiceType,
+  _projectService: ProjectServiceType
+) => {
   fileService = _fileService;
+  projectService = _projectService;
 
   const refreshCurrentFileData = async () => {
     const currentOpenFile = fileService.currentOpenFile.value;
@@ -71,12 +75,13 @@ const init = (_fileService: FileServiceType) => {
     }
 
     if (currentOpenFile in staticFileDataTable.value) {
-      currentStaticFileData.value = staticFileDataTable.value[currentOpenFile];
+      currentStaticFileRawData.value =
+        staticFileDataTable.value[currentOpenFile];
       return;
     }
 
     const filePathChain = fileService.getFilePathChain(currentOpenFile);
-    const data = (await ipc.fetchDataFiles([filePathChain]))[0];
+    const data = (await ipc.fetchDataFiles([filePathChain]))?.[0];
 
     if (!data) {
       staticFileDataTable.value[currentOpenFile] = {
@@ -89,7 +94,7 @@ const init = (_fileService: FileServiceType) => {
         schema: data.schema,
       };
     }
-    currentStaticFileData.value =
+    currentStaticFileRawData.value =
       staticFileDataTable.value[currentOpenFile] || null;
   };
 
@@ -106,13 +111,14 @@ const init = (_fileService: FileServiceType) => {
   );
 
   watch(
-    () => currentStaticFileData.value,
+    () => currentStaticFileRawData.value,
     (fileData) => {
       if (!fileData) {
         return;
       }
       const json = toml.parse(fileData.schema);
       currentSchema.value = buildSchema(json) as SchemaFieldArray;
+      currentData.value = fileData.data;
     }
   );
 };
@@ -141,10 +147,8 @@ const getStaticFileData = async (fileId: string) => {
   return staticFileDataTable.value[fileId];
 };
 
-// const updateCurrentFileSchema;
-
 const updateFileSchema = (fileId: string, schema: string) => {
-  if (!fileService.currentOpenFile.value) {
+  if (!fileId) {
     return;
   }
 
@@ -152,11 +156,21 @@ const updateFileSchema = (fileId: string, schema: string) => {
   staticFileDataTable.value = { ...staticFileDataTable.value };
 };
 
+const updateFileData = (fileId: string, data: JSONData) => {
+  if (!fileId) {
+    return;
+  }
+  staticFileDataTable.value[fileId].data = data;
+  staticFileDataTable.value = { ...staticFileDataTable.value };
+};
+
 export default {
-  currentStaticFileData,
+  currentStaticFileRawData,
   init,
   memento,
-  updateFileSchema,
-  currentSchema,
   getStaticFileData,
+  currentData,
+  currentSchema,
+  updateFileData,
+  updateFileSchema,
 };

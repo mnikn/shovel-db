@@ -13,15 +13,16 @@ import { StaticDataService, StaticFileData } from '../services';
 
 export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
   () => {
-    const [currentStaticFileData, setCurrentStaticFileData] =
+    const [currentStaticFileRawData, setCurrentStaticFileData] =
       useState<StaticFileData | null>(null);
     const [currentSchema, setCurrentSchema] = useState<SchemaFieldArray | null>(
       null
     );
+    const [currentData, setCurrentData] = useState<any | null>(null);
 
     useEffect(() => {
       const stopWatchFileData = watch(
-        () => StaticDataService.currentStaticFileData.value,
+        () => StaticDataService.currentStaticFileRawData.value,
         (fileData) => {
           setCurrentStaticFileData(cloneDeep(fileData));
         },
@@ -38,16 +39,29 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
           immediate: true,
         }
       );
+      const stopWatchData = watch(
+        () => StaticDataService.currentData.value,
+        (data) => {
+          setCurrentData(cloneDeep(data));
+        },
+        {
+          immediate: true,
+        }
+      );
       return () => {
         stopWatchFileData();
         stopWatchSchema();
+        stopWatchData();
       };
     }, []);
 
+    const updateFileData = StaticDataService.updateFileData;
     const updateFileSchema = StaticDataService.updateFileSchema;
     const getStaticFileData = StaticDataService.getStaticFileData;
     return {
-      currentStaticFileData,
+      currentData,
+      currentStaticFileRawData,
+      updateFileData,
       updateFileSchema,
       currentSchema,
       getStaticFileData,

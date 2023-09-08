@@ -5,6 +5,7 @@ import path from 'path';
 import { IPC_API } from '../../common/constants';
 import {
   appDataCacheFilePath,
+  appDataCacheProjectPath,
   appDataLogPath,
   appDataPath,
 } from '../constants';
@@ -14,9 +15,9 @@ import { createLogger } from '../logger';
 
 const logger = createLogger('ipc');
 
-const route = (api: string, fn: (arg: any) => any) => {
-  ipcMain.on(api, (event, arg) => {
-    const res = fn(arg);
+const route = (api: string, fn: (...arg: any) => any) => {
+  ipcMain.on(api, (event, ...arg) => {
+    const res = fn(...arg);
     event.sender.send(api + '-response', res);
   });
 };
@@ -35,7 +36,7 @@ const init = () => {
     fs.appendFileSync(logFilePath, log + '\n');
   });
 
-  route(IPC_API.SAVE_CURRENT_PROJECT, (data: any) => {
+  route(IPC_API.SAVE_CURRENT_PROJECT, (projectPath: string, data: any) => {
     logger.cacheLog('save current project');
     const serviceMemento = JSON.parse(data);
     const fileServiceMemento = serviceMemento.fileServiceMemento;
@@ -45,7 +46,14 @@ const init = () => {
       JSON.stringify(fileServiceMemento, null, 2)
     );
 
-    const projectPath = appDataPath;
+    const projectServiceMemento = serviceMemento.projectServiceMemento;
+    ensureDirExists(appDataCacheProjectPath);
+    fs.writeFileSync(
+      appDataCacheProjectPath,
+      JSON.stringify(projectServiceMemento, null, 2)
+    );
+
+    // const projectPath = appDataPath;
     const staticDataNeedSaveFileData =
       serviceMemento.staticDataServiceMemento.needSaveFileData;
     staticDataNeedSaveFileData.forEach((saveData: any) => {
@@ -63,22 +71,27 @@ const init = () => {
       const fileCache = JSON.parse(
         fs.readFileSync(appDataCacheFilePath, 'utf8')
       );
+      const projectCache = JSON.parse(
+        fs.readFileSync(appDataCacheProjectPath, 'utf8')
+      );
       cacheServiceMemento.fileServiceMemento = fileCache;
+      cacheServiceMemento.projectServiceMemento = projectCache;
     }
     return cacheServiceMemento;
   });
 
-  route(IPC_API.FETCH_DATA_FILES, (filePathChainArr: string[][]) => {
-    const projectPath = appDataPath;
-
-    return filePathChainArr.map((filePathChain) => {
-      const targetPath = path.join(projectPath, ...filePathChain) + '.json';
-      if (fs.existsSync(targetPath)) {
-        return JSON.parse(fs.readFileSync(targetPath, 'utf8'));
-      }
-      return null;
-    });
-  });
+  route(
+    IPC_API.FETCH_DATA_FILES,
+    (projectPath: string, filePathChainArr: string[][]) => {
+      return filePathChainArr.map((filePathChain) => {
+        const targetPath = path.join(projectPath, ...filePathChain) + '.json';
+        if (fs.existsSync(targetPath)) {
+          return JSON.parse(fs.readFileSync(targetPath, 'utf8'));
+        }
+        return null;
+      });
+    }
+  );
 };
 
 export default {

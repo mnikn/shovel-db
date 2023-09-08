@@ -6,3 +6,4 @@ export const appDataLogPath = join(appDataPath, 'logs');
 
 export const appDataCachePath = join(appDataPath, 'cache');
 export const appDataCacheFilePath = join(appDataCachePath, 'files.json');
+export const appDataCacheProjectPath = join(appDataCachePath, 'project.json');

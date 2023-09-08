@@ -1,9 +1,14 @@
+import { dialog } from '@electron/remote';
 import { toValue } from '@vue/reactivity';
 import { ipcRenderer } from 'electron';
 import { IPC_API } from '../../common/constants';
 import { EVENT, eventEmitter } from '../events';
 import { createLogger } from '../logger';
-import { serviceMemento, ServiceMementoType } from '../services';
+import {
+  ProjectService,
+  serviceMemento,
+  ServiceMementoType,
+} from '../services';
 
 const logger = createLogger('ipc');
 
@@ -25,10 +30,10 @@ const route = (api: string, fn: (arg: any) => any) => {
   });
 };
 
-const doSend = (api: string, data?: any): Promise<any> => {
+const doSend = (api: string, ...data: any): Promise<any> => {
   return new Promise((resolve) => {
     processPool.add(api);
-    ipcRenderer.send(api, data);
+    ipcRenderer.send(api, ...data);
     ipcRenderer.once(`${api}-response`, (_, response) => {
       resolve(response);
       processPool.delete(api);
@@ -36,11 +41,11 @@ const doSend = (api: string, data?: any): Promise<any> => {
   });
 };
 
-const send = (api: string, data?: any): Promise<any> | null => {
+const send = (api: string, ...data: any): Promise<any> | null => {
   if (processPool.has(api)) {
     return null;
   }
-  return doSend(api, data);
+  return doSend(api, ...data);
 };
 
 const init = () => {
@@ -58,8 +63,19 @@ const retrieveServiceCache = async (): Promise<ServiceMementoType> => {
 };
 
 const saveProject = async () => {
+  if (!ProjectService.projectPath.value) {
+    const targetPath = dialog.showOpenDialogSync({
+      title: 'Select project path',
+      properties: ['openDirectory', 'createDirectory'],
+    });
+    if (!targetPath) {
+      return;
+    }
+    ProjectService.updateProjectPath(targetPath[0]);
+  }
   const startSaveProject = send(
     IPC_API.SAVE_CURRENT_PROJECT,
+    toValue(ProjectService.projectPath),
     JSON.stringify(toValue(serviceMemento))
   );
   if (startSaveProject) {
@@ -70,7 +86,14 @@ const saveProject = async () => {
 };
 
 const fetchDataFiles = async (filePathChainArr: string[][]) => {
-  return await send(IPC_API.FETCH_DATA_FILES, filePathChainArr);
+  if (!ProjectService.projectPath.value) {
+    return null;
+  }
+  return await send(
+    IPC_API.FETCH_DATA_FILES,
+    toValue(ProjectService.projectPath),
+    filePathChainArr
+  );
 };
 
 export default {

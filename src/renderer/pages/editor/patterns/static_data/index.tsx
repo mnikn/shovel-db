@@ -15,7 +15,10 @@ import {
 } from '../../../../models/schema';
 import { buildSchema } from '../../../../models/schema/factory';
 import { useExplorerStore, useStaticDataStore } from '../../../../store';
-import { useStaticDataStore as useStaticDataStoreV2 } from '../../../../stores';
+import {
+  useFileStore,
+  useStaticDataStore as useStaticDataStoreV2,
+} from '../../../../stores';
 import SchemaForm from '../../components/schema_form';
 import FieldSelect from '../../components/schema_form/field/select_field';
 
@@ -35,16 +38,15 @@ const i18nSchema = new SchemaFieldSelect({
 export default function StaticData() {
   const {
     fileData,
-    updateData,
+    /* updateData, */
     currentLang,
     switchLang,
     translations,
     updateTranslations,
   } = useStaticDataStore();
   const [formTranslations, setFormTranslations] = useState(translations);
-  const { currentStaticFileData, currentSchema } =
-    useStaticDataStoreV2();
-  const { currentOpenFile } = useExplorerStore();
+  const { currentSchema, currentData, updateFileData } = useStaticDataStoreV2();
+  const { currentOpenFile } = useFileStore();
   /* const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema; */
   const fileDataRef = useRef(fileData);
   fileDataRef.current = fileData;
@@ -63,20 +65,21 @@ export default function StaticData() {
     setFormTranslations(translations);
   }, [translations]);
 
-  const formData = fileData?.[currentOpenFile?.id || '']?.data || [];
+  const formData = currentData;
 
   const onValueChange = useCallback(
-    (val) => {
+    (val: any) => {
       if (!fileDataRef.current || !currentOpenFile) {
         return;
       }
-      updateData(currentOpenFile.id, val);
+      /* updateData(currentOpenFile.id, val); */
+      updateFileData(currentOpenFile, val);
       updateTranslations(formTranslations);
     },
-    [updateData, updateTranslations, formTranslations, currentOpenFile]
+    [updateTranslations, formTranslations, currentOpenFile, updateFileData]
   );
 
-  if (!currentStaticFileData || !currentSchema) {
+  if (!currentSchema) {
     return null;
   }
 
