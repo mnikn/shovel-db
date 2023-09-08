@@ -1,20 +1,16 @@
-import { Box, Stack, CircularProgress, FormLabel } from '@mui/material';
-import React, { useEffect, useState, useRef } from 'react';
+import { Box } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   useExplorerStore,
   useStaticDataStore,
   useStoryStore,
 } from '../../store';
 import { Mode, useEditorStore } from '../../store/editor';
-import useEditor from '../../stores/editor';
 import { useProjectStore } from '../../store/project';
 import { useTrackStore } from '../../store/track';
-import { grey } from '@mui/material/colors';
-import { borderRadius } from '../../theme';
-import Explorer from './components/explorer';
-import Main from './main';
-import SearchPanel from './components/search_panel';
 import CommandPanel from './components/command_panel';
+import SearchPanel from './components/search_panel';
+import Main from './main';
 
 export default function Editor() {
   const { undo, redo } = useTrackStore();
@@ -31,7 +27,6 @@ export default function Editor() {
   const { fileData: staticDataFileData, translations: staticDataTranslations } =
     useStaticDataStore();
   const { save } = useProjectStore();
-  const { saving } = useEditor();
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
   const searchPanelOpenRef = useRef(searchPanelOpen);
   searchPanelOpenRef.current = searchPanelOpen;
@@ -116,51 +111,23 @@ export default function Editor() {
 
   return (
     <Box>
-      <Stack direction={'row'} sx={{ height: '100%', width: '100%' }}>
-        <Explorer />
-        <Main>
-          {saving ? (
-            <Stack
-              direction='row'
-              spacing={2}
-              sx={{
-                backgroundColor: grey[50],
-                position: 'absolute',
-                top: '24px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '150px',
-                height: '50px',
-                alignItems: 'center',
-                justifyContent: 'center',
-                ...borderRadius.larger,
-                boxShadow: 'rgba(0, 0, 0, 0.1) 0px 4px 12px',
-              }}
-            >
-              <CircularProgress
-                sx={{ height: '24px!important', width: '24px!important' }}
-              />
-              <FormLabel>Saving...</FormLabel>
-            </Stack>
-          ) : null}
-        </Main>
-        {searchPanelOpen && (
-          <SearchPanel
-            close={() => {
-              setSearchPanelOpen(false);
-              setMode(Mode.Normal);
-            }}
-          />
-        )}
-        {commandPanelOpen && (
-          <CommandPanel
-            close={() => {
-              setCommandPanelOpen(false);
-              setMode(Mode.Normal);
-            }}
-          />
-        )}
-      </Stack>
+      <Main />
+      {searchPanelOpen && (
+        <SearchPanel
+          close={() => {
+            setSearchPanelOpen(false);
+            setMode(Mode.Normal);
+          }}
+        />
+      )}
+      {commandPanelOpen && (
+        <CommandPanel
+          close={() => {
+            setCommandPanelOpen(false);
+            setMode(Mode.Normal);
+          }}
+        />
+      )}
     </Box>
   );
 }

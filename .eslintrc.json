@@ -41,6 +41,6 @@
         "argsIgnorePattern": "^_"
       }
     ],
-    "prefer-spread": "off"
+    "prefer-spread": ["off"]
   }
 }

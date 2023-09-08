@@ -1,0 +1,4 @@
+{
+  "data": [],
+  "schema": "{\n  \"type\": \"array\",\n  \"fieldSchema\": {\n    \"type\": \"object\",\n    \"fields\": {},\n    \"config\": {\n      \"colSpan\": 12,\n      \"initialExpand\": true,\n      \"summary\": \"{{___key}}\"\n    }\n  },\n  \"config\": {\n    \"colSpan\": 12,\n    \"initialExpand\": false,\n    \"summary\": \"{{___index}}\"\n  }\n}"
+}

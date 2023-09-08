@@ -125,13 +125,13 @@ const shortcuts = {
   'story-editor': [
     {
       keybinding: 'Ctrl+S',
-      fn: ipc.saveProject,
+      fn: () => ipc.saveProject(),
     },
   ],
   'static-data-editor': [
     {
       keybinding: 'Ctrl+S',
-      fn: ipc.saveProject,
+      fn: () => ipc.saveProject(),
     },
   ],
 };

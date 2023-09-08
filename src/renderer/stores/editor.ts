@@ -1,8 +1,29 @@
-import { useEffect, useState } from 'react';
+import { createGlobalStore } from 'hox';
+import { useEffect, useMemo, useState } from 'react';
+import { EDITOR_PATTERN, FILE_GROUP } from '../../common/constants';
 import { EVENT, eventEmitter } from '../events';
+import { useFileStore } from './file';
 
-const useEditor = () => {
+export const [useEditorStore, getEditorStore] = createGlobalStore(() => {
   const [saving, setSaving] = useState(false);
+
+  const [hasModal, setHasModal] = useState(false);
+
+  const { currentOpenFile, getFileRootParent } = useFileStore();
+
+  const editorPattern = useMemo(() => {
+    if (!currentOpenFile) {
+      return EDITOR_PATTERN.STATIC_DATA;
+    }
+    const rootParent = getFileRootParent(currentOpenFile);
+    if (rootParent?.id === FILE_GROUP.STATIC_DATA) {
+      return EDITOR_PATTERN.STATIC_DATA;
+    }
+    if (rootParent?.id === FILE_GROUP.STORY) {
+      return EDITOR_PATTERN.STORY;
+    }
+    return EDITOR_PATTERN.STATIC_DATA;
+  }, [currentOpenFile, getFileRootParent]);
 
   useEffect(() => {
     const onSaveStart = () => {
@@ -22,8 +43,10 @@ const useEditor = () => {
   }, []);
 
   return {
+    editorPattern,
     saving,
+    hasModal,
+    setHasModal,
   };
-};
-
-export default useEditor;
+});
+export type EditorStoreType = ReturnType<typeof getEditorStore>;

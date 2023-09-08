@@ -1,33 +1,37 @@
-import { isEqual, cloneDeep } from 'lodash';
-import { watch } from '@vue-reactivity/watch';
-import {
-  FileService,
-  serviceMemento,
-  initServices,
-} from '../../common/services';
-import ipc from '../electron/ipc';
+import { computed } from '@vue/reactivity';
+import FileService from './file';
+import StaticDataService, { StaticFileData } from './static_data';
 import { createLogger } from '../logger';
 import shortcut from './shortcut';
-import { toValue } from '@vue/reactivity';
+import ipc from '../electron/ipc';
 
 const logger = createLogger('service');
 
-const init = () => {
-  initServices();
-  shortcut.init();
+const serviceMemento = computed(() => {
+  return {
+    fileServiceMemento: FileService.memento.value,
+    staticDataServiceMemento: StaticDataService.memento.value,
+  };
+});
 
-  watch(
-    () => serviceMemento.value,
-    (memento) => {
-      logger.debugLog('service memento changed', memento);
-      if (!isEqual(FileService.memento.value, memento.fileServiceMemento)) {
-        FileService.restoreMemento(memento.fileServiceMemento);
-      }
-      ipc.syncServiceMemento(toValue(memento));
-    }
-  );
+type ServiceMementoType = typeof serviceMemento.value;
+
+const initServices = async () => {
+  logger.cacheLog('init services');
+  const serviceCache = await ipc.retrieveServiceCache();
+  if (serviceCache.fileServiceMemento !== undefined) {
+    FileService.restoreMemento(serviceCache.fileServiceMemento);
+  }
+
+  shortcut.init();
+  StaticDataService.init(FileService);
 };
 
-export default {
-  init,
+export {
+  ServiceMementoType,
+  serviceMemento,
+  initServices,
+  FileService,
+  StaticDataService,
+  StaticFileData,
 };

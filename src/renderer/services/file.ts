@@ -1,35 +1,36 @@
-import { isEqual, cloneDeep } from 'lodash';
-import { ref, computed } from '@vue/reactivity';
-import { FILE_GROUP } from '../constants';
+import { computed, ref, toValue } from '@vue/reactivity';
+import { isEqual } from 'lodash';
+import { FILE_GROUP } from '../../common/constants';
 import { File, Folder } from '../models/file';
-import { UUID } from '../utils/uuid';
-
-export type FileServiceMemento = {
-  files: Array<File | Folder>;
-};
+import { UUID } from '../../utils/uuid';
 
 let files = ref<{ [key: string]: File | Folder }>({
   [FILE_GROUP.STATIC_DATA]: {
     id: FILE_GROUP.STATIC_DATA,
     type: 'folder',
-    name: 'Data',
+    name: 'static-data',
     order: 1,
     parentId: null,
   },
   [FILE_GROUP.STORY]: {
     id: FILE_GROUP.STORY,
     type: 'folder',
-    name: 'Story',
+    name: 'story',
     order: 2,
     parentId: null,
   },
 });
+let currentOpenFile = ref<string | null>(null);
+let recentOpenFiles = ref<string[]>([]);
 
-const memento = computed((): FileServiceMemento => {
+const memento = computed(() => {
   return {
-    files: Object.values(files.value),
+    files: Object.values(toValue(files.value)) as Array<File | Folder>,
+    currentOpenFile: toValue(currentOpenFile),
+    recentOpenFiles: toValue(recentOpenFiles),
   };
 });
+export type FileServiceMemento = typeof memento.value;
 
 const restoreMemento = (newMemento: FileServiceMemento) => {
   if (isEqual(newMemento, memento.value)) {
@@ -39,6 +40,12 @@ const restoreMemento = (newMemento: FileServiceMemento) => {
     res[item.id] = item;
     return res;
   }, {});
+  if (newMemento.currentOpenFile !== undefined) {
+    currentOpenFile.value = newMemento.currentOpenFile;
+  }
+  if (newMemento.recentOpenFiles !== undefined) {
+    recentOpenFiles.value = newMemento.recentOpenFiles;
+  }
 };
 
 const getFile = (fileId: string): File | Folder | null => {
@@ -83,6 +90,22 @@ const getFolderChildren = (
   return children;
 };
 
+const getFilePathChain = (fileId: string | null): string[] => {
+  if (!fileId) {
+    return [];
+  }
+  const item = getFile(fileId);
+  if (!item) {
+    return [];
+  }
+  if (!item.parentId) {
+    return [item.name.toLowerCase().trim().replace(/\s+/g, '-')];
+  }
+  return getFilePathChain(item.parentId).concat(
+    item.name.toLowerCase().trim().replace(/\s+/g, '-')
+  );
+};
+
 const doCreateFile = (
   targetFileId: string,
   dataGenerateFn: (group: string) => File | Folder
@@ -123,7 +146,7 @@ const doCreateFile = (
 };
 
 const createFile = (targetFileId: string, data?: Partial<File>): File => {
-  return doCreateFile(targetFileId, (group) => {
+  const newFile = doCreateFile(targetFileId, (group) => {
     return {
       id: `${group}-file-${UUID()}`,
       type: 'file',
@@ -133,6 +156,7 @@ const createFile = (targetFileId: string, data?: Partial<File>): File => {
       ...data,
     };
   }) as File;
+  return newFile;
 };
 
 const createFolder = (targetFileId: string, data?: Partial<Folder>): Folder => {
@@ -171,21 +195,51 @@ const deleteFile = (fileId: string) => {
   } else {
     const children = getFolderChildren(file.id);
     children.forEach((child) => {
+      if (child.id === currentOpenFile.value) {
+        currentOpenFile.value = null;
+      }
       delete files.value[child.id];
     });
     delete files.value[fileId];
   }
+  if (fileId === currentOpenFile.value) {
+    currentOpenFile.value = null;
+  }
+  if (file.parentId) {
+    const parentChildren = getFolderChildren(file.parentId);
+    parentChildren.forEach((child, i) => {
+      child.order = i + 1;
+    });
+    // trigger compute
+    files.value = {
+      ...files.value,
+    };
+  }
 };
 
-export default {
+const openFile = (fileId: string) => {
+  currentOpenFile.value = fileId;
+  recentOpenFiles.value.splice(0, -10);
+  recentOpenFiles.value.push(fileId);
+};
+
+const FileService = {
   memento,
   restoreMemento,
   getFile,
   getFileParent,
   getFileRootParent,
   getFolderChildren,
+  getFilePathChain,
   createFile,
   createFolder,
   renameFile,
   deleteFile,
+  openFile,
+
+  files,
+  currentOpenFile,
 };
+
+export default FileService;
+export type FileServiceType = typeof FileService;

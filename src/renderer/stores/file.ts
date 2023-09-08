@@ -1,15 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
 import { watch } from '@vue-reactivity/watch';
-import { File, Folder } from '../../common/models/file';
-import { FileService } from '../../common/services';
+import { createGlobalStore } from 'hox';
+import { useEffect, useState } from 'react';
 import { createLogger } from '../logger';
+import { File, Folder } from '../models/file';
+import { FileService } from '../services';
 
-const logger = createLogger('file-service');
+const logger = createLogger('file-store');
 
-const useFile = () => {
-  const [files, setFiles] = useState<Array<File | Folder>>(
-    FileService.memento.value.files
-  );
+export const [useFileStore, getFileStore] = createGlobalStore(() => {
+  const [files, setFiles] = useState<Array<File | Folder>>([]);
+
+  const [currentOpenFile, setCurrentOpenFile] = useState<string | null>();
 
   useEffect(() => {
     const stop = watch(
@@ -17,6 +18,10 @@ const useFile = () => {
       (memento) => {
         logger.debugLog('sync memento to store: ', memento);
         setFiles(memento.files);
+        setCurrentOpenFile(memento.currentOpenFile);
+      },
+      {
+        immediate: true,
       }
     );
     return () => {
@@ -24,40 +29,48 @@ const useFile = () => {
     };
   }, []);
 
-  const createFile = useCallback(
-    (targetFileId: string, data?: Partial<File>) => {
-      logger.cacheLog(
-        `create file: [target file id: ${targetFileId}, data: ${data}]`
-      );
-      return FileService.createFile(targetFileId, data);
-    },
-    []
-  );
-  const createFolder = useCallback(
-    (targetFileId: string, data?: Partial<Folder>) => {
-      logger.cacheLog(
-        `create folder: [target file id: ${targetFileId}, data: ${data}]`
-      );
-      return FileService.createFolder(targetFileId, data);
-    },
-    []
-  );
-  const renameFile = useCallback((fileId: string, name: string) => {
+  const createFile = (targetFileId: string, data?: Partial<File>) => {
+    logger.cacheLog(
+      `create file: [target file id: ${targetFileId}, data: ${data}]`
+    );
+    return FileService.createFile(targetFileId, data);
+  };
+  const createFolder = (targetFileId: string, data?: Partial<Folder>) => {
+    logger.cacheLog(
+      `create folder: [target file id: ${targetFileId}, data: ${data}]`
+    );
+    return FileService.createFolder(targetFileId, data);
+  };
+  const renameFile = (fileId: string, name: string) => {
     logger.cacheLog(`rename file: ${fileId}`);
     return FileService.renameFile(fileId, name);
-  }, []);
-  const deleteFile = useCallback((fileId: string) => {
+  };
+  const deleteFile = (fileId: string) => {
     logger.cacheLog(`delete file: ${fileId}`);
     FileService.deleteFile(fileId);
-  }, []);
+  };
+  const openFile = (fileId: string) => {
+    logger.cacheLog(`open file: ${fileId}`);
+    FileService.openFile(fileId);
+  };
+
+  const getFile = FileService.getFile;
+  const getFileRootParent = FileService.getFileRootParent;
+  const getFilePathChain = FileService.getFilePathChain;
 
   return {
     files,
+    currentOpenFile,
+
     createFile,
     createFolder,
     renameFile,
     deleteFile,
-  };
-};
+    openFile,
 
-export default useFile;
+    getFile,
+    getFileRootParent,
+    getFilePathChain,
+  };
+});
+export type FileStoreType = ReturnType<typeof getFileStore>;

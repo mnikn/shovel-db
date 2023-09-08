@@ -16,12 +16,8 @@ const path = require('path');
 const remote = require('@electron/remote/main');
 
 import ipc from './electron/ipc';
-import service from './services';
-import { IPC_API } from '../common/constants';
-import { serviceMemento } from '../common/services';
 
 ipc.init();
-service.init();
 
 remote.initialize();
 let mainWindow: Electron.BrowserWindow | null;

@@ -1,10 +1,10 @@
 import { watch } from '@vue-reactivity/watch';
 import { ComputedRef } from '@vue/reactivity';
-import { ServiceMemento } from '.';
+import type { ServiceMementoType } from '.';
 
-const serviceMementoStack: ServiceMemento[] = [];
+const serviceMementoStack: ServiceMementoType[] = [];
 
-const init = (serviceMemento: ComputedRef<ServiceMemento>) => {
+const init = (serviceMemento: ComputedRef<ServiceMementoType>) => {
   watch(
     () => serviceMemento.value,
     (memento) => {

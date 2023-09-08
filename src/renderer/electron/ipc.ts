@@ -1,8 +1,9 @@
+import { toValue } from '@vue/reactivity';
 import { ipcRenderer } from 'electron';
 import { IPC_API } from '../../common/constants';
-import { restoreServiceMemento, ServiceMemento } from '../../common/services';
 import { EVENT, eventEmitter } from '../events';
 import { createLogger } from '../logger';
+import { serviceMemento, ServiceMementoType } from '../services';
 
 const logger = createLogger('ipc');
 
@@ -43,30 +44,24 @@ const send = (api: string, data?: any): Promise<any> | null => {
 };
 
 const init = () => {
-  route(IPC_API.SYNC_SERVICE_MEMENTO, (memento: string) => {
-    restoreServiceMemento(JSON.parse(memento));
-  });
-};
-
-const fetchServiceMemento = async () => {
-  logger.cacheLog('fetch service memento from main');
-  const memento = send(IPC_API.FETCH_SERVICE_MEMENTO);
-  if (!memento) {
-    return;
-  }
-  restoreServiceMemento(JSON.parse(await memento));
-};
-
-const syncServiceMemento = (memento: ServiceMemento) => {
-  send(IPC_API.SYNC_SERVICE_MEMENTO, JSON.stringify(memento));
+  // route(IPC_API.SYNC_SERVICE_MEMENTO, (memento: string) => {
+  //   restoreServiceMemento(JSON.parse(memento));
+  // });
 };
 
 const storeLog = (log: string) => {
   send(IPC_API.LOG, log);
 };
 
+const retrieveServiceCache = async (): Promise<ServiceMementoType> => {
+  return await send(IPC_API.RETRIEVE_SERVICE_CACHE);
+};
+
 const saveProject = async () => {
-  const startSaveProject = send(IPC_API.SAVE_CURRENT_PROJECT);
+  const startSaveProject = send(
+    IPC_API.SAVE_CURRENT_PROJECT,
+    JSON.stringify(toValue(serviceMemento))
+  );
   if (startSaveProject) {
     eventEmitter.emit(EVENT.ON_SAVE_PROJECT_START);
     await startSaveProject;
@@ -74,10 +69,14 @@ const saveProject = async () => {
   }
 };
 
+const fetchDataFiles = async (filePathChainArr: string[][]) => {
+  return await send(IPC_API.FETCH_DATA_FILES, filePathChainArr);
+};
+
 export default {
   init,
-  fetchServiceMemento,
-  syncServiceMemento,
   storeLog,
   saveProject,
+  fetchDataFiles,
+  retrieveServiceCache,
 };

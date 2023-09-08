@@ -15,6 +15,7 @@ import {
 } from '../../../../models/schema';
 import { buildSchema } from '../../../../models/schema/factory';
 import { useExplorerStore, useStaticDataStore } from '../../../../store';
+import { useStaticDataStore as useStaticDataStoreV2 } from '../../../../stores';
 import SchemaForm from '../../components/schema_form';
 import FieldSelect from '../../components/schema_form/field/select_field';
 
@@ -41,20 +42,22 @@ export default function StaticData() {
     updateTranslations,
   } = useStaticDataStore();
   const [formTranslations, setFormTranslations] = useState(translations);
+  const { currentStaticFileData, currentSchema } =
+    useStaticDataStoreV2();
   const { currentOpenFile } = useExplorerStore();
-  const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema;
+  /* const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema; */
   const fileDataRef = useRef(fileData);
   fileDataRef.current = fileData;
-  const currentFileSchema = useMemo(() => {
-    if (!fileDataRef.current) {
-      return new SchemaFieldArray(new SchemaFieldObject());
-    }
-    const config = schemaConfig;
-    if (!config) {
-      return buildSchema(DEFAULT_CONFIG_JSON.ARR_OBJ_JSON) as SchemaFieldArray;
-    }
-    return buildSchema(JSON.parse(config)) as SchemaFieldArray;
-  }, [schemaConfig]);
+  /* const currentFileSchema = useMemo(() => {
+   *   if (!fileDataRef.current) {
+   *     return new SchemaFieldArray(new SchemaFieldObject());
+   *   }
+   *   const config = schemaConfig;
+   *   if (!config) {
+   *     return buildSchema(DEFAULT_CONFIG_JSON.ARR_OBJ_JSON) as SchemaFieldArray;
+   *   }
+   *   return buildSchema(JSON.parse(config)) as SchemaFieldArray;
+   * }, [schemaConfig]); */
 
   useEffect(() => {
     setFormTranslations(translations);
@@ -72,11 +75,16 @@ export default function StaticData() {
     },
     [updateData, updateTranslations, formTranslations, currentOpenFile]
   );
+
+  if (!currentStaticFileData || !currentSchema) {
+    return null;
+  }
+
   return (
     <Stack sx={{ p: 6, height: '100%' }}>
       <SchemaForm
         formData={formData}
-        schema={currentFileSchema}
+        schema={currentSchema}
         currentLang={currentLang}
         translations={translations}
         onValueChange={onValueChange}

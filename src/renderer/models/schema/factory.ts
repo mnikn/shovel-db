@@ -11,7 +11,7 @@ import {
   SchemaFieldString,
   SchemaFieldStringSpeed,
   SchemaFieldType,
-} from './';
+} from '../schema';
 
 export function buildSchema(
   json: RawJson,

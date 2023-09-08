@@ -7,7 +7,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { Box, Container, Stack, TextField } from '@mui/material';
 import * as d3 from 'd3';
 import { uniq } from 'lodash';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FILE_GROUP } from '../../../../common/constants';
 import {
   File,
@@ -17,19 +17,35 @@ import {
   getRootParent,
 } from '../../../models/explorer';
 import { Mode, useEditorStore, useExplorerStore } from '../../../store';
-import useFile from '../../../stores/file';
+import { useFileStore } from '../../../stores';
 import { animation, borderRadius } from '../../../theme';
 
+type FileContextMenuItem = {
+  label: string;
+  order: number;
+  click: (file: File) => void;
+};
+
 let cacheDragingData: File | Folder | null = null;
-export default function Explorer() {
+export default function Explorer(context: {
+  extraFileContextMenuItems?: FileContextMenuItem[];
+}) {
   const [uncollapsedFolders, setUncollapsedFolders] = useState<string[]>([]);
 
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string>('');
 
-  const { files, createFile, createFolder, deleteFile, renameFile } = useFile();
+  const {
+    files,
+    currentOpenFile,
+    createFile,
+    createFolder,
+    deleteFile,
+    renameFile,
+    openFile,
+  } = useFileStore();
 
-  const { currentOpenFile, openFile, moveFile } = useExplorerStore();
+  const { moveFile } = useExplorerStore();
 
   const { setMode } = useEditorStore();
 
@@ -38,7 +54,7 @@ export default function Explorer() {
       return;
     }
 
-    const parents = getPathParents(currentOpenFile.id, files);
+    const parents = getPathParents(currentOpenFile, files);
     setUncollapsedFolders((prev) => {
       return uniq([...prev, ...parents]);
     });
@@ -48,34 +64,44 @@ export default function Explorer() {
     setMode(editingItem ? Mode.Popup : Mode.Normal);
   }, [editingItem, setMode]);
 
-  const fileContextMenu = [
-    {
-      label: 'New File',
-      click: (file: File) => {
-        const newFile = createFile(file.id);
-        setEditingItem(newFile.id);
+  const fileContextMenu: FileContextMenuItem[] = useMemo(() => {
+    return [
+      {
+        label: 'New File',
+        order: 1,
+        click: (file: File) => {
+          const newFile = createFile(file.id);
+          setEditingItem(newFile.id);
+          openFile(newFile.id);
+        },
       },
-    },
-    {
-      label: 'Rename',
-      click: (file: File) => {
-        setEditingName(file.name);
-        setEditingItem(file.id);
+      {
+        label: 'Rename',
+        order: 5,
+        click: (file: File) => {
+          setEditingName(file.name);
+          setEditingItem(file.id);
+        },
       },
-    },
-    {
-      label: 'Copy',
-      click: () => {
-        console.log('Copy');
+      {
+        label: 'Copy',
+        order: 10,
+        click: () => {
+          console.log('Copy');
+        },
       },
-    },
-    {
-      label: 'Delete',
-      click: (file: File) => {
-        deleteFile(file.id);
+      {
+        label: 'Delete',
+        order: 15,
+        click: (file: File) => {
+          deleteFile(file.id);
+        },
       },
-    },
-  ];
+      ...(context?.extraFileContextMenuItems || []),
+    ].sort((a, b) => {
+      return a.order - b.order;
+    });
+  }, [context?.extraFileContextMenuItems, createFile, deleteFile]);
 
   const onDragStart = (event, data) => {
     const dragData = {
@@ -169,6 +195,7 @@ export default function Explorer() {
                   click: () => {
                     const newFile = createFile(data.id);
                     setEditingItem(newFile.id);
+                    openFile(newFile.id);
                   },
                 },
                 {
@@ -278,11 +305,11 @@ export default function Explorer() {
           p: 0.5,
           position: 'relative',
           backgroundColor:
-            currentOpenFile?.id === data.id || editingItem === data.id
+            currentOpenFile === data.id || editingItem === data.id
               ? 'rgb(107 114 128)'
               : 'inherit',
           color:
-            currentOpenFile?.id === data.id || editingItem === data.id
+            currentOpenFile === data.id || editingItem === data.id
               ? 'common.white'
               : 'common.black',
           '&:hover': !editingItem
@@ -300,7 +327,7 @@ export default function Explorer() {
           if (editingItem) {
             return;
           }
-          openFile(data);
+          openFile(data.id);
         }}
         draggable={!editingItem}
         onDoubleClick={() => {
