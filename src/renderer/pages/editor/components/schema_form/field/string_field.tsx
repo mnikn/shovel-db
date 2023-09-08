@@ -19,7 +19,7 @@ function FieldString({
   schema: SchemaFieldString;
   value: any;
   translations?: Translation;
-  currentLang?: LANG;
+  currentLang?: string;
   onValueChange?: (value: any) => void;
 }) {
   const [contentValue, setContentValue] = useState(

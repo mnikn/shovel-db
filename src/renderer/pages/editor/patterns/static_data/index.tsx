@@ -37,19 +37,19 @@ const i18nSchema = new SchemaFieldSelect({
 
 export default function StaticData() {
   const {
-    fileData,
-    /* updateData, */
+    currentSchema,
+    currentData,
+    updateFileData,
     currentLang,
     switchLang,
     translations,
     updateTranslations,
-  } = useStaticDataStore();
+  } = useStaticDataStoreV2();
   const [formTranslations, setFormTranslations] = useState(translations);
-  const { currentSchema, currentData, updateFileData } = useStaticDataStoreV2();
   const { currentOpenFile } = useFileStore();
   /* const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema; */
-  const fileDataRef = useRef(fileData);
-  fileDataRef.current = fileData;
+  /* const fileDataRef = useRef(fileData);
+   * fileDataRef.current = fileData; */
   /* const currentFileSchema = useMemo(() => {
    *   if (!fileDataRef.current) {
    *     return new SchemaFieldArray(new SchemaFieldObject());
@@ -66,10 +66,10 @@ export default function StaticData() {
   }, [translations]);
 
   const formData = currentData;
-
+  console.log('ewwe: ', translations);
   const onValueChange = useCallback(
     (val: any) => {
-      if (!fileDataRef.current || !currentOpenFile) {
+      if (!currentOpenFile) {
         return;
       }
       /* updateData(currentOpenFile.id, val); */

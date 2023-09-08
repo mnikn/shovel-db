@@ -7,7 +7,6 @@ import {
   validateValue,
 } from '../../../../models/schema';
 import Field from './field';
-import { LANG } from '../../../../../constants/i18n';
 import { Translation } from '../../../../store/common/translation';
 
 export default function SchemaForm({
@@ -21,7 +20,7 @@ export default function SchemaForm({
   schema: SchemaFieldObject | SchemaFieldArray;
   onValueChange: (val: any) => void;
   translations?: Translation;
-  currentLang?: LANG;
+  currentLang?: string;
 }) {
   const onChange = useCallback(
     (val) => {

@@ -10,6 +10,7 @@ import {
   TEMPLATE_ARR_OBJ_SCHEMA_CONFIG,
 } from '../models/schema';
 import type { FileServiceType } from './file';
+import TranslationService from './parts/translation';
 
 // type JSONPrimitive = string | number | boolean | null;
 // type JSONArray = JSONValue[];
@@ -30,72 +31,80 @@ export type StaticFileData = {
   schema: JSONData;
 };
 
-let fileService: FileServiceType;
-let staticFileDataTable = ref<{
-  [key: string]: StaticFileData;
-}>({});
-let currentStaticFileRawData = ref<StaticFileData | null>(null);
-const currentSchema = ref<SchemaFieldArray | null>(null);
-const currentData = ref<JSONData | null>(null);
-let projectService: ProjectServiceType;
-
-const memento = computed(() => {
-  return {
-    needSaveFileData: Object.keys(staticFileDataTable.value).map((fileId) => {
-      const filePathChain = fileService.getFilePathChain(fileId);
-      return {
-        filePathChain,
-        data: staticFileDataTable.value[fileId],
-      };
-    }),
-  };
-});
-export type StaticDataServiceMemento = typeof memento.value;
-
-const init = (
-  _fileService: FileServiceType,
-  _projectService: ProjectServiceType
+const StaticDataService = (
+  fileService: FileServiceType,
+  projectService: ProjectServiceType
 ) => {
-  fileService = _fileService;
-  projectService = _projectService;
+  const translationService = TranslationService(projectService);
+  let staticFileDataTable = ref<{
+    [key: string]: StaticFileData;
+  }>({});
+  let currentStaticFileRawData = ref<StaticFileData | null>(null);
+  const currentSchema = ref<SchemaFieldArray | null>(null);
+  const currentData = ref<JSONData | null>(null);
 
-  const refreshCurrentFileData = async () => {
-    const currentOpenFile = fileService.currentOpenFile.value;
-    if (
-      !currentOpenFile ||
-      fileService.getFileRootParent(currentOpenFile)?.id !==
-        FILE_GROUP.STATIC_DATA
-    ) {
+  const memento = computed(() => {
+    return {
+      needSaveFileData: Object.keys(staticFileDataTable.value).map((fileId) => {
+        const filePathChain = fileService.getFilePathChain(fileId);
+        return {
+          filePathChain,
+          data: staticFileDataTable.value[fileId],
+        };
+      }),
+      trasnlationMemento: translationService.memento.value,
+    };
+  });
+
+  const restoreMemento = (newMemento: Partial<{ trasnlationMemento: any }>) => {
+    if (newMemento.trasnlationMemento !== undefined) {
+      translationService.restoreMemento(newMemento.trasnlationMemento);
+    }
+  };
+
+  const getStaticFileData = async (fileId: string) => {
+    if (fileService.getFileRootParent(fileId)?.id !== FILE_GROUP.STATIC_DATA) {
       return;
     }
 
-    const currentFile = fileService.getFile(currentOpenFile);
-    if (!currentFile) {
-      return;
+    // when first get static data, fetch static data translation data
+    if (Object.keys(staticFileDataTable.value).length === 0) {
+      const translationsData = (
+        await ipc.fetchDataFiles([['static-data', 'translations']])
+      )?.[0];
+
+      translationService.restoreMemento({
+        translations: translationsData,
+      });
+    }
+    if (fileId in staticFileDataTable.value) {
+      return staticFileDataTable.value[fileId];
     }
 
-    if (currentOpenFile in staticFileDataTable.value) {
-      currentStaticFileRawData.value =
-        staticFileDataTable.value[currentOpenFile];
-      return;
-    }
-
-    const filePathChain = fileService.getFilePathChain(currentOpenFile);
-    const data = (await ipc.fetchDataFiles([filePathChain]))?.[0];
-
+    const filePathChain = fileService.getFilePathChain(fileId);
+    const data = (await ipc.fetchDataFiles([filePathChain]))[0];
     if (!data) {
-      staticFileDataTable.value[currentOpenFile] = {
+      staticFileDataTable.value[fileId] = {
         data: [],
         schema: TEMPLATE_ARR_OBJ_SCHEMA_CONFIG,
       };
     } else {
-      staticFileDataTable.value[currentOpenFile] = {
+      staticFileDataTable.value[fileId] = {
         data: data.data,
         schema: data.schema,
       };
     }
-    currentStaticFileRawData.value =
-      staticFileDataTable.value[currentOpenFile] || null;
+    return staticFileDataTable.value[fileId];
+  };
+
+  const refreshCurrentFileData = async () => {
+    if (!fileService.currentOpenFile.value) {
+      return;
+    }
+    const fileData = await getStaticFileData(fileService.currentOpenFile.value);
+    if (fileData) {
+      currentStaticFileRawData.value = fileData;
+    }
   };
 
   watch(
@@ -121,56 +130,37 @@ const init = (
       currentData.value = fileData.data;
     }
   );
+
+  const updateFileSchema = (fileId: string, schema: string) => {
+    if (!fileId) {
+      return;
+    }
+
+    staticFileDataTable.value[fileId].schema = schema;
+    staticFileDataTable.value = { ...staticFileDataTable.value };
+  };
+
+  const updateFileData = (fileId: string, data: JSONData) => {
+    if (!fileId) {
+      return;
+    }
+    staticFileDataTable.value[fileId].data = data;
+    staticFileDataTable.value = { ...staticFileDataTable.value };
+  };
+
+  return {
+    ...translationService,
+    currentStaticFileRawData,
+    memento,
+    restoreMemento,
+    getStaticFileData,
+    currentData,
+    currentSchema,
+    updateFileData,
+    updateFileSchema,
+  };
 };
 
-const getStaticFileData = async (fileId: string) => {
-  if (fileService.getFileRootParent(fileId)?.id !== FILE_GROUP.STATIC_DATA) {
-    return;
-  }
-  if (fileId in staticFileDataTable.value) {
-    return staticFileDataTable.value[fileId];
-  }
-
-  const filePathChain = fileService.getFilePathChain(fileId);
-  const data = (await ipc.fetchDataFiles([filePathChain]))[0];
-  if (!data) {
-    staticFileDataTable.value[fileId] = {
-      data: [],
-      schema: TEMPLATE_ARR_OBJ_SCHEMA_CONFIG,
-    };
-  } else {
-    staticFileDataTable.value[fileId] = {
-      data: data.data,
-      schema: data.schema,
-    };
-  }
-  return staticFileDataTable.value[fileId];
-};
-
-const updateFileSchema = (fileId: string, schema: string) => {
-  if (!fileId) {
-    return;
-  }
-
-  staticFileDataTable.value[fileId].schema = schema;
-  staticFileDataTable.value = { ...staticFileDataTable.value };
-};
-
-const updateFileData = (fileId: string, data: JSONData) => {
-  if (!fileId) {
-    return;
-  }
-  staticFileDataTable.value[fileId].data = data;
-  staticFileDataTable.value = { ...staticFileDataTable.value };
-};
-
-export default {
-  currentStaticFileRawData,
-  init,
-  memento,
-  getStaticFileData,
-  currentData,
-  currentSchema,
-  updateFileData,
-  updateFileSchema,
-};
+export type StaticDataServiceType = ReturnType<typeof StaticDataService>;
+export type StaticDataServiceMemento = StaticDataServiceType['memento'];
+export default StaticDataService;

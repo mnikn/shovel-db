@@ -1,5 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { computed, ref, toValue } from '@vue/reactivity';
 import { cloneDeep } from 'lodash';
+import { ProjectServiceType } from '..';
+import { watch } from '@vue-reactivity/watch';
 // import { useProjectStore } from '../project';
 // import { LANG } from '../../../constants/i18n';
 // import { trackState } from '../track';
@@ -10,12 +13,58 @@ export type Translation = {
   };
 };
 
-const TranslationService = () => {
-  const init = (langs: string[]) => {};
+const TranslationService = (projectService: ProjectServiceType) => {
+  const currentLang = ref<string>('zh-cn');
+  const translations = ref<Translation>({});
+
+  const memento = computed(() => {
+    return {
+      translations: toValue(translations),
+    };
+  });
+  const restoreMemento = (
+    newMemento: Partial<{ translations: Translation }>
+  ) => {
+    if (newMemento.translations !== undefined) {
+      translations.value = newMemento.translations;
+    }
+  };
+
+  const switchLang = (lang: string) => {
+    currentLang.value = lang;
+  };
+
+  const tr = (key: string) => {
+    return translations.value[key]?.[currentLang.value] !== undefined
+      ? translations.value[key]?.[currentLang.value]
+      : key;
+  };
+
+  const updateTranslations = (val: Translation) => {
+    translations.value = val;
+  };
+
+  watch(
+    () => projectService.langs.value,
+    (langs) => {
+      if (!langs.includes(currentLang.value)) {
+        currentLang.value = langs[0];
+      }
+    }
+  );
+
   return {
-    init,
+    memento,
+    restoreMemento,
+    currentLang,
+    switchLang,
+    tr,
+    translations,
+    updateTranslations,
   };
 };
+export type TranslationServiceType = ReturnType<typeof TranslationService>;
+export type TranslationServiceMemento = TranslationServiceType['memento'];
 
 export default TranslationService;
 

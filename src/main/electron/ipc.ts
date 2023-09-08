@@ -62,6 +62,18 @@ const init = () => {
       ensureDirExists(targetPath);
       fs.writeFileSync(targetPath, JSON.stringify(saveData.data, null, 2));
     });
+    const staticDataNeedSaveFileTranslations =
+      serviceMemento.staticDataServiceMemento.trasnlationMemento.translations;
+    const staticTranslationPath = path.join(
+      projectPath,
+      'static-data',
+      'translations.json'
+    );
+    ensureDirExists(staticTranslationPath);
+    fs.writeFileSync(
+      staticTranslationPath,
+      JSON.stringify(staticDataNeedSaveFileTranslations, null, 2)
+    );
   });
 
   route(IPC_API.RETRIEVE_SERVICE_CACHE, () => {

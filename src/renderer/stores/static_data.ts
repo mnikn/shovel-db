@@ -1,15 +1,10 @@
 import { watch } from '@vue-reactivity/watch';
-import { toValue } from '@vue/reactivity';
 import { createGlobalStore } from 'hox';
 import { cloneDeep } from 'lodash';
 import { useEffect, useState } from 'react';
-import { buildSchema, SchemaFieldArray } from '../models/schema';
-import { StaticDataService, StaticFileData } from '../services';
-
-// type StaticFileData = {
-//   data: any;
-//   schema: SchemaFieldArray;
-// };
+import { SchemaFieldArray } from '../models/schema';
+import { getStaticDataService, StaticFileData } from '../services';
+import { Translation } from '../services/parts/translation';
 
 export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
   () => {
@@ -20,9 +15,13 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
     );
     const [currentData, setCurrentData] = useState<any | null>(null);
 
+    const [currentLang, setCurrentLang] = useState<string>('zh-cn');
+    const [translations, setTranslations] = useState<Translation>({});
+    const staticDataService = getStaticDataService();
+
     useEffect(() => {
       const stopWatchFileData = watch(
-        () => StaticDataService.currentStaticFileRawData.value,
+        () => staticDataService.currentStaticFileRawData.value,
         (fileData) => {
           setCurrentStaticFileData(cloneDeep(fileData));
         },
@@ -31,7 +30,7 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
         }
       );
       const stopWatchSchema = watch(
-        () => StaticDataService.currentSchema.value,
+        () => staticDataService.currentSchema.value,
         (schema) => {
           setCurrentSchema(cloneDeep(schema));
         },
@@ -40,9 +39,27 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
         }
       );
       const stopWatchData = watch(
-        () => StaticDataService.currentData.value,
+        () => staticDataService.currentData.value,
         (data) => {
           setCurrentData(cloneDeep(data));
+        },
+        {
+          immediate: true,
+        }
+      );
+      const stopWatchCurrentLang = watch(
+        () => staticDataService.currentLang.value,
+        (lang) => {
+          setCurrentLang(lang);
+        },
+        {
+          immediate: true,
+        }
+      );
+      const stopWatchTranslations = watch(
+        () => staticDataService.translations.value,
+        (translations) => {
+          setTranslations(cloneDeep(translations));
         },
         {
           immediate: true,
@@ -52,12 +69,18 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
         stopWatchFileData();
         stopWatchSchema();
         stopWatchData();
+        stopWatchCurrentLang();
+        stopWatchTranslations();
       };
     }, []);
 
-    const updateFileData = StaticDataService.updateFileData;
-    const updateFileSchema = StaticDataService.updateFileSchema;
-    const getStaticFileData = StaticDataService.getStaticFileData;
+    const updateFileData = staticDataService.updateFileData;
+    const updateFileSchema = staticDataService.updateFileSchema;
+    const getStaticFileData = staticDataService.getStaticFileData;
+    const tr = staticDataService.tr;
+    const switchLang = staticDataService.switchLang;
+    const updateTranslations = staticDataService.updateTranslations;
+
     return {
       currentData,
       currentStaticFileRawData,
@@ -65,6 +88,12 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
       updateFileSchema,
       currentSchema,
       getStaticFileData,
+
+      tr,
+      currentLang,
+      switchLang,
+      translations,
+      updateTranslations,
     };
   }
 );
