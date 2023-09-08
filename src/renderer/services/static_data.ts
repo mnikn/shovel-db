@@ -122,8 +122,7 @@ const getStaticFileData = async (fileId: string) => {
     return;
   }
   if (fileId in staticFileDataTable.value) {
-    currentStaticFileData.value = staticFileDataTable.value[fileId];
-    return;
+    return staticFileDataTable.value[fileId];
   }
 
   const filePathChain = fileService.getFilePathChain(fileId);

@@ -38,8 +38,11 @@ export default function Main() {
   const [staticDataEditSchema, setStaticDataEditSchema] = useState<
     string | null
   >(null);
+  const [staticDataEditSchemaFile, setStaticDataEditSchemaFile] = useState<
+    string | null
+  >(null);
 
-  const { getStaticFileData } = useStaticDataStore();
+  const { getStaticFileData, updateFileSchema } = useStaticDataStore();
 
   const storyStoreDataRef = useRef({
     translations: storyTranslations,
@@ -112,7 +115,9 @@ export default function Main() {
           order: 6,
           click: async (file: File) => {
             const data = await getStaticFileData(file.id);
+            console.log('we: ', data);
             setStaticDataEditSchema(data?.schema);
+            setStaticDataEditSchemaFile(file.id);
           },
         },
       ];
@@ -177,13 +182,16 @@ export default function Main() {
             <FormLabel>Saving...</FormLabel>
           </Stack>
         ) : null}
-        {staticDataFileSchemaConfigModalVisible && (
+        {staticDataEditSchemaFile && (
           <ConfigModal
-            value={staticDataEditSchema}
-            onValueChange={updateFileSchema}
+            value={staticDataEditSchema || ''}
+            onValueChange={(val) =>
+              updateFileSchema(staticDataEditSchemaFile, val)
+            }
             lang='toml'
             close={() => {
               setStaticDataEditSchema(null);
+              setStaticDataEditSchemaFile(null);
             }}
           />
         )}
