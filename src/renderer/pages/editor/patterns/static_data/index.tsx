@@ -66,7 +66,6 @@ export default function StaticData() {
   }, [translations]);
 
   const formData = currentData;
-  console.log('ewwe: ', translations);
   const onValueChange = useCallback(
     (val: any) => {
       if (!currentOpenFile) {

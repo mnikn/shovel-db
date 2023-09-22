@@ -44,7 +44,7 @@ const editorDidMount = (_, monaco: any) => {
       const objStr = JSON.stringify(obj, null, 2);
       return objStr.substring(1, objStr.length - 1);
     };
-    let snippets = [
+    const snippets = [
       {
         label: 'object',
         kind: monaco.languages.CompletionItemKind.Snippet,
@@ -229,8 +229,8 @@ const editorDidMount = (_, monaco: any) => {
   /* monaco.languages.unregisterCompletionItemProvider('schema-json-config'); */
   monaco.languages.registerCompletionItemProvider('json', {
     provideCompletionItems: (model, position) => {
-      var word = model.getWordUntilPosition(position);
-      var range = {
+      const word = model.getWordUntilPosition(position);
+      const range = {
         startLineNumber: position.lineNumber,
         endLineNumber: position.lineNumber,
         startColumn: word.startColumn,

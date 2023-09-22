@@ -138,6 +138,10 @@ const StaticDataService = (
 
     staticFileDataTable.value[fileId].schema = schema;
     staticFileDataTable.value = { ...staticFileDataTable.value };
+    if (fileService.currentOpenFile.value === fileId) {
+      const json = toml.parse(schema);
+      currentSchema.value = buildSchema(json) as SchemaFieldArray;
+    }
   };
 
   const updateFileData = (fileId: string, data: JSONData) => {
