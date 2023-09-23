@@ -214,7 +214,7 @@ type = "array"
   [fieldSchema.config]
     colSpan = 12
     initialExpand = true
-    summary = "{{___key}}"
+    summary = "{{___index}}"
 
   [fieldSchema.fields.id]
     name = "id"

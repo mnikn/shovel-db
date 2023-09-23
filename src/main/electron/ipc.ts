@@ -7,9 +7,10 @@ import {
   appDataCacheFilePath,
   appDataCacheProjectPath,
   appDataLogPath,
-  appDataPath,
 } from '../constants';
 import { ensureDirExists } from '../utils/file';
+import csv from 'csvtojson';
+import { parse as jsonParseCsv, Parser as CsvParser } from 'json2csv';
 
 import { createLogger } from '../logger';
 
@@ -18,6 +19,13 @@ const logger = createLogger('ipc');
 const route = (api: string, fn: (...arg: any) => any) => {
   ipcMain.on(api, (event, ...arg) => {
     const res = fn(...arg);
+    event.sender.send(api + '-response', res);
+  });
+};
+
+const routeAsync = (api: string, fn: (...arg: any) => Promise<any>) => {
+  ipcMain.on(api, async (event, ...arg) => {
+    const res = await fn(...arg);
     event.sender.send(api + '-response', res);
   });
 };
@@ -67,13 +75,24 @@ const init = () => {
     const staticTranslationPath = path.join(
       projectPath,
       'static-data',
-      'translations.json'
+      'translations.csv'
     );
     ensureDirExists(staticTranslationPath);
-    fs.writeFileSync(
-      staticTranslationPath,
-      JSON.stringify(staticDataNeedSaveFileTranslations, null, 2)
+    const staticDataTranslationsData: any[] = [];
+    Object.keys(staticDataNeedSaveFileTranslations).forEach((key) => {
+      staticDataTranslationsData.push({
+        keys: key,
+        ...serviceMemento.projectServiceMemento.langs.reduce((res, lang) => {
+          res[lang] = '';
+          return res;
+        }, {}),
+        ...staticDataNeedSaveFileTranslations[key],
+      });
+    });
+    const staticDataTranslations = new CsvParser().parse(
+      staticDataTranslationsData
     );
+    fs.writeFileSync(staticTranslationPath, staticDataTranslations);
   });
 
   route(IPC_API.RETRIEVE_SERVICE_CACHE, () => {
@@ -92,16 +111,32 @@ const init = () => {
     return cacheServiceMemento;
   });
 
-  route(
+  routeAsync(
     IPC_API.FETCH_DATA_FILES,
-    (projectPath: string, filePathChainArr: string[][]) => {
-      return filePathChainArr.map((filePathChain) => {
-        const targetPath = path.join(projectPath, ...filePathChain) + '.json';
+    async (projectPath: string, filePathChainArr: string[][]) => {
+      const dataList: any[] = [];
+
+      for (const filePathChain of filePathChainArr) {
+        const targetPath = path.join(projectPath, ...filePathChain);
         if (fs.existsSync(targetPath)) {
-          return JSON.parse(fs.readFileSync(targetPath, 'utf8'));
+          if (targetPath.endsWith('json')) {
+            dataList.push(JSON.parse(fs.readFileSync(targetPath, 'utf8')));
+          } else if (targetPath.endsWith('csv')) {
+            const rawData = fs.readFileSync(targetPath, { encoding: 'utf8' });
+            if (rawData) {
+              const translationRawData = await csv({
+                output: 'csv',
+              }).fromString(rawData);
+              dataList.push(translationRawData);
+            } else {
+              dataList.push(null);
+            }
+          } else {
+            dataList.push(null);
+          }
         }
-        return null;
-      });
+      }
+      return dataList;
     }
   );
 };

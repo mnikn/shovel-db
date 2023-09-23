@@ -29,8 +29,8 @@ const i18nSchema = new SchemaFieldSelect({
       value: 'zh-cn',
     },
     {
-      label: 'en',
-      value: 'en',
+      label: 'en-us',
+      value: 'en-us',
     },
   ],
 });

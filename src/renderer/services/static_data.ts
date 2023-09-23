@@ -69,19 +69,34 @@ const StaticDataService = (
 
     // when first get static data, fetch static data translation data
     if (Object.keys(staticFileDataTable.value).length === 0) {
-      const translationsData = (
-        await ipc.fetchDataFiles([['static-data', 'translations']])
+      const translationRawData = (
+        await ipc.fetchDataFiles([['static-data', 'translations.csv']])
       )?.[0];
-
-      translationService.restoreMemento({
-        translations: translationsData,
-      });
+      if (translationRawData) {
+        console.log('vcwe: ', translationRawData);
+        const translations: any = {};
+        translationRawData.forEach((s, i) => {
+          s.forEach((s2, j) => {
+            if (j === 0) {
+              translations[s2] = {};
+            } else {
+              translations[s[0]][projectService.langs.value[j - 1]] = s2;
+            }
+          });
+        });
+        translationService.restoreMemento({
+          translations,
+        });
+      }
     }
     if (fileId in staticFileDataTable.value) {
       return staticFileDataTable.value[fileId];
     }
 
     const filePathChain = fileService.getFilePathChain(fileId);
+    if (filePathChain.length > 0) {
+      filePathChain[filePathChain.length - 1] += '.json';
+    }
     const data = (await ipc.fetchDataFiles([filePathChain]))[0];
     if (!data) {
       staticFileDataTable.value[fileId] = {
