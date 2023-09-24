@@ -115,7 +115,6 @@ export default function Main() {
           order: 6,
           click: async (file: File) => {
             const data = await getStaticFileData(file.id);
-            console.log('we: ', data);
             setStaticDataEditSchema(data?.schema);
             setStaticDataEditSchemaFile(file.id);
           },
@@ -188,7 +187,7 @@ export default function Main() {
             onValueChange={(val) =>
               updateFileSchema(staticDataEditSchemaFile, val)
             }
-            lang='toml'
+            lang='json'
             close={() => {
               setStaticDataEditSchema(null);
               setStaticDataEditSchemaFile(null);

@@ -1,7 +1,7 @@
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
 import { Button, DialogTitle, Modal, Stack } from '@mui/material';
 import React, { useMemo, useState } from 'react';
-import { SchemaFieldString } from '../../../models/schema';
+import { DEFAULT_CONFIG_JSON, SchemaFieldString } from '../../../models/schema';
 import { borderRadius } from '../../../theme';
 import FieldString from './schema_form/field/string_field';
 
@@ -26,8 +26,7 @@ const editorMounted = (_, monaco: any) => {
         label: 'object',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: JSON.stringify(DEFAULT_CONFIG_JSON.OBJECT_JSON, null, 2), */
-        insertText: '',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.OBJECT_JSON, null, 2),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -36,8 +35,7 @@ const editorMounted = (_, monaco: any) => {
         label: 'array',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: JSON.stringify(DEFAULT_CONFIG_JSON.ARR_JSON, null, 2), */
-        insertText: '1',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.ARR_JSON, null, 2),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -46,8 +44,7 @@ const editorMounted = (_, monaco: any) => {
         label: 'string',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: JSON.stringify(DEFAULT_CONFIG_JSON.STR_JSON, null, 2), */
-        insertText: '2',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.STR_JSON, null, 2),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -56,8 +53,7 @@ const editorMounted = (_, monaco: any) => {
         label: 'boolean',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: JSON.stringify(DEFAULT_CONFIG_JSON.BOOLEAN_JSON, null, 2), */
-        insertText: '3',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.BOOLEAN_JSON, null, 2),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -66,8 +62,7 @@ const editorMounted = (_, monaco: any) => {
         label: 'number',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: JSON.stringify(DEFAULT_CONFIG_JSON.NUM_JSON, null, 2), */
-        insertText: '4',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.NUM_JSON, null, 2),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -76,8 +71,7 @@ const editorMounted = (_, monaco: any) => {
         label: 'select',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: JSON.stringify(DEFAULT_CONFIG_JSON.SELECT_JSON, null, 2), */
-        insertText: '5',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.SELECT_JSON, null, 2),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -86,8 +80,7 @@ const editorMounted = (_, monaco: any) => {
         label: 'file',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: JSON.stringify(DEFAULT_CONFIG_JSON.FILE_JSON, null, 2), */
-        insertText: '6',
+        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.FILE_JSON, null, 2),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -96,14 +89,13 @@ const editorMounted = (_, monaco: any) => {
         label: 'numberField',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: formatInnerField({
-         *   ...fieldObj,
-         *   your_field: {
-         *     ...fieldObj.your_field,
-         *     ...DEFAULT_CONFIG_JSON.NUM_JSON,
-         *   },
-         * }), */
-        insertText: '7',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.NUM_JSON,
+          },
+        }),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -112,14 +104,13 @@ const editorMounted = (_, monaco: any) => {
         label: 'stringField',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: formatInnerField({
-         *   ...fieldObj,
-         *   your_field: {
-         *     ...fieldObj.your_field,
-         *     ...DEFAULT_CONFIG_JSON.STR_JSON,
-         *   },
-         * }), */
-        insertText: '8',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.STR_JSON,
+          },
+        }),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -128,14 +119,13 @@ const editorMounted = (_, monaco: any) => {
         label: 'booleanField',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: formatInnerField({
-         *   ...fieldObj,
-         *   your_field: {
-         *     ...fieldObj.your_field,
-         *     ...DEFAULT_CONFIG_JSON.BOOLEAN_JSON,
-         *   },
-         * }), */
-        insertText: '9',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.BOOLEAN_JSON,
+          },
+        }),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -144,14 +134,13 @@ const editorMounted = (_, monaco: any) => {
         label: 'selectField',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: formatInnerField({
-         *   ...fieldObj,
-         *   your_field: {
-         *     ...fieldObj.your_field,
-         *     ...DEFAULT_CONFIG_JSON.SELECT_JSON,
-         *   },
-         * }), */
-        insertText: '10',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.SELECT_JSON,
+          },
+        }),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -160,14 +149,13 @@ const editorMounted = (_, monaco: any) => {
         label: 'arrayField',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: formatInnerField({
-         *   ...fieldObj,
-         *   your_field: {
-         *     ...fieldObj.your_field,
-         *     ...DEFAULT_CONFIG_JSON.ARR_JSON,
-         *   },
-         * }), */
-        insertText: '11',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.ARR_JSON,
+          },
+        }),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -176,14 +164,13 @@ const editorMounted = (_, monaco: any) => {
         label: 'objectField',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: formatInnerField({
-         *   ...fieldObj,
-         *   your_field: {
-         *     ...fieldObj.your_field,
-         *     ...DEFAULT_CONFIG_JSON.OBJECT_JSON,
-         *   },
-         * }), */
-        insertText: '12',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.OBJECT_JSON,
+          },
+        }),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -192,14 +179,13 @@ const editorMounted = (_, monaco: any) => {
         label: 'fileField',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: 'object field',
-        /* insertText: formatInnerField({
-         *   ...fieldObj,
-         *   your_field: {
-         *     ...fieldObj.your_field,
-         *     ...DEFAULT_CONFIG_JSON.FILE_JSON,
-         *   },
-         * }), */
-        insertText: '22',
+        insertText: formatInnerField({
+          ...fieldObj,
+          your_field: {
+            ...fieldObj.your_field,
+            ...DEFAULT_CONFIG_JSON.FILE_JSON,
+          },
+        }),
         insertTextRules:
           monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range,
@@ -218,7 +204,7 @@ const editorMounted = (_, monaco: any) => {
   };
 
   /* monaco.languages.unregisterCompletionItemProvider('schema-json-config'); */
-  monaco.languages.registerCompletionItemProvider('toml', {
+  monaco.languages.registerCompletionItemProvider('json', {
     provideCompletionItems: (model, position) => {
       const word = model.getWordUntilPosition(position);
       const range = {

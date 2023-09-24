@@ -4,20 +4,17 @@ export const DEFAULT_CONFIG = {
   OBJECT_CONFIG_DEFAULT: {
     colSpan: 12,
     initialExpand: true,
-    summary: '{{___key}}',
   },
   ARRAY: {
     colSpan: 12,
     defaultValue: [],
     enableWhen: null,
     initialExpand: false,
-    summary: '{{___index}}',
     fieldId: `field_array_${UUID()}`,
   },
   ARRAY_CONFIG_DEFAULT: {
     colSpan: 12,
     initialExpand: false,
-    summary: '{{___index}}',
   },
   STRING: {
     colSpan: 3,
@@ -166,7 +163,33 @@ export const DEFAULT_CONFIG_JSON = {
     fieldSchema: {
       type: 'object',
       fields: {},
-      config: DEFAULT_CONFIG.OBJECT_CONFIG_DEFAULT,
+      config: {
+        ...DEFAULT_CONFIG.OBJECT_CONFIG_DEFAULT,
+        summary: '{{___index}}',
+      },
+    },
+  },
+  TEMPLATE_ARR_OBJ_JSON: {
+    type: 'array',
+    config: DEFAULT_CONFIG.ARRAY_CONFIG_DEFAULT,
+    fieldSchema: {
+      type: 'object',
+      fields: {
+        id: {
+          name: 'id',
+          type: 'string',
+          config: DEFAULT_CONFIG.STRING_CONFIG_DEFAULT,
+        },
+        name: {
+          name: 'name',
+          type: 'string',
+          config: { ...DEFAULT_CONFIG.STRING_CONFIG_DEFAULT, needI18n: true },
+        },
+      },
+      config: {
+        ...DEFAULT_CONFIG.OBJECT_CONFIG_DEFAULT,
+        summary: '{{___index}} {{id}}--{{name}}',
+      },
     },
   },
   SELECT_JSON: {
@@ -399,7 +422,6 @@ function getDefaultConfig(type: SchemaFieldType): any {
         colSpan: 12,
         enableWhen: null,
         initialExpand: true,
-        summary: '{{___key}}',
         fieldId: `field_object_${UUID()}`,
       };
     }

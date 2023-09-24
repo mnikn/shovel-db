@@ -7,6 +7,7 @@ import ipc from '../../renderer/electron/ipc';
 import {
   buildSchema,
   SchemaFieldArray,
+  DEFAULT_CONFIG_JSON,
   TEMPLATE_ARR_OBJ_SCHEMA_CONFIG,
 } from '../models/schema';
 import type { FileServiceType } from './file';
@@ -73,7 +74,6 @@ const StaticDataService = (
         await ipc.fetchDataFiles([['static-data', 'translations.csv']])
       )?.[0];
       if (translationRawData) {
-        console.log('vcwe: ', translationRawData);
         const translations: any = {};
         translationRawData.forEach((s, i) => {
           s.forEach((s2, j) => {
@@ -101,7 +101,7 @@ const StaticDataService = (
     if (!data) {
       staticFileDataTable.value[fileId] = {
         data: [],
-        schema: TEMPLATE_ARR_OBJ_SCHEMA_CONFIG,
+        schema: JSON.stringify(DEFAULT_CONFIG_JSON.TEMPLATE_ARR_OBJ_JSON, null, 2),
       };
     } else {
       staticFileDataTable.value[fileId] = {
@@ -140,7 +140,8 @@ const StaticDataService = (
       if (!fileData) {
         return;
       }
-      const json = toml.parse(fileData.schema);
+      // const json = toml.parse(fileData.schema);
+      const json = JSON.parse(fileData.schema);
       currentSchema.value = buildSchema(json) as SchemaFieldArray;
       currentData.value = fileData.data;
     }
@@ -154,7 +155,8 @@ const StaticDataService = (
     staticFileDataTable.value[fileId].schema = schema;
     staticFileDataTable.value = { ...staticFileDataTable.value };
     if (fileService.currentOpenFile.value === fileId) {
-      const json = toml.parse(schema);
+      // const json = toml.parse(schema);
+      const json = JSON.parse(schema);
       currentSchema.value = buildSchema(json) as SchemaFieldArray;
     }
   };

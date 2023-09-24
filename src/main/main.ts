@@ -16,6 +16,7 @@ const path = require('path');
 const remote = require('@electron/remote/main');
 
 import ipc from './electron/ipc';
+import { appDataCacheProjectPath } from './constants';
 
 ipc.init();
 
@@ -82,9 +83,13 @@ const menuTemplate: any = [
     submenu: [
       {
         label: 'New Project',
-        // click: () => {
-        //   console.log('Open File Clicked');
-        // },
+        click: () => {
+          if (!mainWindow) {
+            return;
+          }
+          fs.rmSync(appDataCacheProjectPath);
+          mainWindow.webContents.reload();
+        },
       },
       {
         label: 'Open Project...',

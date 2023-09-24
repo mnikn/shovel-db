@@ -47,19 +47,27 @@ const init = () => {
   route(IPC_API.SAVE_CURRENT_PROJECT, (projectPath: string, data: any) => {
     logger.cacheLog('save current project');
     const serviceMemento = JSON.parse(data);
-    const fileServiceMemento = serviceMemento.fileServiceMemento;
-    ensureDirExists(appDataCacheFilePath);
-    fs.writeFileSync(
-      appDataCacheFilePath,
-      JSON.stringify(fileServiceMemento, null, 2)
-    );
-
     const projectServiceMemento = serviceMemento.projectServiceMemento;
+    const appDataProjectCachce = {
+      projectPath: projectServiceMemento.projectPath,
+    };
+
     ensureDirExists(appDataCacheProjectPath);
     fs.writeFileSync(
       appDataCacheProjectPath,
-      JSON.stringify(projectServiceMemento, null, 2)
+      JSON.stringify(appDataProjectCachce, null, 2)
     );
+    const projectDataPath = path.join(projectPath, 'project.json');
+    const projectData = {
+      langs: projectServiceMemento.langs,
+    };
+    ensureDirExists(projectDataPath);
+    fs.writeFileSync(projectDataPath, JSON.stringify(projectData, null, 2));
+
+    const fileServiceMemento = serviceMemento.fileServiceMemento;
+    const fileDataPath = path.join(projectPath, 'files.json');
+    ensureDirExists(fileDataPath);
+    fs.writeFileSync(fileDataPath, JSON.stringify(fileServiceMemento, null, 2));
 
     // const projectPath = appDataPath;
     const staticDataNeedSaveFileData =
@@ -89,24 +97,46 @@ const init = () => {
         ...staticDataNeedSaveFileTranslations[key],
       });
     });
-    const staticDataTranslations = new CsvParser().parse(
-      staticDataTranslationsData
-    );
-    fs.writeFileSync(staticTranslationPath, staticDataTranslations);
+    if (staticDataTranslationsData.length > 0) {
+      const staticDataTranslations = new CsvParser().parse(
+        staticDataTranslationsData
+      );
+      fs.writeFileSync(staticTranslationPath, staticDataTranslations);
+    }
   });
 
   route(IPC_API.RETRIEVE_SERVICE_CACHE, () => {
     logger.cacheLog('retrive cache');
     const cacheServiceMemento: any = {};
-    if (fs.existsSync(appDataCacheFilePath)) {
-      const fileCache = JSON.parse(
-        fs.readFileSync(appDataCacheFilePath, 'utf8')
-      );
-      const projectCache = JSON.parse(
+    if (fs.existsSync(appDataCacheProjectPath)) {
+      const appDataProjectCache = JSON.parse(
         fs.readFileSync(appDataCacheProjectPath, 'utf8')
       );
-      cacheServiceMemento.fileServiceMemento = fileCache;
-      cacheServiceMemento.projectServiceMemento = projectCache;
+      let projectMemento: any = { ...appDataProjectCache };
+      if (appDataProjectCache?.projectPath) {
+        const projectDataPath = fs.readFileSync(
+          path.join(appDataProjectCache?.projectPath, 'project.json')
+        );
+        if (fs.existsSync(projectDataPath)) {
+          const projectData = fs.readFileSync(projectDataPath);
+          projectMemento = { ...projectMemento, ...projectData };
+        }
+
+        const fileCachePath = path.join(
+          appDataProjectCache.projectPath,
+          'files.json'
+        );
+        if (fs.existsSync(fileCachePath)) {
+          const fileCache = JSON.parse(
+            fs.readFileSync(
+              path.join(appDataProjectCache.projectPath, 'files.json'),
+              'utf8'
+            )
+          );
+          cacheServiceMemento.fileServiceMemento = fileCache;
+        }
+      }
+      cacheServiceMemento.projectServiceMemento = projectMemento;
     }
     return cacheServiceMemento;
   });
