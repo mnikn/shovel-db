@@ -12,12 +12,14 @@ import ipc from '../electron/ipc';
 import { dialog } from '@electron/remote';
 import { IPC_API } from '../../common/constants';
 import { EVENT, eventEmitter } from '../events';
+import StoryService, { StoryServiceType } from './story';
 
 const logger = createLogger('service');
 
 type ServiceMementoType = typeof serviceMemento.value;
 
 let staticDataService: StaticDataServiceType;
+let storyService: StoryServiceType;
 let projectService: ProjectServiceType;
 let fileService: FileServiceType;
 const initServices = async () => {
@@ -29,6 +31,7 @@ const initServices = async () => {
   fileService = FileService;
 
   staticDataService = StaticDataService(fileService, projectService);
+  storyService = StoryService(fileService, projectService);
   const serviceCache = await ipc.retrieveServiceCache();
   if (serviceCache.projectServiceMemento !== undefined) {
     ProjectService.restoreMemento(serviceCache.projectServiceMemento);
@@ -49,6 +52,10 @@ const serviceMemento = computed(() => {
 
 const getStaticDataService = () => {
   return staticDataService;
+};
+
+const getStoryService = () => {
+  return storyService;
 };
 
 const getFileService = () => {
@@ -89,6 +96,7 @@ export {
   ProjectServiceType,
   FileServiceType,
   getStaticDataService,
+  getStoryService,
   getFileService,
   getProjectService,
   StaticFileData,

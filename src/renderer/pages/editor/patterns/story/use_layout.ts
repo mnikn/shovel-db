@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import * as d3 from 'd3';
-import { useStoryStore } from '../../../../store';
+import { useStoryStore } from '../../../../stores';
 // import useEventState from 'renderer/utils/use_event_state';
 // import { Storylet } from 'renderer/models/storylet';
 // import StoryProvider from '../../services/story_provider';

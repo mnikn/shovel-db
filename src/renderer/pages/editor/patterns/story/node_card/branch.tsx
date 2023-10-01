@@ -1,6 +1,6 @@
 import React from 'react';
 import { StoryletBranchNode } from '../../../../../models/story/storylet';
-import { useStoryStore } from '../../../../../store';
+import { useStoryStore } from '../../../../../stores';
 import BaseNodeCard from './base';
 import { Stack, Box } from '@mui/material';
 import { grey } from '@mui/material/colors';
@@ -17,7 +17,7 @@ export default function BranchNodeCard({
   onDrag?: (val: any) => void;
   onDragEnd?: (val: any) => void;
 }) {
-  const { currentStorylet, tr, storyActors } = useStoryStore();
+  const { currentStorylet, tr, actors } = useStoryStore();
   if (!currentStorylet) {
     return null;
   }
@@ -54,9 +54,8 @@ export default function BranchNodeCard({
                 }}
                 src={
                   (
-                    storyActors.find(
-                      (item: any) => item.id === node.data.actor?.id
-                    )?.portraits || []
+                    actors.find((item: any) => item.id === node.data.actor?.id)
+                      ?.portraits || []
                   ).find((p: any) => p.id === node.data.actor?.portrait)?.pic ||
                   ''
                 }

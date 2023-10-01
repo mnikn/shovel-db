@@ -44,6 +44,40 @@ const TranslationService = (projectService: ProjectServiceType) => {
     translations.value = val;
   };
 
+  const hasTranslateKey = (key: string) => {
+    return key in translations.value;
+  };
+
+  const updateTranslateKey = (key: string, val: string) => {
+    const newTranslations = { ...translations.value };
+    newTranslations[key] = {
+      ...newTranslations[key],
+      [currentLang.value]: val,
+    };
+    projectService.langs.value.forEach((lang) => {
+      if (lang !== currentLang.value) {
+        newTranslations[key][lang] = newTranslations[key][lang] || '';
+      }
+    });
+    translations.value = newTranslations;
+  };
+
+  const updateTranslateKeyAll = (key: string, val: any) => {
+    const newTranslations = { ...translations.value };
+    newTranslations[key] = {
+      ...newTranslations[key],
+    };
+    projectService.langs.value.forEach((lang) => {
+      newTranslations[key][lang] =
+        val?.[lang] || newTranslations[key]?.[lang] || '';
+    });
+    translations.value = newTranslations;
+  };
+
+  const getTranslationsForKey = (key: string) => {
+    return translations.value[key];
+  };
+
   watch(
     () => projectService.langs.value,
     (langs) => {
@@ -61,6 +95,10 @@ const TranslationService = (projectService: ProjectServiceType) => {
     tr,
     translations,
     updateTranslations,
+    hasTranslateKey,
+    updateTranslateKey,
+    updateTranslateKeyAll,
+    getTranslationsForKey,
   };
 };
 export type TranslationServiceType = ReturnType<typeof TranslationService>;

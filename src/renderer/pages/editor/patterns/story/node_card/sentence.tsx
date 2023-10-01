@@ -1,8 +1,7 @@
 import React from 'react';
 import { StoryletSentenceNode } from '../../../../../models/story/storylet';
-import { useStoryStore } from '../../../../../store';
+import { useStoryStore } from '../../../../../stores';
 import BaseNodeCard from './base';
-import BaseEditDialog from '../edit_dialog';
 import { Stack, Box } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { borderRadius } from '../../../../../theme';
@@ -18,7 +17,7 @@ export default function SentenceNodeCard({
   onDrag?: (val: any) => void;
   onDragEnd?: (val: any) => void;
 }) {
-  const { currentStorylet, tr, storyActors } = useStoryStore();
+  const { currentStorylet, tr, actors } = useStoryStore();
   if (!currentStorylet) {
     return null;
   }
@@ -55,9 +54,8 @@ export default function SentenceNodeCard({
                 }}
                 src={
                   (
-                    storyActors.find(
-                      (item: any) => item.id === node.data.actor?.id
-                    )?.portraits || []
+                    actors.find((item: any) => item.id === node.data.actor?.id)
+                      ?.portraits || []
                   ).find((p: any) => p.id === node.data.actor?.portrait)?.pic ||
                   ''
                 }

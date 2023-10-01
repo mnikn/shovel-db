@@ -6,7 +6,10 @@ import React, {
   useState,
 } from 'react';
 import { Box } from '@mui/material';
-import { useExplorerStore, useStoryStore } from '../../../../store';
+import {
+  useFileStore,
+  useStoryStore as useStoryStoreV2,
+} from '../../../../stores';
 import useLayout from './use_layout';
 import NodeCard from './node_card';
 import { borderRadius } from '../../../../theme';
@@ -29,15 +32,15 @@ const i18nSchema = new SchemaFieldSelect({
 export default function Story() {
   const [zoomDom, setZoomDom] = useState<HTMLDivElement | null>(null);
   const [dragingNode, setDragingNode] = useState<any>(null);
-  const { currentOpenFile } = useExplorerStore();
+  const { currentOpenFile } = useFileStore();
+
   const {
     currentStorylet,
-    selectNode,
-    moveStoryletNode,
-    trackCurrentState,
     switchLang,
     currentLang,
-  } = useStoryStore();
+    selectNode,
+    moveStoryletNode,
+  } = useStoryStoreV2();
 
   const dragingNodeRef = useRef<HTMLDivElement>(dragingNode);
   dragingNodeRef.current = dragingNode;
@@ -181,7 +184,6 @@ export default function Story() {
                             dragTargetRef.current.node.id,
                             dragTargetRef.current.type
                           );
-                          trackCurrentState();
                         }
 
                         setDragingNode(null);

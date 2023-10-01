@@ -1,6 +1,6 @@
 import React, { useLayoutEffect } from 'react';
 import { StoryletRootNode } from '../../../../../models/story/storylet';
-import { useStoryStore } from '../../../../../store';
+import { useStoryStore } from '../../../../../stores';
 import BaseNodeCard from './base';
 
 export default function RootNodeCard({

@@ -30,26 +30,32 @@ import {
   StoryletSentenceNode,
 } from '../../../../../models/story/storylet';
 import { NodeLink } from '../../../../../models/tree';
-import { useStoryStore } from '../../../../../store';
+import { useStoryStore } from '../../../../../stores';
 import { Mode, useEditorStore } from '../../../../../store/editor';
 import { animation, borderRadius } from '../../../../../theme';
 import EditDialog from '../edit_dialog';
 
 function CardPopup({ node }: { node: StoryletNode<StoryletNodeData> }) {
-  const { nodeSettings } = useStoryStore();
+  const { nodeSchemaSettings } = useStoryStore();
   const [height, setHeight] = useState(0);
   const basicDataSchema = useMemo(() => {
     const basicsDataMap = {
-      root: buildSchema(JSON.parse(nodeSettings.root.basicDataSchema)),
-      sentence: buildSchema(JSON.parse(nodeSettings.sentence.basicDataSchema)),
-      branch: buildSchema(JSON.parse(nodeSettings.branch.basicDataSchema)),
-      action: buildSchema(JSON.parse(nodeSettings.action.basicDataSchema)),
+      root: buildSchema(JSON.parse(nodeSchemaSettings.root.basicDataSchema)),
+      sentence: buildSchema(
+        JSON.parse(nodeSchemaSettings.sentence.basicDataSchema)
+      ),
+      branch: buildSchema(
+        JSON.parse(nodeSchemaSettings.branch.basicDataSchema)
+      ),
+      action: buildSchema(
+        JSON.parse(nodeSchemaSettings.action.basicDataSchema)
+      ),
     };
     const res = basicsDataMap[node.data.type] as SchemaFieldObject;
     return res;
-  }, [node, nodeSettings]);
+  }, [node, nodeSchemaSettings]);
 
-  let components: React.ReactNode[] = [];
+  const components: React.ReactNode[] = [];
   iterSchema(
     basicDataSchema,
     (schema: SchemaField, path: string, label?: string) => {
@@ -177,9 +183,7 @@ export default function BaseNodeCard({
     translations,
     updateTranslateKeyAll,
     getTranslationsForKey,
-    trackCurrentState,
     updateNode,
-    nodeSettings,
     tr,
   } = useStoryStore();
   const viewRef = useRef<HTMLElement>();
@@ -191,7 +195,7 @@ export default function BaseNodeCard({
     return null;
   }
 
-  const isSelecting = selection?.nodeId === node.id;
+  const isSelecting = selection === node.id;
 
   useLayoutEffect(() => {
     if (!viewRef.current) {
@@ -251,7 +255,6 @@ export default function BaseNodeCard({
         }
         insertFn(newNode, node);
 
-        trackCurrentState();
         return;
       }
 
@@ -326,7 +329,6 @@ export default function BaseNodeCard({
       // Esc
       if (e.keyCode === 8 && !(node instanceof StoryletRootNode)) {
         deleteNode(node.id);
-        trackCurrentState();
         return;
       }
 
@@ -359,7 +361,6 @@ export default function BaseNodeCard({
     getTranslationsForKey,
     mode,
     setMode,
-    trackCurrentState,
   ]);
 
   const close = useCallback(() => {

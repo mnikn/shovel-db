@@ -15,6 +15,7 @@ import { File } from '../../models/file';
 import { borderRadius } from '../../theme';
 import Explorer from './components/explorer';
 import StaticData from './patterns/static_data';
+import Story from './patterns/story';
 import ConfigModal from './components/config_modal';
 
 export default function Main() {
@@ -124,8 +125,7 @@ export default function Main() {
         }}
       >
         {editorPattern === EDITOR_PATTERN.STATIC_DATA && <StaticData />}
-        {/* {editorPattern === EDITOR_PATTERN.STORY && <Story />} */}
-        {editorPattern === EDITOR_PATTERN.STORY && <></>}
+        {editorPattern === EDITOR_PATTERN.STORY && <Story />}
         {/* {projectSettingsOpen && (
             <ProjectSettings
             open={projectSettingsOpen}
