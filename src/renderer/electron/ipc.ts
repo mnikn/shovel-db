@@ -1,16 +1,7 @@
 import { dialog } from '@electron/remote';
-import { toValue } from '@vue/reactivity';
 import { ipcRenderer } from 'electron';
 import { IPC_API } from '../../common/constants';
-import { EVENT, eventEmitter } from '../events';
-import { createLogger } from '../logger';
-import {
-  ProjectService,
-  serviceMemento,
-  ServiceMementoType,
-} from '../services';
-
-const logger = createLogger('ipc');
+import type { ServiceMementoType } from '../services';
 
 const processPool: Set<string> = new Set();
 
@@ -49,9 +40,9 @@ const send = (api: string, ...data: any): Promise<any> | null => {
 };
 
 const init = () => {
-  // route(IPC_API.SYNC_SERVICE_MEMENTO, (memento: string) => {
-  //   restoreServiceMemento(JSON.parse(memento));
-  // });
+  route(IPC_API.OPEN_PROJECT, () => {
+    openProject();
+  });
 };
 
 const storeLog = (log: string) => {
@@ -62,44 +53,35 @@ const retrieveServiceCache = async (): Promise<ServiceMementoType> => {
   return await send(IPC_API.RETRIEVE_SERVICE_CACHE);
 };
 
-const saveProject = async () => {
-  if (!ProjectService.projectPath.value) {
-    const targetPath = dialog.showOpenDialogSync({
-      title: 'Select project path',
-      properties: ['openDirectory', 'createDirectory'],
-    });
-    if (!targetPath) {
-      return;
-    }
-    ProjectService.updateProjectPath(targetPath[0]);
-  }
-  const startSaveProject = send(
-    IPC_API.SAVE_CURRENT_PROJECT,
-    toValue(ProjectService.projectPath),
-    JSON.stringify(toValue(serviceMemento))
-  );
-  if (startSaveProject) {
-    eventEmitter.emit(EVENT.ON_SAVE_PROJECT_START);
-    await startSaveProject;
-    eventEmitter.emit(EVENT.ON_SAVE_PROJECT_FINISHED);
-  }
-};
-
-const fetchDataFiles = async (filePathChainArr: string[][]) => {
-  if (!ProjectService.projectPath.value) {
+const fetchDataFiles = async (
+  projectPath: string,
+  filePathChainArr: string[][]
+) => {
+  if (!projectPath) {
     return null;
   }
-  return await send(
-    IPC_API.FETCH_DATA_FILES,
-    toValue(ProjectService.projectPath),
-    filePathChainArr
-  );
+  return await send(IPC_API.FETCH_DATA_FILES, projectPath, filePathChainArr);
+};
+
+const openProject = async () => {
+  const result = dialog.showOpenDialogSync({
+    title: 'Select project path',
+    properties: ['openDirectory', 'createDirectory'],
+  });
+
+  console.log('ew: ', result);
+  if (result) {
+    await send(IPC_API.OPEN_PROJECT, result[0]);
+    window.location.reload();
+  }
 };
 
 export default {
+  route,
+  send,
   init,
   storeLog,
-  saveProject,
   fetchDataFiles,
   retrieveServiceCache,
+  openProject,
 };

@@ -3,35 +3,31 @@ import { grey } from '@mui/material/colors';
 import { ipcRenderer } from 'electron';
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { EDITOR_PATTERN, FILE_GROUP } from '../../../common/constants';
-import {
-  REMOVE_UESLESS_TRANSLATIONS,
-  SHOW_ARTICLE_SUMMARY,
-  SHOW_PROJET_SETTINGS,
-} from '../../../constants/events';
-import { Event, eventEmitter } from '../../events';
-import { processValueWithSchema, SchemaFieldString } from '../../models/schema';
-import { useStoryStore } from '../../store';
-import { useEditorStore, useFileStore, useStaticDataStore } from '../../stores';
+/* import {
+ *   REMOVE_UESLESS_TRANSLATIONS,
+ *   SHOW_ARTICLE_SUMMARY,
+ *   SHOW_PROJET_SETTINGS,
+ * } from '../../../constants/events'; */
+/* import { Event, eventEmitter } from '../../events';
+ * import { processValueWithSchema, SchemaFieldString } from '../../models/schema'; */
+import { useEditorStore, useStaticDataStore } from '../../stores';
 import { File } from '../../models/file';
 import { borderRadius } from '../../theme';
-import ArticelPanel from './components/article_panel';
 import Explorer from './components/explorer';
-import ProjectSettings from './components/project_settings';
 import StaticData from './patterns/static_data';
-import Story from './patterns/story';
 import ConfigModal from './components/config_modal';
 
 export default function Main() {
-  const {
-    translations: storyTranslations,
-    story,
-    getNodeSchema,
-    setTranslations: setStoryTranslations,
-  } = useStoryStore();
+  /* const {
+   *   translations: storyTranslations,
+   *   story,
+   *   getNodeSchema,
+   *   setTranslations: setStoryTranslations,
+   * } = useStoryStore(); */
 
-  const { saving, setHasModal, editorPattern } = useEditorStore();
-  const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
-  const [articleSummaryOpen, setArticleSummaryOpen] = useState(false);
+  const { saving, editorPattern } = useEditorStore();
+  /* const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
+   * const [articleSummaryOpen, setArticleSummaryOpen] = useState(false); */
   /* const [
    *   staticDataFileSchemaConfigModalVisible,
    * ] = useState(false); */
@@ -44,69 +40,59 @@ export default function Main() {
 
   const { getStaticFileData, updateFileSchema } = useStaticDataStore();
 
-  const storyStoreDataRef = useRef({
-    translations: storyTranslations,
-    story,
-  });
-  storyStoreDataRef.current = {
-    translations: storyTranslations,
-    story,
-  };
-  /* const {
-   *   translations: staticDataTranslations,
-   *   setTranslations: setStaticDataTranslations,
-   * } = useStaticDataStore();
-   * const staticDataStoreDataRef = useRef({
+  /* const storyStoreDataRef = useRef({
    *   translations: storyTranslations,
+   *   story,
    * });
-   * staticDataStoreDataRef.current = {
+   * storyStoreDataRef.current = {
    *   translations: storyTranslations,
+   *   story,
    * }; */
 
-  useLayoutEffect(() => {
-    const showProjectSettings = () => {
-      setProjectSettingsOpen(true);
-      setHasModal(true);
-    };
-    const showArticleSummary = () => {
-      setArticleSummaryOpen(true);
-      setHasModal(true);
-    };
-    const removeUselessTranslations = () => {
-      const newStoryTranslations: any = {};
-      Object.values(storyStoreDataRef.current.story).forEach((storylet) => {
-        Object.values(storylet.nodes).forEach((node) => {
-          const schema = getNodeSchema(node);
-          processValueWithSchema(
-            schema.basicDataSchema,
-            node.data,
-            (propSchema, propVal) => {
-              if (
-                propSchema instanceof SchemaFieldString &&
-                propSchema.config.needI18n
-              ) {
-                newStoryTranslations[propVal] =
-                  storyStoreDataRef.current.translations[propVal];
-              }
-            }
-          );
-        });
-      });
-      setStoryTranslations(newStoryTranslations);
-    };
-    ipcRenderer.on(SHOW_PROJET_SETTINGS, showProjectSettings);
-    ipcRenderer.on(SHOW_ARTICLE_SUMMARY, showArticleSummary);
-    ipcRenderer.on(REMOVE_UESLESS_TRANSLATIONS, removeUselessTranslations);
-    eventEmitter.on(Event.OpenProjectSettings, showProjectSettings);
+  /* useLayoutEffect(() => {
+     *   const showProjectSettings = () => {
+     *     setProjectSettingsOpen(true);
+     *     setHasModal(true);
+     *   };
+     *   const showArticleSummary = () => {
+     *     setArticleSummaryOpen(true);
+     *     setHasModal(true);
+     *   };
+     *   const removeUselessTranslations = () => {
+     *     const newStoryTranslations: any = {};
+     *     Object.values(storyStoreDataRef.current.story).forEach((storylet) => {
+     *       Object.values(storylet.nodes).forEach((node) => {
+     *         const schema = getNodeSchema(node);
+     *         processValueWithSchema(
+     *           schema.basicDataSchema,
+     *           node.data,
+     *           (propSchema, propVal) => {
+     *             if (
+     *               propSchema instanceof SchemaFieldString &&
+     *               propSchema.config.needI18n
+     *             ) {
+     *               newStoryTranslations[propVal] =
+     *                 storyStoreDataRef.current.translations[propVal];
+     *             }
+     *           }
+     *         );
+     *       });
+     *     });
+     *     setStoryTranslations(newStoryTranslations);
+     *   };
+     *   ipcRenderer.on(SHOW_PROJET_SETTINGS, showProjectSettings);
+     *   ipcRenderer.on(SHOW_ARTICLE_SUMMARY, showArticleSummary);
+     *   ipcRenderer.on(REMOVE_UESLESS_TRANSLATIONS, removeUselessTranslations);
+     *   eventEmitter.on(Event.OpenProjectSettings, showProjectSettings);
 
-    return () => {
-      ipcRenderer.off(REMOVE_UESLESS_TRANSLATIONS, removeUselessTranslations);
-      ipcRenderer.off(SHOW_ARTICLE_SUMMARY, showArticleSummary);
-      ipcRenderer.off(SHOW_PROJET_SETTINGS, showProjectSettings);
-      eventEmitter.off(Event.OpenProjectSettings, showProjectSettings);
-    };
-  }, [setHasModal, setStoryTranslations]);
-
+     *   return () => {
+     *     ipcRenderer.off(REMOVE_UESLESS_TRANSLATIONS, removeUselessTranslations);
+     *     ipcRenderer.off(SHOW_ARTICLE_SUMMARY, showArticleSummary);
+     *     ipcRenderer.off(SHOW_PROJET_SETTINGS, showProjectSettings);
+     *     eventEmitter.off(Event.OpenProjectSettings, showProjectSettings);
+     *   };
+     * }, [setHasModal, setStoryTranslations]);
+     */
   const extraFileContextMenuItems = useMemo(() => {
     if (editorPattern === EDITOR_PATTERN.STATIC_DATA) {
       return [
@@ -138,25 +124,26 @@ export default function Main() {
         }}
       >
         {editorPattern === EDITOR_PATTERN.STATIC_DATA && <StaticData />}
-        {editorPattern === EDITOR_PATTERN.STORY && <Story />}
-        {projectSettingsOpen && (
-          <ProjectSettings
+        {/* {editorPattern === EDITOR_PATTERN.STORY && <Story />} */}
+        {editorPattern === EDITOR_PATTERN.STORY && <></>}
+        {/* {projectSettingsOpen && (
+            <ProjectSettings
             open={projectSettingsOpen}
             close={() => {
-              setProjectSettingsOpen(false);
-              setHasModal(false);
+            setProjectSettingsOpen(false);
+            setHasModal(false);
             }}
-          />
-        )}
-        {articleSummaryOpen && (
-          <ArticelPanel
+            />
+            )}
+            {articleSummaryOpen && (
+            <ArticelPanel
             open={articleSummaryOpen}
             close={() => {
-              setArticleSummaryOpen(false);
-              setHasModal(false);
+            setArticleSummaryOpen(false);
+            setHasModal(false);
             }}
-          />
-        )}
+            />
+            )} */}
         {saving ? (
           <Stack
             direction='row'

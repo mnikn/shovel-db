@@ -1,24 +1,7 @@
 import { Box, Stack } from '@mui/material';
-import { debounce } from 'lodash';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import {
-  DEFAULT_CONFIG_JSON,
-  SchemaFieldArray,
-  SchemaFieldObject,
-  SchemaFieldSelect,
-} from '../../../../models/schema';
-import { buildSchema } from '../../../../models/schema/factory';
-import { useExplorerStore, useStaticDataStore } from '../../../../store';
-import {
-  useFileStore,
-  useStaticDataStore as useStaticDataStoreV2,
-} from '../../../../stores';
+import React, { useCallback, useEffect, useState } from 'react';
+import { SchemaFieldSelect } from '../../../../models/schema';
+import { useFileStore, useStaticDataStore } from '../../../../stores';
 import SchemaForm from '../../components/schema_form';
 import FieldSelect from '../../components/schema_form/field/select_field';
 
@@ -44,7 +27,7 @@ export default function StaticData() {
     switchLang,
     translations,
     updateTranslations,
-  } = useStaticDataStoreV2();
+  } = useStaticDataStore();
   const [formTranslations, setFormTranslations] = useState(translations);
   const { currentOpenFile } = useFileStore();
   /* const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema; */

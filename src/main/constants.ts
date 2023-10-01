@@ -1,7 +1,10 @@
 import { app } from 'electron';
-import { join } from 'path';
+import { join, dirname } from 'path';
 
-export const appDataPath = join(app.getAppPath(), 'appdata');
+const appPath = dirname(app.getPath('exe'));
+console.log('ewe: ', appPath);
+
+export const appDataPath = join(appPath, 'appdata');
 export const appDataLogPath = join(appDataPath, 'logs');
 
 export const appDataCachePath = join(appDataPath, 'cache');

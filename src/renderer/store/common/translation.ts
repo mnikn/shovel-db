@@ -12,19 +12,21 @@ export interface Translation {
 
 export default function useTranslation() {
   const { projectSettings } = useProjectStore();
-  const [currentLang, setCurrentLang] = useState<LANG>(projectSettings.i18n[0]);
+  const [currentLang, setCurrentLang] = useState<any>(
+    projectSettings?.i18n?.[0]
+  );
   const [translations, setTranslations] = useState<Translation>({});
   const translationsRef = useRef(translations);
   translationsRef.current = translations;
 
-  const switchLang = useCallback((lang: LANG) => {
+  const switchLang = useCallback((lang: any) => {
     setCurrentLang(lang);
   }, []);
 
   useEffect(() => {
     setCurrentLang((prev) => {
-      if (!projectSettings.i18n.includes(prev)) {
-        return projectSettings.i18n[0];
+      if (!projectSettings?.i18n?.includes(prev)) {
+        return projectSettings?.i18n?.[0] || 'zh-cn';
       }
       return prev;
     });

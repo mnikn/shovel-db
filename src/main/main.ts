@@ -17,6 +17,7 @@ const remote = require('@electron/remote/main');
 
 import ipc from './electron/ipc';
 import { appDataCacheProjectPath } from './constants';
+import { IPC_API } from '../common/constants';
 
 ipc.init();
 
@@ -87,7 +88,10 @@ const menuTemplate: any = [
           if (!mainWindow) {
             return;
           }
-          fs.rmSync(appDataCacheProjectPath);
+
+          if (fs.existsSync(appDataCacheProjectPath)) {
+            fs.rmSync(appDataCacheProjectPath);
+          }
           mainWindow.webContents.reload();
         },
       },
@@ -97,7 +101,7 @@ const menuTemplate: any = [
           if (!mainWindow) {
             return;
           }
-          mainWindow.webContents.send(OPEN_PROJECT);
+          mainWindow.webContents.send(IPC_API.OPEN_PROJECT);
         },
       },
       {

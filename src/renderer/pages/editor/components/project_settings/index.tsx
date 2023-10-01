@@ -1,248 +1,16 @@
-import {
-  Button,
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  Modal,
-  Stack,
-  Tab,
-  Tabs,
-} from '@mui/material';
+import { Button, FormLabel, Modal, Stack, Tab, Tabs } from '@mui/material';
 import React, { useMemo, useState } from 'react';
 import { borderRadius } from '../../../../theme';
 import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
 import ActorSettings from './actor_settings';
 import { grey } from '@mui/material/colors';
 import CodeSettings from './code_settings';
-import {
-  useExplorerStore,
-  useProjectStore,
-  useStaticDataStore,
-  useStoryStore,
-} from '../../../../store';
-import { DEFAULT_CONFIG, DEFAULT_CONFIG_JSON } from '../../../../models/schema';
-import { buildSchema } from '../../../../models/schema/factory';
+import { useStoryStore } from '../../../../store';
 
 enum TAB {
   Story = 'Story',
   StaticData = 'Static Data',
 }
-
-let isInject = false;
-const editorDidMount = (_, monaco: any) => {
-  if (isInject) {
-    return;
-  }
-  const createDependencyProposals = (range) => {
-    const fieldObj = {
-      your_field: {
-        name: 'your_field',
-        config: {},
-      },
-    };
-    const formatInnerField = (obj: any) => {
-      const objStr = JSON.stringify(obj, null, 2);
-      return objStr.substring(1, objStr.length - 1);
-    };
-    const snippets = [
-      {
-        label: 'object',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.OBJECT_JSON, null, 2),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'array',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.ARR_JSON, null, 2),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'string',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.STR_JSON, null, 2),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'boolean',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.BOOLEAN_JSON, null, 2),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'number',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.NUM_JSON, null, 2),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'select',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.SELECT_JSON, null, 2),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'file',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: JSON.stringify(DEFAULT_CONFIG_JSON.FILE_JSON, null, 2),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'numberField',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: formatInnerField({
-          ...fieldObj,
-          your_field: {
-            ...fieldObj.your_field,
-            ...DEFAULT_CONFIG_JSON.NUM_JSON,
-          },
-        }),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'stringField',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: formatInnerField({
-          ...fieldObj,
-          your_field: {
-            ...fieldObj.your_field,
-            ...DEFAULT_CONFIG_JSON.STR_JSON,
-          },
-        }),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'booleanField',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: formatInnerField({
-          ...fieldObj,
-          your_field: {
-            ...fieldObj.your_field,
-            ...DEFAULT_CONFIG_JSON.BOOLEAN_JSON,
-          },
-        }),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'selectField',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: formatInnerField({
-          ...fieldObj,
-          your_field: {
-            ...fieldObj.your_field,
-            ...DEFAULT_CONFIG_JSON.SELECT_JSON,
-          },
-        }),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'arrayField',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: formatInnerField({
-          ...fieldObj,
-          your_field: {
-            ...fieldObj.your_field,
-            ...DEFAULT_CONFIG_JSON.ARR_JSON,
-          },
-        }),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'objectField',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: formatInnerField({
-          ...fieldObj,
-          your_field: {
-            ...fieldObj.your_field,
-            ...DEFAULT_CONFIG_JSON.OBJECT_JSON,
-          },
-        }),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'fileField',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: formatInnerField({
-          ...fieldObj,
-          your_field: {
-            ...fieldObj.your_field,
-            ...DEFAULT_CONFIG_JSON.FILE_JSON,
-          },
-        }),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-      {
-        label: 'field',
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        documentation: 'object field',
-        insertText: formatInnerField(fieldObj),
-        insertTextRules:
-          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range,
-      },
-    ];
-    return snippets;
-  };
-
-  /* monaco.languages.unregisterCompletionItemProvider('schema-json-config'); */
-  monaco.languages.registerCompletionItemProvider('json', {
-    provideCompletionItems: (model, position) => {
-      const word = model.getWordUntilPosition(position);
-      const range = {
-        startLineNumber: position.lineNumber,
-        endLineNumber: position.lineNumber,
-        startColumn: word.startColumn,
-        endColumn: word.endColumn,
-      };
-      return {
-        suggestions: createDependencyProposals(range),
-      };
-    },
-  });
-  isInject = true;
-};
 
 export default function ProjectSettings({
   open,
@@ -254,10 +22,6 @@ export default function ProjectSettings({
   const [currentTab, setCurrentTab] = useState(TAB.Story);
   const [actorSettingsOpen, setActorSettingsOpen] = useState(false);
   const [actorSettingsSchemaOpen, setActorSettingsSchemaOpen] = useState(false);
-  const [
-    staticDataCurrentFileSchemaSettingsOpen,
-    setStaticDataCurrentFileSchemaSettingsOpen,
-  ] = useState(false);
   const [basicSchemaSettingsOpen, setBasicSchemaSettingsOpen] = useState<{
     [key: string]: boolean;
   }>({
@@ -280,6 +44,8 @@ export default function ProjectSettings({
   const actorSettingsSchema = useMemo(() => {
     return actorSettings;
   }, [actorSettings]);
+
+  const editorDidMount = () => {};
 
   const renderNodeSettingsComponent = (nodeKey: string) => {
     return (
@@ -361,11 +127,6 @@ export default function ProjectSettings({
     );
   };
 
-  const { fileData, updateSchema } = useStaticDataStore();
-  const { currentOpenFile } = useExplorerStore();
-  const currentFileSchema =
-    fileData?.[currentOpenFile?.id || '']?.schema ||
-    JSON.stringify(DEFAULT_CONFIG_JSON.ARR_OBJ_JSON, null, 2);
   return (
     <Modal open={open}>
       <Stack
@@ -411,44 +172,6 @@ export default function ProjectSettings({
             return <Tab key={item} label={item} value={item} />;
           })}
         </Tabs>
-        {currentTab === TAB.StaticData && (
-          <Stack spacing={2}>
-            <Stack
-              direction='row'
-              spacing={2}
-              sx={{
-                alignItems: 'center',
-              }}
-            >
-              <FormLabel>Current file:</FormLabel>
-              <Button
-                variant='outlined'
-                onClick={() => {
-                  setStaticDataCurrentFileSchemaSettingsOpen(true);
-                }}
-              >
-                Edit schema
-              </Button>
-            </Stack>
-            {staticDataCurrentFileSchemaSettingsOpen && (
-              <CodeSettings
-                lang='json'
-                open
-                value={currentFileSchema}
-                onValueChange={(val) => {
-                  if (!currentOpenFile) {
-                    return;
-                  }
-                  updateSchema(currentOpenFile.id, val);
-                }}
-                onEditorMounted={editorDidMount}
-                close={() => {
-                  setStaticDataCurrentFileSchemaSettingsOpen(false);
-                }}
-              />
-            )}
-          </Stack>
-        )}
         {currentTab === TAB.Story && (
           <Stack spacing={2}>
             <Stack

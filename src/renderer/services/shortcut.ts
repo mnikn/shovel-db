@@ -1,3 +1,4 @@
+import { saveProject } from '.';
 import ipc from '../electron/ipc';
 
 /**
@@ -125,13 +126,13 @@ const shortcuts = {
   'story-editor': [
     {
       keybinding: 'Ctrl+S',
-      fn: () => ipc.saveProject(),
+      fn: () => saveProject(),
     },
   ],
   'static-data-editor': [
     {
       keybinding: 'Ctrl+S',
-      fn: () => ipc.saveProject(),
+      fn: () => saveProject(),
     },
   ],
 };

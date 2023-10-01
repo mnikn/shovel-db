@@ -3,7 +3,7 @@ import { createGlobalStore } from 'hox';
 import { useEffect, useState } from 'react';
 import { createLogger } from '../logger';
 import { File, Folder } from '../models/file';
-import { FileService } from '../services';
+import { getFileService } from '../services';
 
 const logger = createLogger('file-store');
 
@@ -12,9 +12,11 @@ export const [useFileStore, getFileStore] = createGlobalStore(() => {
 
   const [currentOpenFile, setCurrentOpenFile] = useState<string | null>();
 
+  const fileService = getFileService();
+
   useEffect(() => {
     const stop = watch(
-      () => FileService.memento.value,
+      () => fileService.memento.value,
       (memento) => {
         logger.debugLog('sync memento to store: ', memento);
         setFiles(memento.files);
@@ -27,36 +29,36 @@ export const [useFileStore, getFileStore] = createGlobalStore(() => {
     return () => {
       stop();
     };
-  }, []);
+  }, [fileService]);
 
   const createFile = (targetFileId: string, data?: Partial<File>) => {
     logger.cacheLog(
       `create file: [target file id: ${targetFileId}, data: ${data}]`
     );
-    return FileService.createFile(targetFileId, data);
+    return fileService.createFile(targetFileId, data);
   };
   const createFolder = (targetFileId: string, data?: Partial<Folder>) => {
     logger.cacheLog(
       `create folder: [target file id: ${targetFileId}, data: ${data}]`
     );
-    return FileService.createFolder(targetFileId, data);
+    return fileService.createFolder(targetFileId, data);
   };
   const renameFile = (fileId: string, name: string) => {
     logger.cacheLog(`rename file: ${fileId}`);
-    return FileService.renameFile(fileId, name);
+    return fileService.renameFile(fileId, name);
   };
   const deleteFile = (fileId: string) => {
     logger.cacheLog(`delete file: ${fileId}`);
-    FileService.deleteFile(fileId);
+    fileService.deleteFile(fileId);
   };
   const openFile = (fileId: string) => {
     logger.cacheLog(`open file: ${fileId}`);
-    FileService.openFile(fileId);
+    fileService.openFile(fileId);
   };
 
-  const getFile = FileService.getFile;
-  const getFileRootParent = FileService.getFileRootParent;
-  const getFilePathChain = FileService.getFilePathChain;
+  const getFile = fileService.getFile;
+  const getFileRootParent = fileService.getFileRootParent;
+  const getFilePathChain = fileService.getFilePathChain;
 
   return {
     files,

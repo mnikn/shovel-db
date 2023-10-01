@@ -105,6 +105,23 @@ const init = () => {
     }
   });
 
+  route(IPC_API.OPEN_PROJECT, (projectPath: string) => {
+    logger.cacheLog('open project');
+
+    if (fs.existsSync(appDataCacheProjectPath)) {
+      fs.rmSync(appDataCacheProjectPath);
+    }
+    const appDataProjectCachce = {
+      projectPath,
+    };
+
+    ensureDirExists(appDataCacheProjectPath);
+    fs.writeFileSync(
+      appDataCacheProjectPath,
+      JSON.stringify(appDataProjectCachce, null, 2)
+    );
+  });
+
   route(IPC_API.RETRIEVE_SERVICE_CACHE, () => {
     logger.cacheLog('retrive cache');
     const cacheServiceMemento: any = {};

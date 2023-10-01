@@ -1,6 +1,5 @@
 import { watch } from '@vue-reactivity/watch';
-import { computed, ref } from '@vue/reactivity';
-import toml from 'toml';
+import { computed, ref, toValue } from '@vue/reactivity';
 import type { ProjectServiceType } from '.';
 import { FILE_GROUP } from '../../common/constants';
 import ipc from '../../renderer/electron/ipc';
@@ -8,7 +7,6 @@ import {
   buildSchema,
   SchemaFieldArray,
   DEFAULT_CONFIG_JSON,
-  TEMPLATE_ARR_OBJ_SCHEMA_CONFIG,
 } from '../models/schema';
 import type { FileServiceType } from './file';
 import TranslationService from './parts/translation';
@@ -68,10 +66,13 @@ const StaticDataService = (
       return;
     }
 
+    const projectPath = toValue(projectService.projectPath);
     // when first get static data, fetch static data translation data
-    if (Object.keys(staticFileDataTable.value).length === 0) {
+    if (Object.keys(staticFileDataTable.value).length === 0 && projectPath) {
       const translationRawData = (
-        await ipc.fetchDataFiles([['static-data', 'translations.csv']])
+        await ipc.fetchDataFiles(projectPath, [
+          ['static-data', 'translations.csv'],
+        ])
       )?.[0];
       if (translationRawData) {
         const translations: any = {};
@@ -97,11 +98,19 @@ const StaticDataService = (
     if (filePathChain.length > 0) {
       filePathChain[filePathChain.length - 1] += '.json';
     }
-    const data = (await ipc.fetchDataFiles([filePathChain]))[0];
+
+    let data: any;
+    if (projectPath) {
+      data = (await ipc.fetchDataFiles(projectPath, [filePathChain]))[0];
+    }
     if (!data) {
       staticFileDataTable.value[fileId] = {
         data: [],
-        schema: JSON.stringify(DEFAULT_CONFIG_JSON.TEMPLATE_ARR_OBJ_JSON, null, 2),
+        schema: JSON.stringify(
+          DEFAULT_CONFIG_JSON.TEMPLATE_ARR_OBJ_JSON,
+          null,
+          2
+        ),
       };
     } else {
       staticFileDataTable.value[fileId] = {
