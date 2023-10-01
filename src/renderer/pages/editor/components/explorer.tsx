@@ -26,9 +26,19 @@ type FileContextMenuItem = {
   click: (file: File) => void;
 };
 
+type FolderContextMenuItem = {
+  label: string;
+  order: number;
+  click: () => void;
+};
+
 let cacheDragingData: File | Folder | null = null;
-export default function Explorer(context: {
-  extraFileContextMenuItems?: FileContextMenuItem[];
+export default function Explorer({
+  staticDataFileExtraFileContextMenuItems,
+  storyFolderExtraFileContextMenuItems,
+}: {
+  staticDataFileExtraFileContextMenuItems: FileContextMenuItem[];
+  storyFolderExtraFileContextMenuItems: FolderContextMenuItem[];
 }) {
   const [uncollapsedFolders, setUncollapsedFolders] = useState<string[]>([]);
 
@@ -43,6 +53,7 @@ export default function Explorer(context: {
     deleteFile,
     renameFile,
     openFile,
+    getFileRootParent,
   } = useFileStore();
 
   const { moveFile } = useExplorerStore();
@@ -63,45 +74,6 @@ export default function Explorer(context: {
   useEffect(() => {
     setMode(editingItem ? Mode.Popup : Mode.Normal);
   }, [editingItem, setMode]);
-
-  const fileContextMenu: FileContextMenuItem[] = useMemo(() => {
-    return [
-      {
-        label: 'New File',
-        order: 1,
-        click: (file: File) => {
-          const newFile = createFile(file.id);
-          setEditingItem(newFile.id);
-          openFile(newFile.id);
-        },
-      },
-      {
-        label: 'Rename',
-        order: 5,
-        click: (file: File) => {
-          setEditingName(file.name);
-          setEditingItem(file.id);
-        },
-      },
-      {
-        label: 'Copy',
-        order: 10,
-        click: () => {
-          console.log('Copy');
-        },
-      },
-      {
-        label: 'Delete',
-        order: 15,
-        click: (file: File) => {
-          deleteFile(file.id);
-        },
-      },
-      ...(context?.extraFileContextMenuItems || []),
-    ].sort((a, b) => {
-      return a.order - b.order;
-    });
-  }, [context?.extraFileContextMenuItems, createFile, deleteFile]);
 
   const onDragStart = (event, data) => {
     const dragData = {
@@ -189,7 +161,7 @@ export default function Explorer(context: {
               e.preventDefault();
               const menu = new remote.Menu();
 
-              const folderContextMenu = [
+              let folderContextMenu = [
                 {
                   label: 'New File',
                   click: () => {
@@ -206,6 +178,13 @@ export default function Explorer(context: {
                   },
                 },
               ];
+
+              if (data.id === FILE_GROUP.STORY) {
+                folderContextMenu = [
+                  ...folderContextMenu,
+                  ...storyFolderExtraFileContextMenuItems,
+                ];
+              }
 
               if (
                 ![FILE_GROUP.STATIC_DATA, FILE_GROUP.STORY].includes(
@@ -337,6 +316,50 @@ export default function Explorer(context: {
         onContextMenu={(e) => {
           e.preventDefault();
           const menu = new remote.Menu();
+
+          let fileContextMenu = [
+            {
+              label: 'New File',
+              order: 1,
+              click: (file: File) => {
+                const newFile = createFile(file.id);
+                setEditingItem(newFile.id);
+                openFile(newFile.id);
+              },
+            },
+            {
+              label: 'Rename',
+              order: 5,
+              click: (file: File) => {
+                setEditingName(file.name);
+                setEditingItem(file.id);
+              },
+            },
+            {
+              label: 'Copy',
+              order: 10,
+              click: () => {
+                console.log('Copy');
+              },
+            },
+            {
+              label: 'Delete',
+              order: 15,
+              click: (file: File) => {
+                deleteFile(file.id);
+              },
+            },
+          ];
+
+          if (getFileRootParent(data?.id)?.id === FILE_GROUP.STATIC_DATA) {
+            fileContextMenu = [
+              ...fileContextMenu,
+              ...staticDataFileExtraFileContextMenuItems,
+            ];
+          }
+          fileContextMenu = fileContextMenu.sort((a, b) => {
+            return a.order - b.order;
+          });
           fileContextMenu.forEach((item) => {
             menu.append(
               new remote.MenuItem({

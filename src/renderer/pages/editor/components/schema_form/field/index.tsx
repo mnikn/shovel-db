@@ -45,6 +45,8 @@ import FieldBoolean from './boolean_field';
 import { Translation } from '../../../../../store/common/translation';
 import FieldNumber from './number_field';
 import FieldStringSpeed from './string_speed_field';
+import path from 'path';
+import { getProjectService } from '../../../../../services';
 
 const getContainerLabelStyle = (label: string) => ({
   m: 1,
@@ -463,7 +465,12 @@ export function FieldArray({
                 }
                 const v = get(item.value, word, '');
                 if (v != null && v.includes && v.includes('.png')) {
-                  return `<div style="display: flex; justify-content: center; align-items: center; width: 80px; height: 80px; border-radius: 12px; background: ${grey[800]}; margin-left: 4px; margin-right: 4px;"><img style="width: 64px; height: 64px; object-fit: cover;" src="${v}" alt="" /> </div>`;
+                  const projectPath = getProjectService().projectPath.value;
+                  const fullFilePath: any = projectPath
+                    ? path.join(path.join(projectPath, 'resources'), v)
+                    : null;
+
+                  return `<div style="display: flex; justify-content: center; align-items: center; width: 80px; height: 80px; border-radius: 12px; background: ${grey[800]}; margin-left: 4px; margin-right: 4px;"><img style="width: 64px; height: 64px; object-fit: cover;" src="${fullFilePath}" alt="" /> </div>`;
                 }
                 if (
                   v &&

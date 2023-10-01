@@ -45,7 +45,6 @@ export default function FieldFile({
             const resourceId = await getProjectService().saveExternalResource(
               filePath
             );
-            console.log('reer: ', resourceId);
             if (onValueChange) {
               onValueChange(resourceId);
             }

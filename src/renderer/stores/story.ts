@@ -12,6 +12,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
   const [actors, setActors] = useState<any[]>([]);
   const [selection, setSelection] = useState<string | null>(null);
   const [nodeSchemaSettings, setNodeSchemaSettings] = useState<any>({});
+  const [actorSchemaSettings, setActorSchemaSettings] = useState<any>({});
 
   const [currentLang, setCurrentLang] = useState<string>('zh-cn');
   const [translations, setTranslations] = useState<Translation>({});
@@ -36,9 +37,13 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     );
     const stopWatchSelection = watchRef(storyService.selection, setSelection);
     const stopWatchActors = watchRef(storyService.actors, setActors);
-    const stopWatchNodeSettingsSchema = watchRef(
+    const stopWatchNodeSchemaSettings = watchRef(
       storyService.nodeSchemaSettings,
       setNodeSchemaSettings
+    );
+    const stopWatchActorSchemaSettings = watchRef(
+      storyService.actorSchemaSettings,
+      setActorSchemaSettings
     );
     const stopWatchCurrentLang = watchRef(
       storyService.currentLang,
@@ -52,7 +57,8 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
       stopWatchFileData();
       stopWatchActors();
       stopWatchSelection();
-      stopWatchNodeSettingsSchema();
+      stopWatchNodeSchemaSettings();
+      stopWatchActorSchemaSettings();
       stopWatchCurrentLang();
       stopWatchTranslations();
     };
@@ -70,6 +76,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
   const tr = storyService.tr;
   const switchLang = storyService.switchLang;
   const updateTranslations = storyService.updateTranslations;
+  const updateActors = storyService.updateActors;
 
   const updateTranslateKeyAll = storyService.updateTranslateKeyAll;
   const getTranslationsForKey = storyService.getTranslationsForKey;
@@ -79,6 +86,8 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     selection,
     actors,
     nodeSchemaSettings,
+    actorSchemaSettings,
+    updateActors,
 
     selectNode,
     insertChildNode,

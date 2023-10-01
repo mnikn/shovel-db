@@ -1,7 +1,13 @@
 import { Box, CircularProgress, FormLabel, Stack } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { ipcRenderer } from 'electron';
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { EDITOR_PATTERN, FILE_GROUP } from '../../../common/constants';
 /* import {
  *   REMOVE_UESLESS_TRANSLATIONS,
@@ -17,16 +23,11 @@ import Explorer from './components/explorer';
 import StaticData from './patterns/static_data';
 import Story from './patterns/story';
 import ConfigModal from './components/config_modal';
+import ActorSettingsModal from './components/actor_settings_modal';
+import { Folder } from '../../models/explorer';
 
 export default function Main() {
-  /* const {
-   *   translations: storyTranslations,
-   *   story,
-   *   getNodeSchema,
-   *   setTranslations: setStoryTranslations,
-   * } = useStoryStore(); */
-
-  const { saving, editorPattern } = useEditorStore();
+  const { saving, editorPattern, setHasModal } = useEditorStore();
   /* const [projectSettingsOpen, setProjectSettingsOpen] = useState(false);
    * const [articleSummaryOpen, setArticleSummaryOpen] = useState(false); */
   /* const [
@@ -40,6 +41,7 @@ export default function Main() {
   >(null);
 
   const { getStaticFileData, updateFileSchema } = useStaticDataStore();
+  const [actorSettingsModalOpen, setActorSettingsModalOpen] = useState(false);
 
   /* const storyStoreDataRef = useRef({
    *   translations: storyTranslations,
@@ -94,29 +96,43 @@ export default function Main() {
      *   };
      * }, [setHasModal, setStoryTranslations]);
      */
-  const extraFileContextMenuItems = useMemo(() => {
-    if (editorPattern === EDITOR_PATTERN.STATIC_DATA) {
-      return [
-        {
-          label: 'Edit Schema',
-          order: 6,
-          click: async (file: File) => {
-            const data = await getStaticFileData(file.id);
-            setStaticDataEditSchema(data?.schema);
-            setStaticDataEditSchemaFile(file.id);
-          },
+  const staticDataFileExtraFileContextMenuItems = useMemo(() => {
+    return [
+      {
+        label: 'Edit Schema',
+        order: 6,
+        click: async (file: File) => {
+          const data = await getStaticFileData(file.id);
+          setStaticDataEditSchema(data?.schema);
+          setStaticDataEditSchemaFile(file.id);
         },
-      ];
-    }
-    if (editorPattern === EDITOR_PATTERN.STORY) {
-      return [];
-    }
-    return [];
-  }, [editorPattern]);
+      },
+    ];
+  }, []);
+
+  const storyFolderExtraFileContextMenuItems = useMemo(() => {
+    return [
+      {
+        label: 'Edit actors',
+        order: 6,
+        click: async () => {
+          setActorSettingsModalOpen(true);
+          setHasModal(true);
+        },
+      },
+    ];
+  }, []);
 
   return (
     <Stack direction={'row'} sx={{ height: '100%', width: '100%' }}>
-      <Explorer extraFileContextMenuItems={extraFileContextMenuItems} />
+      <Explorer
+        staticDataFileExtraFileContextMenuItems={
+          staticDataFileExtraFileContextMenuItems
+        }
+        storyFolderExtraFileContextMenuItems={
+          storyFolderExtraFileContextMenuItems
+        }
+      />
       <Box
         sx={{
           flexGrow: 1,
@@ -178,6 +194,14 @@ export default function Main() {
             close={() => {
               setStaticDataEditSchema(null);
               setStaticDataEditSchemaFile(null);
+            }}
+          />
+        )}
+        {actorSettingsModalOpen && (
+          <ActorSettingsModal
+            close={() => {
+              setActorSettingsModalOpen(false);
+              setHasModal(false);
             }}
           />
         )}

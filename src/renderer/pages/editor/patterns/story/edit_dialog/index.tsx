@@ -26,6 +26,8 @@ import { useStoryStore } from '../../../../../stores';
 import { cloneDeep } from 'lodash';
 import { grey } from '@mui/material/colors';
 import { buildSchema } from '../../../../../models/schema/factory';
+import { getProjectService } from '../../../../../services';
+import path from 'path';
 
 const optionSchema = new SchemaFieldObject();
 optionSchema.fields.push(
@@ -223,6 +225,14 @@ export default function EditDialog({
             const portraitItem = actors
               .find((item) => item.id === p)
               ?.portraits.find((z) => z.id === c);
+            const projectPath = getProjectService().projectPath.value;
+            const portraitPath: any =
+              projectPath && portraitItem?.pic
+                ? path.join(
+                    path.join(projectPath, 'resources'),
+                    portraitItem?.pic
+                  )
+                : null;
             return (
               <Stack direction='row' sx={{ alignItems: 'center', px: 2 }}>
                 {p && c && (
@@ -242,7 +252,7 @@ export default function EditDialog({
                         width: '24px',
                         height: 'auto',
                       }}
-                      src={tr(portraitItem?.pic || '')}
+                      src={portraitPath || ''}
                     />
                   </Box>
                 )}

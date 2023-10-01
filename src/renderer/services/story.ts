@@ -419,8 +419,8 @@ const StoryService = (
       )?.[0];
       if (storyRawData) {
         const res = {};
-        Object.keys(storyRawData).forEach((key) => {
-          res[key] = Storylet.fromJson(storyRawData[key]);
+        Object.keys(storyRawData?.story).forEach((key) => {
+          res[key] = Storylet.fromJson(storyRawData?.story?.[key]);
           Object.keys(res[key].links)
             .filter(
               (k: any) => !res[key].links[k].source || !res[key].links[k].target
@@ -431,6 +431,7 @@ const StoryService = (
             });
         });
         storyFileDataTable.value = res;
+        actors.value = storyRawData?.actors;
       }
     },
     {
@@ -730,12 +731,19 @@ const StoryService = (
     return false;
   };
 
+  const updateActors = (val: any[]) => {
+    actors.value = val;
+  };
+
   const memento = computed(() => {
     return {
-      story: Object.keys(storyFileDataTable.value).reduce((res, key) => {
-        res[key] = storyFileDataTable.value[key].toJson();
-        return res;
-      }, {}),
+      story: {
+        story: Object.keys(storyFileDataTable.value).reduce((res, key) => {
+          res[key] = storyFileDataTable.value[key].toJson();
+          return res;
+        }, {}),
+        actors: toValue(actors),
+      },
       trasnlationMemento: translationService.memento.value,
     };
   });
@@ -754,8 +762,10 @@ const StoryService = (
     ...translationService,
     currentStorylet,
     nodeSchemaSettings,
+
     actorSchemaSettings,
     actors,
+    updateActors,
 
     selection,
     selectNode,
