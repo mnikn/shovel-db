@@ -16,6 +16,7 @@ export const IPC_API = {
   RETRIEVE_SERVICE_CACHE: 'retrieve_service_cache',
   SAVE_DATA_FILES: 'save_data_files',
   FETCH_DATA_FILES: 'fetch_data_files',
+  SAVE_EXTERNAL_RESOURCE: 'save_external_resource',
   OPEN_PROJECT: 'open_project',
   LOG: 'log',
 };

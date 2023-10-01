@@ -63,6 +63,13 @@ const fetchDataFiles = async (
   return await send(IPC_API.FETCH_DATA_FILES, projectPath, filePathChainArr);
 };
 
+const saveExternalResource = async (
+  projectPath: string,
+  resourcePath: string
+) => {
+  return await send(IPC_API.SAVE_EXTERNAL_RESOURCE, projectPath, resourcePath);
+};
+
 const openProject = async () => {
   const result = dialog.showOpenDialogSync({
     title: 'Select project path',
@@ -83,5 +90,6 @@ export default {
   storeLog,
   fetchDataFiles,
   retrieveServiceCache,
+  saveExternalResource,
   openProject,
 };

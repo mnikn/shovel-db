@@ -6,6 +6,9 @@ import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRou
 import RemoveCircleOutlineRoundedIcon from '@mui/icons-material/RemoveCircleOutlineRounded';
 import { grey } from '@mui/material/colors';
 import { animation, borderRadius } from '../../../../../theme';
+import ipc from '../../../../../electron/ipc';
+import { getProjectService } from '../../../../../services';
+import path from 'path';
 
 export default function FieldFile({
   label,
@@ -18,6 +21,11 @@ export default function FieldFile({
   value: any;
   onValueChange?: (value: any) => void;
 }) {
+  const projectPath = getProjectService().projectPath.value;
+  const fullFilePath: any =
+    projectPath && value
+      ? path.join(path.join(projectPath, 'resources'), value)
+      : null;
   return (
     <Stack
       sx={{
@@ -28,10 +36,18 @@ export default function FieldFile({
       {label && <FormLabel>{label}</FormLabel>}
       {schema.config.type === 'img' && (
         <ImageUploading
-          value={value}
-          onChange={(e) => {
+          value={fullFilePath}
+          onChange={async (e) => {
+            const filePath = e?.[0].file?.path;
+            if (!filePath) {
+              return;
+            }
+            const resourceId = await getProjectService().saveExternalResource(
+              filePath
+            );
+            console.log('reer: ', resourceId);
             if (onValueChange) {
-              onValueChange(e[0].file?.path);
+              onValueChange(resourceId);
             }
           }}
           dataURLKey='data_url'
@@ -72,7 +88,7 @@ export default function FieldFile({
                     Upload
                   </Container>
                 )}
-                {value && (
+                {fullFilePath && (
                   <Box
                     sx={{
                       position: 'relative',
@@ -83,7 +99,7 @@ export default function FieldFile({
                     }}
                   >
                     <img
-                      src={value}
+                      src={fullFilePath}
                       style={{
                         height: '100%',
                         width: '100%',

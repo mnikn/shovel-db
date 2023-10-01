@@ -13,6 +13,8 @@ import csv from 'csvtojson';
 import { parse as jsonParseCsv, Parser as CsvParser } from 'json2csv';
 
 import { createLogger } from '../logger';
+import { UUID } from '../../common/utils/uuid';
+import crypto from 'crypto';
 
 const logger = createLogger('ipc');
 
@@ -157,6 +159,30 @@ const init = () => {
     }
     return cacheServiceMemento;
   });
+
+  route(
+    IPC_API.SAVE_EXTERNAL_RESOURCE,
+    (projectPath: string, resourcePath: string, type: 'mv' | 'cp' = 'mv') => {
+      const extName = path.extname(resourcePath);
+      const resourceStorePath = path.join(projectPath, 'resources');
+
+      const hashBuffer = crypto
+        .createHash('sha256')
+        .update(fs.readFileSync(resourcePath));
+      const hash = hashBuffer.digest('hex');
+      const targetFileName = hash + extName;
+
+      const targetPath = path.join(resourceStorePath, targetFileName);
+      ensureDirExists(targetPath);
+      if (type === 'cp') {
+        fs.cpSync(resourcePath, targetPath);
+      } else {
+        fs.renameSync(resourcePath, targetPath);
+      }
+
+      return targetFileName;
+    }
+  );
 
   routeAsync(
     IPC_API.FETCH_DATA_FILES,

@@ -1,5 +1,6 @@
 // import { dialog } from '@electron/remote';
 import { computed, ref, toValue } from '@vue/reactivity';
+import ipc from '../electron/ipc';
 // import { IPC_API } from '../../common/constants';
 // import ipc from '../electron/ipc';
 
@@ -27,21 +28,13 @@ const updateProjectPath = (path: string) => {
   projectPath.value = path;
 };
 
-const init = () => {
-  //   ipc.route(IPC_API.OPEN_PROJECT, () => {
-  //      return ipc.openProject()
-  //   const result = dialog.showOpenDialogSync({
-  //     title: 'Select project path',
-  //     properties: ['openDirectory', 'createDirectory'],
-  //   });
-  //   console.log('ew: ', result);
-  //   if (result) {
-  //     updateProjectPath(result[0]);
-  //     setTimeout(() => {
-  //       window.location.reload();
-  //     }, 500);
-  //   }
-  // });
+const init = () => {};
+
+const saveExternalResource = async (resourcePath: string) => {
+  if (!projectPath.value) {
+    return;
+  }
+  return await ipc.saveExternalResource(projectPath.value, resourcePath);
 };
 
 const ProjectService = {
@@ -51,6 +44,7 @@ const ProjectService = {
   langs,
   projectPath,
   updateProjectPath,
+  saveExternalResource,
 };
 export type ProjectServiceType = typeof ProjectService;
 export default ProjectService;
