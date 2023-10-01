@@ -377,6 +377,8 @@ const StoryService = (
       if (!(fileService.currentOpenFile.value in storyFileDataTable.value)) {
         storyFileDataTable.value[fileService.currentOpenFile.value] =
           new Storylet();
+        storyFileDataTable.value[fileService.currentOpenFile.value].name =
+          fileService.files.value[fileService.currentOpenFile.value].name;
       }
 
       currentStorylet.value =
@@ -387,10 +389,12 @@ const StoryService = (
     }
   );
 
-  const init = async () => {
-    const projectPath = toValue(projectService.projectPath);
-    // when first get static data, fetch static data translation data
-    if (Object.keys(storyFileDataTable).length === 0 && projectPath) {
+  watch(
+    () => projectService.projectPath.value,
+    async (projectPath) => {
+      if (!projectPath) {
+        return;
+      }
       const translationRawData = (
         await ipc.fetchDataFiles(projectPath, [['story', 'translations.csv']])
       )?.[0];
@@ -409,8 +413,30 @@ const StoryService = (
           translations,
         });
       }
+
+      const storyRawData = (
+        await ipc.fetchDataFiles(projectPath, [['story', 'story.json']])
+      )?.[0];
+      if (storyRawData) {
+        const res = {};
+        Object.keys(storyRawData).forEach((key) => {
+          res[key] = Storylet.fromJson(storyRawData[key]);
+          Object.keys(res[key].links)
+            .filter(
+              (k: any) => !res[key].links[k].source || !res[key].links[k].target
+            )
+            .forEach((l) => {
+              console.warn('fing miss link: ', l);
+              delete res[key].links[l];
+            });
+        });
+        storyFileDataTable.value = res;
+      }
+    },
+    {
+      immediate: true,
     }
-  };
+  );
 
   const selectNode = (nodeId: string | null) => {
     selection.value = nodeId;
@@ -446,7 +472,7 @@ const StoryService = (
     newVal.upsertLink(parent.id, child.id);
 
     storyFileDataTable.value[fileService.currentOpenFile.value] = newVal;
-    // storyFileDataTable.value = { ...storyFileDataTable.value };
+    storyFileDataTable.value = { ...storyFileDataTable.value };
   };
 
   const batchInsertChildNode = (
@@ -490,7 +516,7 @@ const StoryService = (
     newVal.upsertLink(parent.id, rootChildId);
 
     storyFileDataTable.value[fileService.currentOpenFile.value] = newVal;
-    // storyFileDataTable.value = { ...storyFileDataTable.value };
+    storyFileDataTable.value = { ...storyFileDataTable.value };
   };
 
   const insertSiblingNode = (
@@ -532,7 +558,7 @@ const StoryService = (
       delete needInsert.data.option;
     }
     storyFileDataTable.value[fileService.currentOpenFile.value] = newVal;
-    // storyFileDataTable.value = { ...storyFileDataTable.value };
+    storyFileDataTable.value = { ...storyFileDataTable.value };
   };
 
   const updateNode = (data: StoryletNode<StoryletNodeData>) => {
@@ -542,7 +568,7 @@ const StoryService = (
     const newVal = currentStorylet.value.clone();
     newVal.upsertNode(data);
     storyFileDataTable.value[fileService.currentOpenFile.value] = newVal;
-    // storyFileDataTable.value = { ...storyFileDataTable.value };
+    storyFileDataTable.value = { ...storyFileDataTable.value };
   };
 
   const deleteNode = (id: string) => {
@@ -575,7 +601,7 @@ const StoryService = (
     delete newVal.nodes[id];
 
     storyFileDataTable.value[fileService.currentOpenFile.value] = newVal;
-    // storyFileDataTable.value = { ...storyFileDataTable.value };
+    storyFileDataTable.value = { ...storyFileDataTable.value };
   };
 
   const moveStoryletNode = (
@@ -632,7 +658,7 @@ const StoryService = (
     }
 
     storyFileDataTable.value[fileService.currentOpenFile.value] = val;
-    // storyFileDataTable.value = { ...storyFileDataTable.value };
+    storyFileDataTable.value = { ...storyFileDataTable.value };
   };
 
   const moveSelection = (direction: string) => {
@@ -704,7 +730,25 @@ const StoryService = (
     return false;
   };
 
-  init();
+  const memento = computed(() => {
+    return {
+      story: Object.keys(storyFileDataTable.value).reduce((res, key) => {
+        res[key] = storyFileDataTable.value[key].toJson();
+        return res;
+      }, {}),
+      trasnlationMemento: translationService.memento.value,
+    };
+  });
+
+  // type MementoType = typeof memento.value;
+  // const restoreMemento = (newMemento: Partial<MementoType>) => {
+  //   if (newMemento.trasnlationMemento !== undefined) {
+  //     translationService.restoreMemento(newMemento.trasnlationMemento);
+  //   }
+  //   if (newMemento.story !== undefined) {
+  //     storyFileDataTable.value = newMemento.story;
+  //   }
+  // };
 
   return {
     ...translationService,
@@ -723,6 +767,9 @@ const StoryService = (
     updateNode,
     deleteNode,
     moveStoryletNode,
+
+    memento,
+    // restoreMemento,
   };
 };
 

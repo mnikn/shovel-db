@@ -47,6 +47,7 @@ const serviceMemento = computed(() => {
     projectServiceMemento: ProjectService.memento.value,
     fileServiceMemento: FileService.memento.value,
     staticDataServiceMemento: staticDataService.memento.value,
+    storyServiceMemento: storyService.memento.value,
   };
 });
 

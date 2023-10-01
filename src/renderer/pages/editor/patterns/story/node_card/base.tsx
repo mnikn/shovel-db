@@ -30,8 +30,7 @@ import {
   StoryletSentenceNode,
 } from '../../../../../models/story/storylet';
 import { NodeLink } from '../../../../../models/tree';
-import { useStoryStore } from '../../../../../stores';
-import { Mode, useEditorStore } from '../../../../../store/editor';
+import { useStoryStore, useEditorStore } from '../../../../../stores';
 import { animation, borderRadius } from '../../../../../theme';
 import EditDialog from '../edit_dialog';
 
@@ -188,7 +187,7 @@ export default function BaseNodeCard({
   } = useStoryStore();
   const viewRef = useRef<HTMLElement>();
   const [editOpen, setEditOpen] = useState(false);
-  const { setMode, mode } = useEditorStore();
+  const { hasModal, setHasModal } = useEditorStore();
   const [isHover, setIsHover] = useState(false);
   const [isDraging, setIsDraging] = useState(false);
   if (!currentStorylet) {
@@ -213,7 +212,7 @@ export default function BaseNodeCard({
 
   useEffect(() => {
     const onKeyDown = (e) => {
-      if (!isSelecting || editOpen || mode === Mode.Popup) {
+      if (!isSelecting || editOpen || hasModal) {
         return;
       }
 
@@ -338,7 +337,7 @@ export default function BaseNodeCard({
         setEditOpen(true);
         setIsHover(false);
         setIsDraging(false);
-        setMode(Mode.Popup);
+        setHasModal(true);
         return;
       }
 
@@ -359,19 +358,19 @@ export default function BaseNodeCard({
     translations,
     updateTranslateKeyAll,
     getTranslationsForKey,
-    mode,
-    setMode,
+    hasModal,
+    setHasModal,
   ]);
 
   const close = useCallback(() => {
     setEditOpen(false);
     setIsHover(false);
     setIsDraging(false);
-    setMode(Mode.Normal);
+    setHasModal(false);
     setTimeout(() => {
       selectNode(node.id);
     }, 0);
-  }, [selectNode, setMode]);
+  }, [selectNode, setHasModal]);
 
   return (
     <Box

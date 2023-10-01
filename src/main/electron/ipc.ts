@@ -71,7 +71,7 @@ const init = () => {
     ensureDirExists(fileDataPath);
     fs.writeFileSync(fileDataPath, JSON.stringify(fileServiceMemento, null, 2));
 
-    // const projectPath = appDataPath;
+    // save static data
     const staticDataNeedSaveFileData =
       serviceMemento.staticDataServiceMemento.needSaveFileData;
     staticDataNeedSaveFileData.forEach((saveData: any) => {
@@ -104,6 +104,33 @@ const init = () => {
         staticDataTranslationsData
       );
       fs.writeFileSync(staticTranslationPath, staticDataTranslations);
+    }
+
+    // save story
+    const storyPath = path.join(projectPath, 'story');
+    const storyFilePath = path.join(storyPath, 'story.json');
+    ensureDirExists(storyFilePath);
+    fs.writeFileSync(
+      storyFilePath,
+      JSON.stringify(serviceMemento.storyServiceMemento.story, null, 2)
+    );
+    const storyTranslationsFilePath = path.join(storyPath, 'translations.csv');
+    const storyTranslationsData: any[] = [];
+    const storyNeedSaveFileTranslations =
+      serviceMemento.storyServiceMemento.trasnlationMemento.translations;
+    Object.keys(storyNeedSaveFileTranslations).forEach((key) => {
+      storyTranslationsData.push({
+        keys: key,
+        ...serviceMemento.projectServiceMemento.langs.reduce((res, lang) => {
+          res[lang] = '';
+          return res;
+        }, {}),
+        ...storyNeedSaveFileTranslations[key],
+      });
+    });
+    if (storyTranslationsData.length > 0) {
+      const storyTranslations = new CsvParser().parse(storyTranslationsData);
+      fs.writeFileSync(storyTranslationsFilePath, storyTranslations);
     }
   });
 

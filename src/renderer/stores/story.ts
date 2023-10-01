@@ -67,9 +67,6 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
   const moveSelection = storyService.moveSelection;
   const moveStoryletNode = storyService.moveStoryletNode;
 
-  // const updateFileData = staticDataService.updateFileData;
-  // const updateFileSchema = staticDataService.updateFileSchema;
-  // const getStaticFileData = staticDataService.getStaticFileData;
   const tr = storyService.tr;
   const switchLang = storyService.switchLang;
   const updateTranslations = storyService.updateTranslations;

@@ -24,7 +24,7 @@ import { useStoryStore } from '../../../../stores';
 // }
 
 const initialScale = 0.4;
-const initialPos = [2500, 1000];
+const initialPos = [1000, 700];
 export default function useLayout({
   zoomDom,
   dragingNode,
