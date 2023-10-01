@@ -208,7 +208,7 @@ export default function Explorer(context: {
               ];
 
               if (
-                ![FILE_GROUP.STATIC_DATA, FILE_GROUP.STATIC_DATA].includes(
+                ![FILE_GROUP.STATIC_DATA, FILE_GROUP.STORY].includes(
                   data.id as any
                 )
               ) {

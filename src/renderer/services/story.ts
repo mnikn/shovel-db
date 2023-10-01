@@ -79,7 +79,7 @@ const sentenceBasicDataSchemaConfig = {
     content: {
       name: 'Content',
       config: {
-        colSpan: 11,
+        colSpan: 10,
         autoFocus: true,
         needI18n: true,
         type: 'multiline',
@@ -89,7 +89,7 @@ const sentenceBasicDataSchemaConfig = {
     contentSpeed: {
       name: 'Content Speed',
       config: {
-        colSpan: 11,
+        colSpan: 2,
         targetProp: 'content',
       },
       type: 'string_speed',

@@ -22,172 +22,10 @@ import {
   StoryletSentenceNode,
 } from '../../../../../models/story/storylet';
 import { RawJson } from '../../../../../../type';
-import { useStoryStore } from '../../../../../store';
+import { useStoryStore } from '../../../../../stores';
 import { cloneDeep } from 'lodash';
 import { grey } from '@mui/material/colors';
 import { buildSchema } from '../../../../../models/schema/factory';
-
-function generateSchema(node: StoryletNode<StoryletNodeData>) {
-  const schema = new SchemaFieldObject();
-  switch (node.idPrefix) {
-    case 'root': {
-      schema.fields.push(
-        {
-          name: 'Custom node id',
-          id: 'customNodeId',
-          data: new SchemaFieldString({
-            colSpan: 4,
-          }),
-        },
-        {
-          name: 'Enable check',
-          id: 'enableCheck',
-          data: new SchemaFieldString({
-            type: 'code',
-            colSpan: 12,
-            codeLang: 'python',
-          }),
-        }
-      );
-      break;
-    }
-    case 'sentence': {
-      schema.fields.push(
-        {
-          name: 'Custom node id',
-          id: 'customNodeId',
-          data: new SchemaFieldString({
-            colSpan: 4,
-          }),
-        },
-        {
-          name: 'actor',
-          id: 'actor',
-          data: new SchemaFieldSelect({
-            colSpan: 8,
-            groupConfig: {
-              group: { valueKey: 'id', label: 'id' },
-              child: { valueKey: 'portrait', label: 'portrait' },
-            },
-          }),
-        },
-        {
-          name: 'Content',
-          id: 'content',
-          data: new SchemaFieldString({
-            type: 'multiline',
-            colSpan: 12,
-            autoFocus: true,
-            needI18n: true,
-          }),
-        },
-        {
-          name: 'Enable check',
-          id: 'enableCheck',
-          data: new SchemaFieldString({
-            type: 'code',
-            colSpan: 12,
-            codeLang: 'python',
-          }),
-        }
-      );
-      break;
-    }
-    case 'branch': {
-      schema.fields.push(
-        {
-          name: 'Custom node id',
-          id: 'customNodeId',
-          data: new SchemaFieldString({
-            colSpan: 4,
-          }),
-        },
-        {
-          name: 'Content',
-          id: 'content',
-          data: new SchemaFieldString({
-            type: 'multiline',
-            colSpan: 12,
-            autoFocus: true,
-            needI18n: true,
-          }),
-        },
-        {
-          name: 'Enable check',
-          id: 'enableCheck',
-          data: new SchemaFieldString({
-            type: 'code',
-            colSpan: 12,
-            codeLang: 'python',
-          }),
-        }
-      );
-      break;
-    }
-    case 'action': {
-      schema.fields.push(
-        {
-          name: 'Custom node id',
-          id: 'customNodeId',
-          data: new SchemaFieldString({
-            colSpan: 4,
-          }),
-        },
-        {
-          name: 'Action type',
-          id: 'actionType',
-          data: new SchemaFieldSelect({
-            colSpan: 4,
-            options: Object.values(ActionType).map((item) => {
-              return {
-                value: item,
-                label: item,
-              };
-            }),
-            defaultValue: ActionType.Code,
-          }),
-        },
-        {
-          name: 'Target node',
-          id: 'targetNode',
-          data: new SchemaFieldString({
-            colSpan: 4,
-            enableWhen: `(v) => v.actionType === "${ActionType.JumpNode}"`,
-          }),
-        },
-        {
-          name: 'Target storylet',
-          id: 'targetStorylet',
-          data: new SchemaFieldString({
-            colSpan: 4,
-            enableWhen: `(v) => v.actionType === "${ActionType.JumpStorylet}"`,
-          }),
-        },
-        {
-          name: 'Enable check',
-          id: 'enableCheck',
-          data: new SchemaFieldString({
-            type: 'code',
-            colSpan: 12,
-            codeLang: 'python',
-          }),
-        },
-        {
-          name: 'Process code',
-          id: 'process',
-          data: new SchemaFieldString({
-            colSpan: 12,
-            enableWhen: `(v) => v.actionType === "${ActionType.Code}"`,
-            type: 'code',
-            codeLang: 'python',
-          }),
-        }
-      );
-      break;
-    }
-  }
-  return schema;
-}
 
 const optionSchema = new SchemaFieldObject();
 optionSchema.fields.push(
@@ -241,10 +79,9 @@ export default function EditDialog({
     currentLang,
     updateTranslations,
     updateNode,
-    trackCurrentState,
     currentStorylet,
-    storyActors,
-    nodeSettings,
+    actors,
+    nodeSchemaSettings,
     tr,
   } = useStoryStore();
   const [formNodeData, setFormNodeData] = useState(cloneDeep(node.data));
@@ -260,9 +97,9 @@ export default function EditDialog({
 
   const extraDataShcema = useMemo(() => {
     return buildSchema(
-      JSON.parse(nodeSettings[node.data.type]?.extraDataSchema || '{}')
+      JSON.parse(nodeSchemaSettings[node.data.type]?.extraDataSchema || '{}')
     ) as SchemaFieldObject;
-  }, [nodeSettings]);
+  }, [nodeSchemaSettings]);
 
   const tabs = useMemo(() => {
     const res = [
@@ -306,9 +143,8 @@ export default function EditDialog({
       node.data.actor = null;
     }
     updateNode(node);
-    trackCurrentState();
     close();
-  }, [node, formTranslations, updateNode, trackCurrentState, close]);
+  }, [node, formTranslations, updateNode, close]);
 
   useEffect(() => {
     const onKeyDown = (e) => {
@@ -331,10 +167,16 @@ export default function EditDialog({
 
   const basicDataSchema = useMemo(() => {
     const basicsDataMap = {
-      root: buildSchema(JSON.parse(nodeSettings.root.basicDataSchema)),
-      sentence: buildSchema(JSON.parse(nodeSettings.sentence.basicDataSchema)),
-      branch: buildSchema(JSON.parse(nodeSettings.branch.basicDataSchema)),
-      action: buildSchema(JSON.parse(nodeSettings.action.basicDataSchema)),
+      root: buildSchema(JSON.parse(nodeSchemaSettings.root.basicDataSchema)),
+      sentence: buildSchema(
+        JSON.parse(nodeSchemaSettings.sentence.basicDataSchema)
+      ),
+      branch: buildSchema(
+        JSON.parse(nodeSchemaSettings.branch.basicDataSchema)
+      ),
+      action: buildSchema(
+        JSON.parse(nodeSchemaSettings.action.basicDataSchema)
+      ),
     };
     const res = basicsDataMap[node.data.type] as SchemaFieldObject;
     // handle actor options
@@ -342,7 +184,7 @@ export default function EditDialog({
       return field.id === 'actor';
     });
     if (actorField) {
-      actorField.data.config.options = storyActors.map((actor) => {
+      actorField.data.config.options = actors.map((actor) => {
         return {
           label: tr(actor.name),
           value: actor.id,
@@ -368,7 +210,7 @@ export default function EditDialog({
             return (
               <>
                 {v
-                  ? tr(storyActors.find((item) => item.id === v)?.name || '')
+                  ? tr(actors.find((item) => item.id === v)?.name || '')
                   : item.label}
               </>
             );
@@ -378,7 +220,7 @@ export default function EditDialog({
           valueKey: 'portrait',
           label: 'portrait',
           renderMenuItem: (p, c, item) => {
-            const portraitItem = storyActors
+            const portraitItem = actors
               .find((item) => item.id === p)
               ?.portraits.find((z) => z.id === c);
             return (
@@ -418,7 +260,7 @@ export default function EditDialog({
       }
     });
     return res;
-  }, [node, storyActors, tr, submitForm, close, nodeSettings]);
+  }, [node, actors, tr, submitForm, close, nodeSchemaSettings]);
 
   const renderSchemaForm = (
     schemaObj: SchemaFieldObject,

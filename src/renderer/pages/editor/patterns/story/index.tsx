@@ -6,10 +6,7 @@ import React, {
   useState,
 } from 'react';
 import { Box } from '@mui/material';
-import {
-  useFileStore,
-  useStoryStore as useStoryStoreV2,
-} from '../../../../stores';
+import { useFileStore, useStoryStore } from '../../../../stores';
 import useLayout from './use_layout';
 import NodeCard from './node_card';
 import { borderRadius } from '../../../../theme';
@@ -40,7 +37,7 @@ export default function Story() {
     currentLang,
     selectNode,
     moveStoryletNode,
-  } = useStoryStoreV2();
+  } = useStoryStore();
 
   const dragingNodeRef = useRef<HTMLDivElement>(dragingNode);
   dragingNodeRef.current = dragingNode;

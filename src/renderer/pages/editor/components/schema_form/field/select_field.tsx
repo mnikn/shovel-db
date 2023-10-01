@@ -10,8 +10,8 @@ import {
 } from '@mui/material';
 import { SchemaFieldSelect } from '../../../../../models/schema';
 import { get } from 'lodash';
-import { useExplorerStore, useStoryStore } from '../../../../../store';
-import { useStaticDataStore } from '../../../../../stores';
+import { useExplorerStore } from '../../../../../store';
+import { useStaticDataStore, useStoryStore } from '../../../../../stores';
 
 function FieldSelect({
   label,
