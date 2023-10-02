@@ -16,8 +16,8 @@ import {
   getPathParents,
   getRootParent,
 } from '../../../models/explorer';
-import { Mode, useEditorStore, useExplorerStore } from '../../../store';
-import { useFileStore } from '../../../stores';
+import { useExplorerStore } from '../../../store';
+import { useFileStore, useEditorStore } from '../../../stores';
 import { animation, borderRadius } from '../../../theme';
 
 type FileContextMenuItem = {
@@ -58,7 +58,7 @@ export default function Explorer({
 
   const { moveFile } = useExplorerStore();
 
-  const { setMode } = useEditorStore();
+  const { setHasModal } = useEditorStore();
 
   useEffect(() => {
     if (!currentOpenFile) {
@@ -72,8 +72,8 @@ export default function Explorer({
   }, [currentOpenFile, files]);
 
   useEffect(() => {
-    setMode(editingItem ? Mode.Popup : Mode.Normal);
-  }, [editingItem, setMode]);
+    setHasModal(!!editingItem);
+  }, [editingItem, setHasModal]);
 
   const onDragStart = (event, data) => {
     const dragData = {

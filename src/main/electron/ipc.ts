@@ -3,17 +3,12 @@ import { BrowserWindow, ipcMain } from 'electron';
 import fs from 'fs';
 import path from 'path';
 import { IPC_API } from '../../common/constants';
-import {
-  appDataCacheFilePath,
-  appDataCacheProjectPath,
-  appDataLogPath,
-} from '../constants';
+import { appDataCacheProjectPath, appDataLogPath } from '../constants';
 import { ensureDirExists } from '../utils/file';
 import csv from 'csvtojson';
-import { parse as jsonParseCsv, Parser as CsvParser } from 'json2csv';
+import { Parser as CsvParser } from 'json2csv';
 
 import { createLogger } from '../logger';
-import { UUID } from '../../common/utils/uuid';
 import crypto from 'crypto';
 
 const logger = createLogger('ipc');

@@ -3,7 +3,7 @@ import { ipcRenderer } from 'electron';
 import { IPC_API } from '../../common/constants';
 import type { ServiceMementoType } from '../services';
 
-const processPool: Set<string> = new Set();
+const processPool = new Map<string, () => Promise<any>>();
 
 export async function ipcSend(channel: string, data: any): Promise<any> {
   return new Promise((resolve) => {
@@ -22,19 +22,21 @@ const route = (api: string, fn: (arg: any) => any) => {
 };
 
 const doSend = (api: string, ...data: any): Promise<any> => {
-  return new Promise((resolve) => {
-    processPool.add(api);
+  let promise: Promise<any>;
+  promise = new Promise((resolve) => {
+    processPool.set(api, () => promise);
     ipcRenderer.send(api, ...data);
     ipcRenderer.once(`${api}-response`, (_, response) => {
       resolve(response);
       processPool.delete(api);
     });
   });
+  return promise;
 };
 
 const send = (api: string, ...data: any): Promise<any> | null => {
   if (processPool.has(api)) {
-    return null;
+    return (processPool.get(api) as () => Promise<any>)();
   }
   return doSend(api, ...data);
 };
@@ -76,7 +78,6 @@ const openProject = async () => {
     properties: ['openDirectory', 'createDirectory'],
   });
 
-  console.log('ew: ', result);
   if (result) {
     await send(IPC_API.OPEN_PROJECT, result[0]);
     window.location.reload();

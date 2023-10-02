@@ -1,3 +1,4 @@
+import { debounce } from '@mui/material';
 import { watch } from '@vue-reactivity/watch';
 import { computed, ref, toValue } from '@vue/reactivity';
 import type { ProjectServiceType } from '.';
@@ -121,7 +122,7 @@ const StaticDataService = (
     return staticFileDataTable.value[fileId];
   };
 
-  const refreshCurrentFileData = async () => {
+  const refreshCurrentFileData = debounce(async () => {
     if (!fileService.currentOpenFile.value) {
       return;
     }
@@ -129,7 +130,7 @@ const StaticDataService = (
     if (fileData) {
       currentStaticFileRawData.value = fileData;
     }
-  };
+  }, 500);
 
   watch(
     () => [
