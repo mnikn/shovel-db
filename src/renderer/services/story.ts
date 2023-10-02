@@ -1,6 +1,7 @@
 import { watch } from '@vue-reactivity/watch';
 import { computed, ref, toValue } from '@vue/reactivity';
 import { maxBy } from 'lodash';
+import { FILE_GROUP } from '../../common/constants';
 import { UUID } from '../../common/utils/uuid';
 import ipc from '../electron/ipc';
 import { DEFAULT_CONFIG_JSON } from '../models/schema';
@@ -371,7 +372,11 @@ const StoryService = (
       storyFileDataTable.value,
     ],
     () => {
-      if (!fileService.currentOpenFile.value) {
+      if (
+        !fileService.currentOpenFile.value ||
+        fileService.getFileRootParent(fileService.currentOpenFile.value)?.id !==
+          FILE_GROUP.STORY
+      ) {
         return;
       }
       if (!(fileService.currentOpenFile.value in storyFileDataTable.value)) {

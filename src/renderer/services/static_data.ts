@@ -137,7 +137,11 @@ const StaticDataService = (
   };
 
   const refreshCurrentFileData = debounce(async () => {
-    if (!fileService.currentOpenFile.value) {
+    if (
+      !fileService.currentOpenFile.value ||
+      fileService.getFileRootParent(fileService.currentOpenFile.value)?.id !==
+        FILE_GROUP.STATIC_DATA
+    ) {
       return;
     }
     const fileData = await getStaticFileData(fileService.currentOpenFile.value);
