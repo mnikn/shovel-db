@@ -10,8 +10,11 @@ import {
 } from '@mui/material';
 import { SchemaFieldSelect } from '../../../../../models/schema';
 import { get } from 'lodash';
-import { useExplorerStore } from '../../../../../store';
-import { useStaticDataStore, useStoryStore } from '../../../../../stores';
+import {
+  useStaticDataStore,
+  useStoryStore,
+  useFileStore,
+} from '../../../../../stores';
 
 function FieldSelect({
   label,
@@ -28,15 +31,22 @@ function FieldSelect({
 
   const storyStore = useStoryStore();
   const staticDataStore = useStaticDataStore();
-  const explorerStore = useExplorerStore();
+  const fileStore = useFileStore();
+  const [options, setOptions] = useState<any[]>([]);
 
-  const options = useMemo(() => {
-    if (schema.config.dynamicOptions) {
-      const fn = eval(schema.config.dynamicOptions);
-      return fn({ storyStore, staticDataStore, explorerStore });
-    }
-    return schema.config.options;
-  }, [schema, storyStore, staticDataStore, explorerStore]);
+  useEffect(() => {
+    const fetchOptions = async () => {
+      if (schema.config.dynamicOptions) {
+        const fn = eval(schema.config.dynamicOptions);
+        const res = await fn({ storyStore, staticDataStore, fileStore });
+        setOptions(res || []);
+        return;
+      }
+      setOptions(schema.config?.options || []);
+    };
+    fetchOptions();
+  }, [schema, storyStore, staticDataStore, fileStore]);
+
   const childOptions =
     options.find(
       (item: any) =>

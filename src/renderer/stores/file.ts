@@ -59,6 +59,7 @@ export const [useFileStore, getFileStore] = createGlobalStore(() => {
   const getFile = fileService.getFile;
   const getFileRootParent = fileService.getFileRootParent;
   const getFilePathChain = fileService.getFilePathChain;
+  const getFolderChildren = fileService.getFolderChildren;
 
   return {
     files,
@@ -73,6 +74,7 @@ export const [useFileStore, getFileStore] = createGlobalStore(() => {
     getFile,
     getFileRootParent,
     getFilePathChain,
+    getFolderChildren,
   };
 });
 export type FileStoreType = ReturnType<typeof getFileStore>;

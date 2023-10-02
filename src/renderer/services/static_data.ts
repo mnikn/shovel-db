@@ -62,6 +62,20 @@ const StaticDataService = (
     }
   };
 
+  const getStaticFileDataByPath = async (filePath: string) => {
+    const targetFile = Object.values(fileService.files.value).find((item) => {
+      return (
+        item.type === 'file' &&
+        fileService.getFilePathChain(item.id).join('.') ===
+          'static-data' + '.' + filePath
+      );
+    });
+    if (!targetFile?.id) {
+      return;
+    }
+    return await getStaticFileData(targetFile.id);
+  };
+
   const getStaticFileData = async (fileId: string) => {
     if (fileService.getFileRootParent(fileId)?.id !== FILE_GROUP.STATIC_DATA) {
       return;
@@ -185,6 +199,7 @@ const StaticDataService = (
     memento,
     restoreMemento,
     getStaticFileData,
+    getStaticFileDataByPath,
     currentData,
     currentSchema,
     updateFileData,

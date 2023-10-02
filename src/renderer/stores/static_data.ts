@@ -77,6 +77,7 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
     const updateFileData = staticDataService.updateFileData;
     const updateFileSchema = staticDataService.updateFileSchema;
     const getStaticFileData = staticDataService.getStaticFileData;
+    const getStaticFileDataByPath = staticDataService.getStaticFileDataByPath;
     const tr = staticDataService.tr;
     const switchLang = staticDataService.switchLang;
     const updateTranslations = staticDataService.updateTranslations;
@@ -88,6 +89,7 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
       updateFileSchema,
       currentSchema,
       getStaticFileData,
+      getStaticFileDataByPath,
 
       tr,
       currentLang,
