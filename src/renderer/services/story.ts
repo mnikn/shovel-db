@@ -209,6 +209,10 @@ const actionBasicDataSchema = {
             label: 'copyNode',
             value: 'copyNode',
           },
+          {
+            label: 'empty',
+            value: 'empty',
+          },
         ],
         defaultValue: 'code',
       },
