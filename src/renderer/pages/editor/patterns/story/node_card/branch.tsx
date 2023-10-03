@@ -5,6 +5,8 @@ import BaseNodeCard from './base';
 import { Stack, Box } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { borderRadius } from '../../../../../theme';
+import { getProjectService } from '../../../../../services';
+import path from 'path';
 
 export default function BranchNodeCard({
   node,
@@ -22,6 +24,17 @@ export default function BranchNodeCard({
     return null;
   }
 
+  const projectPath = getProjectService().projectPath.value;
+  const actorPortraitPic = node?.data?.actor?.portrait
+    ? (
+        actors.find((item: any) => item.id === node.data.actor?.id)
+          ?.portraits || []
+      ).find((p: any) => p.id === node.data.actor?.portrait)?.pic
+    : null;
+  const actorPortraitFilePath =
+    actorPortraitPic && projectPath
+      ? path.join(path.join(projectPath, 'resources'), actorPortraitPic)
+      : null;
   return (
     <BaseNodeCard
       pos={pos}
@@ -52,13 +65,7 @@ export default function BranchNodeCard({
                   alignSelf: 'center',
                   ...borderRadius.large,
                 }}
-                src={
-                  (
-                    actors.find((item: any) => item.id === node.data.actor?.id)
-                      ?.portraits || []
-                  ).find((p: any) => p.id === node.data.actor?.portrait)?.pic ||
-                  ''
-                }
+                src={actorPortraitFilePath || ''}
                 alt=''
               />
             )}

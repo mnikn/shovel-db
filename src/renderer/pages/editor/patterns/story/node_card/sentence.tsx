@@ -31,7 +31,7 @@ export default function SentenceNodeCard({
           ?.portraits || []
       ).find((p: any) => p.id === node.data.actor?.portrait)?.pic
     : null;
-  let actorPortraitFilePath =
+  const actorPortraitFilePath =
     actorPortraitPic && projectPath
       ? path.join(path.join(projectPath, 'resources'), actorPortraitPic)
       : null;
