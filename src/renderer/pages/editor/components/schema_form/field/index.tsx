@@ -112,7 +112,7 @@ export function FieldObject({
       }
       return true;
     });
-  }, [schema.fields]);
+  }, [schema.fields, rootValue, value]);
 
   return (
     <Grid

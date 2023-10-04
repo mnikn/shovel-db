@@ -588,8 +588,7 @@ export function iterSchema(
 export function validateValue(
   totalObjValue: any,
   value: any,
-  schema: SchemaField,
-  schemaConfig: any
+  schema: SchemaField
 ): any {
   if (schema.config.enableWhen) {
     const fn = eval(schema.config.enableWhen);
@@ -600,14 +599,15 @@ export function validateValue(
   }
   if (schema.type === SchemaFieldType.Array) {
     if (Array.isArray(value)) {
-      return value.map((item) => {
-        return validateValue(
-          item,
-          item,
-          (schema as SchemaFieldArray).fieldSchema,
-          schemaConfig
-        );
-      });
+      return value
+        .map((item) => {
+          return validateValue(
+            item,
+            item,
+            (schema as SchemaFieldArray).fieldSchema
+          );
+        })
+        .filter((item) => item !== undefined);
     } else {
       return [...schema.config.defaultValue];
     }
@@ -621,8 +621,7 @@ export function validateValue(
             value,
             value[key],
             (schema as SchemaFieldObject).fields.find((f) => f.id === key)
-              ?.data as SchemaField,
-            schemaConfig
+              ?.data as SchemaField
           );
         }
         return res2;
@@ -633,13 +632,19 @@ export function validateValue(
             value,
             null,
             (schema as SchemaFieldObject).fields.find((f) => f.id === key)
-              ?.data as SchemaField,
-            schemaConfig
+              ?.data as SchemaField
           );
         }
         return res;
       }, {});
-      return { ...r1, ...r2 };
+
+      const finalRes = { ...r1, ...r2 };
+      Object.keys(finalRes).forEach((k) => {
+        if (finalRes[k] === undefined) {
+          delete finalRes[k];
+        }
+      });
+      return finalRes;
     } else {
       return (schema as SchemaFieldObject).configDefaultValue;
     }

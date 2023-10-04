@@ -8,6 +8,8 @@ import {
   buildSchema,
   SchemaFieldArray,
   DEFAULT_CONFIG_JSON,
+  processValueWithSchema,
+  validateValue,
 } from '../models/schema';
 import type { FileServiceType } from './file';
 import TranslationService from './parts/translation';
@@ -128,8 +130,9 @@ const StaticDataService = (
         ),
       };
     } else {
+      const schemaObj = buildSchema(JSON.parse(data.schema));
       staticFileDataTable.value[fileId] = {
-        data: data.data,
+        data: validateValue(data.data, data.data, schemaObj),
         schema: data.schema,
       };
     }
@@ -183,17 +186,20 @@ const StaticDataService = (
     staticFileDataTable.value[fileId].schema = schema;
     staticFileDataTable.value = { ...staticFileDataTable.value };
     if (fileService.currentOpenFile.value === fileId) {
-      // const json = toml.parse(schema);
       const json = JSON.parse(schema);
       currentSchema.value = buildSchema(json) as SchemaFieldArray;
     }
   };
 
   const updateFileData = (fileId: string, data: JSONData) => {
-    if (!fileId) {
+    if (!fileId || !currentSchema.value) {
       return;
     }
-    staticFileDataTable.value[fileId].data = data;
+    staticFileDataTable.value[fileId].data = validateValue(
+      data,
+      data,
+      currentSchema.value
+    );
     staticFileDataTable.value = { ...staticFileDataTable.value };
   };
 

@@ -32,7 +32,7 @@ function FieldSelect({
   const storyStore = useStoryStore();
   const staticDataStore = useStaticDataStore();
   const fileStore = useFileStore();
-  const [options, setOptions] = useState<any[]>([]);
+  const [options, setOptions] = useState<any[] | null>(null);
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -46,6 +46,10 @@ function FieldSelect({
     };
     fetchOptions();
   }, [schema, storyStore, staticDataStore, fileStore]);
+
+  if (!options) {
+    return null;
+  }
 
   const childOptions =
     options.find(

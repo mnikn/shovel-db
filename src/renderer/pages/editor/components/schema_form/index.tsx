@@ -24,8 +24,8 @@ export default function SchemaForm({
 }) {
   const onChange = useCallback(
     (val) => {
-      const finalVal = validateValue(val, val, schema, {});
-      onValueChange(finalVal);
+      /* const finalVal = validateValue(val, val, schema); */
+      onValueChange(val);
     },
     [onValueChange]
   );
