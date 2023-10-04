@@ -592,9 +592,8 @@ export function validateValue(
 ): any {
   if (schema.config.enableWhen) {
     const fn = eval(schema.config.enableWhen);
-    if (!fn(totalObjValue)) {
+    if (fn(totalObjValue) === undefined) {
       return undefined;
-      // return schema.config.defaultValue;
     }
   }
   if (schema.type === SchemaFieldType.Array) {
