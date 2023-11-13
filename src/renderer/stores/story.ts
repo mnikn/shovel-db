@@ -11,8 +11,28 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
   const [currentStorylet, setCurrentStorylet] = useState<Storylet | null>(null);
   const [actors, setActors] = useState<any[]>([]);
   const [selection, setSelection] = useState<string | null>(null);
-  const [nodeSchemaSettings, setNodeSchemaSettings] = useState<any>({});
-  const [actorSchemaSettings, setActorSchemaSettings] = useState<any>({});
+  const [nodeSchemaSettings, setNodeSchemaSettings] = useState<
+    typeof storyService.nodeSchemaSettings.value
+  >({
+    root: {
+      basicDataSchema: '',
+      extraDataSchema: '',
+    },
+    sentence: {
+      basicDataSchema: '',
+      extraDataSchema: '',
+    },
+    branch: {
+      basicDataSchema: '',
+      extraDataSchema: '',
+    },
+    action: {
+      basicDataSchema: '',
+      extraDataSchema: '',
+    },
+  });
+  const [actorSchemaSettings, setActorSchemaSettings] =
+    useState<typeof storyService.actorSchemaSettings.value>('');
 
   const [currentLang, setCurrentLang] = useState<string>('zh-cn');
   const [translations, setTranslations] = useState<Translation>({});
@@ -78,6 +98,9 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
   const updateTranslations = storyService.updateTranslations;
   const updateActors = storyService.updateActors;
 
+  const updateNodeSchemaSettings = storyService.updateNodeSchemaSettings;
+  const updateActorSchemaSettings = storyService.updateActorSchemaSettings;
+
   const updateTranslateKeyAll = storyService.updateTranslateKeyAll;
   const getTranslationsForKey = storyService.getTranslationsForKey;
 
@@ -86,6 +109,8 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     selection,
     actors,
     nodeSchemaSettings,
+    updateNodeSchemaSettings,
+    updateActorSchemaSettings,
     actorSchemaSettings,
     updateActors,
 

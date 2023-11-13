@@ -25,6 +25,7 @@ import Story from './patterns/story';
 import ConfigModal from './components/config_modal';
 import ActorSettingsModal from './components/actor_settings_modal';
 import { Folder } from '../../models/explorer';
+import StorySchemaSettingsModal from './components/story_schema_settings_modal';
 
 export default function Main() {
   const { saving, editorPattern, setHasModal } = useEditorStore();
@@ -42,6 +43,8 @@ export default function Main() {
 
   const { getStaticFileData, updateFileSchema } = useStaticDataStore();
   const [actorSettingsModalOpen, setActorSettingsModalOpen] = useState(false);
+  const [storySchemaSettingsModalOpen, setStorySchemaSettingsModalOpen] =
+    useState(false);
 
   /* const storyStoreDataRef = useRef({
    *   translations: storyTranslations,
@@ -117,6 +120,14 @@ export default function Main() {
         order: 6,
         click: async () => {
           setActorSettingsModalOpen(true);
+          setHasModal(true);
+        },
+      },
+      {
+        label: 'Edit schema',
+        order: 6,
+        click: async () => {
+          setStorySchemaSettingsModalOpen(true);
           setHasModal(true);
         },
       },
@@ -201,6 +212,14 @@ export default function Main() {
           <ActorSettingsModal
             close={() => {
               setActorSettingsModalOpen(false);
+              setHasModal(false);
+            }}
+          />
+        )}
+        {storySchemaSettingsModalOpen && (
+          <StorySchemaSettingsModal
+            close={() => {
+              setStorySchemaSettingsModalOpen(false);
               setHasModal(false);
             }}
           />

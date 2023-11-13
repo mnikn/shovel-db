@@ -142,10 +142,10 @@ function CardPopup({ node }: { node: StoryletNode<StoryletNodeData> }) {
           return;
         }
 
-        const resizeObserver = new ResizeObserver((entries) => {
-          setHeight(entries[0].contentRect.height);
-        });
-        resizeObserver.observe(dom);
+        // const resizeObserver = new ResizeObserver((entries) => {
+        //  setHeight(entries[0].contentRect.height);
+        // });
+        // resizeObserver.observe(dom);
       }}
     >
       {components.map((component, i) => {

@@ -3,7 +3,7 @@ import { createGlobalStore } from 'hox';
 import { useEffect, useState } from 'react';
 import { createLogger } from '../logger';
 import { File, Folder } from '../models/file';
-import { getFileService } from '../services';
+import { FileServiceType, getFileService } from '../services';
 
 const logger = createLogger('file-store');
 
@@ -11,6 +11,7 @@ export const [useFileStore, getFileStore] = createGlobalStore(() => {
   const [files, setFiles] = useState<Array<File | Folder>>([]);
 
   const [currentOpenFile, setCurrentOpenFile] = useState<string | null>();
+  const [recentOpenFiles, setRecentOpenFiles] = useState<string[]>([]);
 
   const fileService = getFileService();
 
@@ -21,6 +22,7 @@ export const [useFileStore, getFileStore] = createGlobalStore(() => {
         logger.debugLog('sync memento to store: ', memento);
         setFiles(memento.files);
         setCurrentOpenFile(memento.currentOpenFile);
+        setRecentOpenFiles(memento.recentOpenFiles);
       },
       {
         immediate: true,
@@ -64,6 +66,7 @@ export const [useFileStore, getFileStore] = createGlobalStore(() => {
   return {
     files,
     currentOpenFile,
+    recentOpenFiles,
 
     createFile,
     createFolder,

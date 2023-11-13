@@ -15,7 +15,7 @@ import React, {
   useState,
 } from 'react';
 import { getFullPath, File } from '../../../models/explorer';
-import { useExplorerStore } from '../../../store';
+import { useFileStore } from '../../../stores';
 import { borderRadius, animation } from '../../../theme';
 
 function countMatchSubstring(str: string, substr: string): number {
@@ -26,8 +26,9 @@ function countMatchSubstring(str: string, substr: string): number {
 
 const activeStyle = { backgroundColor: grey[400], cursor: 'pointer' };
 export default function SearchPanel({ close }: { close: () => void }) {
-  const { recentOpenFiles, files, openFile, currentOpenFile } =
-    useExplorerStore();
+  /* const { recentOpenFiles, files, openFile, currentOpenFile } =
+   *   useExplorerStore(); */
+  const { recentOpenFiles, files, openFile, currentOpenFile } = useFileStore();
   const [query, setQuery] = useState<string>('');
   const [selectingItemIndex, setSelectingItemIndex] = useState<number>(0);
   const selectingItemIndexRef = useRef(selectingItemIndex);
@@ -36,7 +37,7 @@ export default function SearchPanel({ close }: { close: () => void }) {
   const searchResultRef = useRef<File[]>([]);
   const searchResult: File[] = useMemo((): File[] => {
     const allFiles = files.filter(
-      (item) => item.type === 'file' && item.id !== currentOpenFile?.id
+      (item) => item.type === 'file' && item.id !== currentOpenFile
     ) as File[];
     if (!query) {
       return allFiles.sort((a, b) => {
@@ -105,7 +106,7 @@ export default function SearchPanel({ close }: { close: () => void }) {
           return;
         }
         close();
-        openFile(file);
+        openFile(file.id);
       }
       if (e.code === 'Escape') {
         e.preventDefault();
@@ -150,7 +151,7 @@ export default function SearchPanel({ close }: { close: () => void }) {
               <Stack
                 key={item.id}
                 onClick={() => {
-                  openFile(item);
+                  openFile(item.id);
                 }}
               >
                 <Stack

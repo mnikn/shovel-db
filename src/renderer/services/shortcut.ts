@@ -1,5 +1,6 @@
 import { saveProject } from '.';
 import ipc from '../electron/ipc';
+import { EVENT, eventEmitter } from '../events';
 
 /**
  * Chrome KeyboardEvent.code value map to key
@@ -128,11 +129,35 @@ const shortcuts = {
       keybinding: 'Ctrl+S',
       fn: () => saveProject(),
     },
+    {
+      keybinding: 'Ctrl+P',
+      fn: () => {
+        eventEmitter.emit(EVENT.TOGGLE_SEARCH_PANEL);
+      },
+    },
+    {
+      keybinding: 'Ctrl+Shift+P',
+      fn: () => {
+        eventEmitter.emit(EVENT.TOGGLE_COMMAND_PANEL);
+      },
+    },
   ],
   'static-data-editor': [
     {
       keybinding: 'Ctrl+S',
       fn: () => saveProject(),
+    },
+    {
+      keybinding: 'Ctrl+P',
+      fn: () => {
+        eventEmitter.emit(EVENT.TOGGLE_SEARCH_PANEL);
+      },
+    },
+    {
+      keybinding: 'Ctrl+Shift+P',
+      fn: () => {
+        eventEmitter.emit(EVENT.TOGGLE_COMMAND_PANEL);
+      },
     },
   ],
 };

@@ -369,6 +369,14 @@ const StoryService = (
   let selection = ref<string | null>(null);
   let actors = ref<any[]>([]);
 
+  const updateNodeSchemaSettings = (val: typeof nodeSchemaSettings.value) => {
+    console.log('ve: ', val);
+    nodeSchemaSettings.value = val;
+  };
+  const updateActorSchemaSettings = (val: typeof actorSchemaSettings.value) => {
+    actorSchemaSettings.value = val;
+  };
+
   watch(
     () => [
       fileService.files.value,
@@ -441,6 +449,8 @@ const StoryService = (
         });
         storyFileDataTable.value = res;
         actors.value = storyRawData?.actors;
+        nodeSchemaSettings.value = storyRawData?.nodeSchemaSettings ?? nodeSchemaSettings.value;
+        actorSchemaSettings.value = storyRawData?.actorSchemaSettings ?? actorSchemaSettings.value;
       }
     },
     {
@@ -752,6 +762,8 @@ const StoryService = (
           return res;
         }, {}),
         actors: toValue(actors),
+        nodeSchemaSettings: toValue(nodeSchemaSettings),
+        actorSchemaSettings: toValue(actorSchemaSettings),
       },
       trasnlationMemento: translationService.memento.value,
     };
@@ -771,8 +783,10 @@ const StoryService = (
     ...translationService,
     currentStorylet,
     nodeSchemaSettings,
+    updateNodeSchemaSettings,
 
     actorSchemaSettings,
+    updateActorSchemaSettings,
     actors,
     updateActors,
 

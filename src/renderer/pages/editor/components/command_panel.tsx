@@ -16,6 +16,7 @@ import React, {
 } from 'react';
 import { Event, eventEmitter } from '../../../events';
 import { useExplorerStore } from '../../../store';
+import { useFileStore } from '../../../stores';
 import { borderRadius, animation } from '../../../theme';
 
 function countMatchSubstring(str: string, substr: string): number {
@@ -37,7 +38,8 @@ export default function CommandPanel({ close }: { close: () => void }) {
   const [query, setQuery] = useState<string>('');
   const [currentCommand, setCurrentCommand] = useState<Command | null>(null);
   const [commandInputText, setCommandInputText] = useState<string>('');
-  const { newFile, currentOpenFile, openFile } = useExplorerStore();
+  /* const { newFile, currentOpenFile, openFile } = useExplorerStore(); */
+  const { createFile, currentOpenFile, openFile, getFile } = useFileStore();
   const [selectingItemIndex, setSelectingItemIndex] = useState<number>(0);
   const selectingItemIndexRef = useRef(selectingItemIndex);
   selectingItemIndexRef.current = selectingItemIndex;
@@ -59,27 +61,29 @@ export default function CommandPanel({ close }: { close: () => void }) {
           if (!currentOpenFile) {
             return;
           }
-          const file = newFile(currentOpenFile.parentId || '', fileName);
+          const file = createFile(getFile(currentOpenFile)?.parentId || '', {
+            name: fileName,
+          });
           if (file) {
             setTimeout(() => {
-              openFile(file);
+              openFile(file.id);
             }, 0);
           }
         },
       },
-      {
-        id: 'open-project-settings',
-        label: 'Open project settings',
-        enabled: () => {
-          return true;
-        },
-        needInputText: false,
-        fn: () => {
-          eventEmitter.emit(Event.OpenProjectSettings);
-        },
-      },
+      /* {
+       *   id: 'open-project-settings',
+       *   label: 'Open project settings',
+       *   enabled: () => {
+       *     return true;
+       *   },
+       *   needInputText: false,
+       *   fn: () => {
+       *     eventEmitter.emit(Event.OpenProjectSettings);
+       *   },
+       * }, */
     ],
-    [newFile, currentOpenFile, openFile]
+    [createFile, currentOpenFile, openFile]
   );
 
   const searchResultRef = useRef<Command[]>([]);

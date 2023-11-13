@@ -239,6 +239,7 @@ const FileService = {
 
   files,
   currentOpenFile,
+  recentOpenFiles,
 };
 
 export default FileService;

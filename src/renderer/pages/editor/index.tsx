@@ -1,5 +1,7 @@
 import { Box } from '@mui/material';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { EVENT, eventEmitter } from '../../events';
+import { useEditorStore } from '../../stores';
 import CommandPanel from './components/command_panel';
 import SearchPanel from './components/search_panel';
 import Main from './main';
@@ -24,6 +26,29 @@ export default function Editor() {
   const [commandPanelOpen, setCommandPanelOpen] = useState(false);
   const commandPanelOpenRef = useRef(commandPanelOpen);
   commandPanelOpenRef.current = commandPanelOpen;
+
+  const { setHasModal } = useEditorStore();
+
+  useEffect(() => {
+    const toggleCommandPanel = () => {
+      setCommandPanelOpen((prev) => {
+        setHasModal(!prev);
+        return !prev;
+      });
+    };
+    const toggleSearchPanel = () => {
+      setSearchPanelOpen((prev) => {
+        setHasModal(!prev);
+        return !prev;
+      });
+    };
+    eventEmitter.on(EVENT.TOGGLE_COMMAND_PANEL, toggleCommandPanel);
+    eventEmitter.on(EVENT.TOGGLE_SEARCH_PANEL, toggleSearchPanel);
+    return () => {
+      eventEmitter.off(EVENT.TOGGLE_COMMAND_PANEL, toggleCommandPanel);
+      eventEmitter.off(EVENT.TOGGLE_SEARCH_PANEL, toggleSearchPanel);
+    };
+  }, []);
 
   /* useEffect(() => {
      *   const handle = async (e) => {
