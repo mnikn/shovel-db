@@ -14,16 +14,18 @@ import crypto from 'crypto';
 const logger = createLogger('ipc');
 
 const route = (api: string, fn: (...arg: any) => any) => {
-  ipcMain.on(api, (event, ...arg) => {
+  ipcMain.on(api, (event, params) => {
+    const { id, arg } = params;
     const res = fn(...arg);
-    event.sender.send(api + '-response', res);
+    event.sender.send(api + `-${id}-response`, res);
   });
 };
 
 const routeAsync = (api: string, fn: (...arg: any) => Promise<any>) => {
-  ipcMain.on(api, async (event, ...arg) => {
+  ipcMain.on(api, async (event, params) => {
+    const { id, arg } = params;
     const res = await fn(...arg);
-    event.sender.send(api + '-response', res);
+    event.sender.send(api + `-${id}-response`, res);
   });
 };
 
