@@ -1,5 +1,5 @@
-import { Box, Stack } from '@mui/material';
-import React, { useCallback, useEffect, useState } from 'react';
+import { Box, CircularProgress, Stack } from '@mui/material';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SchemaFieldSelect } from '../../../../models/schema';
 import { useFileStore, useStaticDataStore } from '../../../../stores';
 import SchemaForm from '../../components/schema_form';
@@ -27,8 +27,9 @@ export default function StaticData() {
     switchLang,
     translations,
     updateTranslations,
+    updateTranslateKey,
+    loading,
   } = useStaticDataStore();
-  const [formTranslations, setFormTranslations] = useState(translations);
   const { currentOpenFile } = useFileStore();
   /* const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema; */
   /* const fileDataRef = useRef(fileData);
@@ -44,10 +45,6 @@ export default function StaticData() {
    *   return buildSchema(JSON.parse(config)) as SchemaFieldArray;
    * }, [schemaConfig]); */
 
-  useEffect(() => {
-    setFormTranslations(translations);
-  }, [translations]);
-
   const formData = currentData;
   const onValueChange = useCallback(
     (val: any) => {
@@ -56,10 +53,23 @@ export default function StaticData() {
       }
       /* updateData(currentOpenFile.id, val); */
       updateFileData(currentOpenFile, val);
-      updateTranslations(formTranslations);
     },
-    [updateTranslations, formTranslations, currentOpenFile, updateFileData]
+    [updateTranslations, currentOpenFile, updateFileData]
   );
+
+  if (loading) {
+    return (
+      <CircularProgress
+        sx={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transofrm: 'translateX(-50%) translateY(-50%)',
+          color: '#ffffff',
+        }}
+      />
+    );
+  }
 
   if (!currentSchema) {
     return null;
@@ -73,6 +83,9 @@ export default function StaticData() {
         currentLang={currentLang}
         translations={translations}
         onValueChange={onValueChange}
+        onTranslationsChange={(termKey, val) => {
+          updateTranslateKey(termKey, val);
+        }}
       />
       <Box
         sx={{

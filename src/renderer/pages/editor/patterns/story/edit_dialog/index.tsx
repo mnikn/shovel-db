@@ -79,7 +79,7 @@ export default function EditDialog({
   const {
     translations,
     currentLang,
-    updateTranslations,
+    updateTranslateKey,
     updateNode,
     currentStorylet,
     actors,
@@ -130,12 +130,7 @@ export default function EditDialog({
     setCurrentTab(tabs[0]?.id || '');
   }, [tabs]);
 
-  const formTranslations = useMemo(() => {
-    return cloneDeep(translations);
-  }, [translations, currentTab]);
-
   const submitForm = useCallback(() => {
-    updateTranslations(formTranslations);
     node.data = { ...node.data, ...formNodeDataRef.current };
     if (
       (node instanceof StoryletSentenceNode ||
@@ -146,7 +141,7 @@ export default function EditDialog({
     }
     updateNode(node);
     close();
-  }, [node, formTranslations, updateNode, close]);
+  }, [node, updateNode, close]);
 
   useEffect(() => {
     const onKeyDown = (e) => {
@@ -284,12 +279,15 @@ export default function EditDialog({
     >
       <Container sx={{ flexGrow: 1, overflow: 'auto' }}>
         <SchemaForm
-          translations={formTranslations}
+          translations={translations}
           currentLang={currentLang}
           schema={schemaObj}
           formData={formValue}
           onValueChange={(val) => {
             onFormValueChanged(val);
+          }}
+          onTranslationsChange={(termKey, val) => {
+            updateTranslateKey(termKey, val);
           }}
         />
       </Container>

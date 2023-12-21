@@ -17,6 +17,7 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
 
     const [currentLang, setCurrentLang] = useState<string>('zh-cn');
     const [translations, setTranslations] = useState<Translation>({});
+    const [loading, setLoading] = useState(true);
     const staticDataService = getStaticDataService();
 
     useEffect(() => {
@@ -65,12 +66,21 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
           immediate: true,
         }
       );
+
+      const stopWatchLoading = watch(
+        () => staticDataService.loading.value,
+        setLoading,
+        {
+          immediate: true,
+        }
+      );
       return () => {
         stopWatchFileData();
         stopWatchSchema();
         stopWatchData();
         stopWatchCurrentLang();
         stopWatchTranslations();
+        stopWatchLoading();
       };
     }, []);
 
@@ -81,6 +91,7 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
     const tr = staticDataService.tr;
     const switchLang = staticDataService.switchLang;
     const updateTranslations = staticDataService.updateTranslations;
+    const updateTranslateKey = staticDataService.updateTranslateKey;
 
     return {
       currentData,
@@ -96,6 +107,8 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
       switchLang,
       translations,
       updateTranslations,
+      updateTranslateKey,
+      loading,
     };
   }
 );

@@ -51,6 +51,15 @@ const config: Configuration = {
     port: 4000,
     historyApiFallback: true,
     compress: true,
+    // overlay: {
+    //   runtimeErrors: (error) => {
+    //     if (error.message === 'ResizeObserver loop limit exceeded') {
+    //       return false;
+    //     }
+
+    //     return true;
+    //   },
+    // },
   },
   output: {
     path: path.resolve(rootPath, 'dist/renderer'),

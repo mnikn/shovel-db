@@ -6,25 +6,12 @@ import { FILE_GROUP } from '../../common/constants';
 import ipc from '../../renderer/electron/ipc';
 import {
   buildSchema,
-  SchemaFieldArray,
   DEFAULT_CONFIG_JSON,
-  processValueWithSchema,
+  SchemaFieldArray,
   validateValue,
 } from '../models/schema';
 import type { FileServiceType } from './file';
 import TranslationService from './parts/translation';
-
-// type JSONPrimitive = string | number | boolean | null;
-// type JSONArray = JSONValue[];
-// type JSONValue = JSONPrimitive | JSONArray | JSONObject;
-// interface JSONObject {
-//   [key: string]: JSONValue;
-// }
-// type JSONData = JSONValue | null;
-
-// export type JSONData = {
-//   [key: string]: number | string | boolean | null | JSONData | Array<JSONData>;
-// } | null;
 
 export type JSONData = any;
 
@@ -44,6 +31,7 @@ const StaticDataService = (
   let currentStaticFileRawData = ref<StaticFileData | null>(null);
   const currentSchema = ref<SchemaFieldArray | null>(null);
   const currentData = ref<JSONData | null>(null);
+  const loading = ref<boolean>(false);
 
   const memento = computed(() => {
     return {
@@ -147,11 +135,14 @@ const StaticDataService = (
     ) {
       return;
     }
+    loading.value = true;
     const fileData = await getStaticFileData(fileService.currentOpenFile.value);
     if (fileData) {
       currentStaticFileRawData.value = fileData;
     }
-  }, 500);
+    loading.value = false;
+  }, 0);
+  // }, 500);
 
   watch(
     () => [
@@ -195,6 +186,7 @@ const StaticDataService = (
     if (!fileId || !currentSchema.value) {
       return;
     }
+
     staticFileDataTable.value[fileId].data = validateValue(
       data,
       data,
@@ -214,6 +206,7 @@ const StaticDataService = (
     currentSchema,
     updateFileData,
     updateFileSchema,
+    loading,
   };
 };
 

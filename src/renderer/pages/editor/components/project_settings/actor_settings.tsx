@@ -86,16 +86,12 @@ export default function ActorSettings({
     translations,
     currentLang,
     storyActors,
-    updateTranslations,
+    updateTranslateKey,
     updateStoryActors,
     trackCurrentState,
     actorSettings,
   } = useStoryStore();
   const [formData, setFormData] = useState<StoryActor[]>(storyActors);
-
-  const formTranslations = useMemo(() => {
-    return cloneDeep(translations);
-  }, [translations]);
 
   const settingsSchema = useMemo(() => {
     return buildSchema(JSON.parse(actorSettings)) as SchemaFieldArray;
@@ -142,12 +138,15 @@ export default function ActorSettings({
         </DialogTitle>
 
         <SchemaForm
-          translations={formTranslations}
+          translations={translations}
           currentLang={currentLang}
           formData={formData}
           schema={settingsSchema}
           onValueChange={(v) => {
             setFormData(v);
+          }}
+          onTranslationsChange={(termKey, val) => {
+            updateTranslateKey(termKey, val);
           }}
         />
 
@@ -168,7 +167,6 @@ export default function ActorSettings({
           <Button
             variant='contained'
             onClick={() => {
-              updateTranslations(formTranslations);
               updateStoryActors(formData);
               trackCurrentState();
               close();

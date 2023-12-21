@@ -1,24 +1,27 @@
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import RemoveIcon from '@mui/icons-material/Remove';
 import {
   Button,
-  Box,
-  Stack,
-  IconButton,
   Card,
+  CardContent,
   CardHeader,
   Collapse,
-  CardContent,
+  IconButton,
+  Stack,
 } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import Grid from '@mui/material/Unstable_Grid2';
-import { get, cloneDeep } from 'lodash';
+import { cloneDeep, get } from 'lodash';
+import path from 'path';
 import React, {
-  useEffect,
-  useState,
-  useRef,
   useCallback,
+  useEffect,
   useMemo,
+  useRef,
+  useState,
 } from 'react';
-import { LANG } from '../../../../../../constants/i18n';
 import { RawJson } from '../../../../../../type';
 import { UUID } from '../../../../../../utils/uuid';
 import {
@@ -30,23 +33,18 @@ import {
   SchemaFieldNumber,
   SchemaFieldObject,
   SchemaFieldSelect,
-  SchemaFieldStringSpeed,
   SchemaFieldString,
+  SchemaFieldStringSpeed,
 } from '../../../../../models/schema';
-import { borderRadius, animation } from '../../../../../theme';
-import FieldFile from './file_field';
-import FieldString from './string_field';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import RemoveIcon from '@mui/icons-material/Remove';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import FieldSelect from './select_field';
-import FieldBoolean from './boolean_field';
-import { Translation } from '../../../../../store/common/translation';
-import FieldNumber from './number_field';
-import FieldStringSpeed from './string_speed_field';
-import path from 'path';
 import { getProjectService } from '../../../../../services';
+import { Translation } from '../../../../../store/common/translation';
+import { animation, borderRadius } from '../../../../../theme';
+import FieldBoolean from './boolean_field';
+import FieldFile from './file_field';
+import FieldNumber from './number_field';
+import FieldSelect from './select_field';
+import FieldString from './string_field';
+import FieldStringSpeed from './string_speed_field';
 
 const getContainerLabelStyle = (label: string) => ({
   m: 1,
@@ -75,6 +73,7 @@ export function FieldObject({
   value,
   onValueChange,
   translations,
+  onTranslationsChange,
   currentLang,
   label,
 }: {
@@ -84,6 +83,7 @@ export function FieldObject({
   translations?: Translation;
   currentLang?: string;
   onValueChange?: (value: any) => void;
+  onTranslationsChange?: (termKey: string, val: any) => void;
   label?: string;
 }) {
   const valueRef = useRef(value);
@@ -139,6 +139,7 @@ export function FieldObject({
               schema={field.data}
               value={get(value, field.id)}
               onValueChange={(v) => onObjectValueChange(field.id, v)}
+              onTranslationsChange={onTranslationsChange}
               rootValue={rootValue}
               label={field.name}
               translations={translations}
@@ -158,6 +159,7 @@ export default function Field({
   onValueChange,
   translations,
   currentLang,
+  onTranslationsChange,
   label,
 }: {
   schema: SchemaField;
@@ -166,6 +168,7 @@ export default function Field({
   translations?: Translation;
   currentLang?: string;
   onValueChange?: (value: any) => void;
+  onTranslationsChange?: (termKey: string, val: any) => void;
   label?: string;
 }) {
   if (schema instanceof SchemaFieldObject) {
@@ -177,6 +180,7 @@ export default function Field({
         onValueChange={onValueChange}
         translations={translations}
         currentLang={currentLang}
+        onTranslationsChange={onTranslationsChange}
         label={label}
       />
     );
@@ -189,6 +193,7 @@ export default function Field({
         onValueChange={onValueChange}
         translations={translations}
         currentLang={currentLang}
+        onTranslationsChange={onTranslationsChange}
         label={label}
       />
     );
@@ -201,6 +206,7 @@ export default function Field({
         schema={schema}
         value={value}
         onValueChange={onValueChange}
+        onTranslationsChange={onTranslationsChange}
         translations={translations}
         currentLang={currentLang}
         label={label}
@@ -273,6 +279,7 @@ export function FieldArray({
   translations,
   currentLang,
   onValueChange,
+  onTranslationsChange,
 }: {
   label?: string;
   schema: SchemaFieldArray;
@@ -280,6 +287,7 @@ export function FieldArray({
   translations?: Translation;
   currentLang?: string;
   onValueChange?: (value: any) => void;
+  onTranslationsChange?: (termKey: string, val: any) => void;
 }) {
   const [list, setList] = useState<RawJson[]>(
     (value || []).map((item) => {
@@ -382,17 +390,21 @@ export function FieldArray({
         targetItem,
         (schema, val) => {
           if (schema instanceof SchemaFieldString && schema.config.needI18n) {
-            const newContentId = UUID();
-            if (translations) {
-              translations[newContentId] = cloneDeep(translations[val]);
+            const newContentId = 'string_field_' + UUID();
+            if (translations && onTranslationsChange && currentLang) {
+              onTranslationsChange(
+                newContentId,
+                translations[val]?.[currentLang]
+              );
             }
-            return 'string_field_' + newContentId;
+            return newContentId;
           }
           return val;
         }
       );
       const prev = listRef.current;
-      const res = prev.concat({
+      const res = [...prev];
+      res.splice(i + 1, 0, {
         id: UUID(),
         expanded: false,
         value: newVal,
@@ -402,7 +414,7 @@ export function FieldArray({
         onValueChange(res.map((item) => item.value));
       }
     },
-    [onValueChange]
+    [onValueChange, currentLang]
   );
 
   const onItemChange = useCallback(
@@ -447,7 +459,6 @@ export function FieldArray({
           }}
         >
           {list.map((item, i) => {
-            const headerItems: React.ReactNode[] = [];
             const summary = schema.fieldSchema?.config?.summary?.replace(
               /\{\{[A-Za-z0-9_.\[\]]+\}\}/g,
               (all) => {
@@ -510,16 +521,36 @@ export function FieldArray({
                         alignItems: 'center',
                       }}
                     >
-                      <IconButton onClick={() => moveUpItem(i)}>
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          moveUpItem(i);
+                        }}
+                      >
                         <ArrowUpwardIcon />
                       </IconButton>
-                      <IconButton onClick={() => moveDownItem(i)}>
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          moveDownItem(i);
+                        }}
+                      >
                         <ArrowDownwardIcon />
                       </IconButton>
-                      <IconButton onClick={() => deleteItem(i)}>
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteItem(i);
+                        }}
+                      >
                         <RemoveIcon />
                       </IconButton>
-                      <IconButton onClick={() => duplicateItem(i)}>
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          duplicateItem(i);
+                        }}
+                      >
                         <ContentCopyIcon />
                       </IconButton>
                     </Stack>
@@ -540,16 +571,19 @@ export function FieldArray({
                   }}
                 />
                 <Collapse in={item.expanded} timeout='auto'>
-                  <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Field
-                      translations={translations}
-                      currentLang={currentLang}
-                      schema={schema.fieldSchema as SchemaField}
-                      value={item.value}
-                      rootValue={value}
-                      onValueChange={(v) => onItemChange(v, i)}
-                    />
-                  </CardContent>
+                  {item.expanded && (
+                    <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Field
+                        translations={translations}
+                        currentLang={currentLang}
+                        schema={schema.fieldSchema as SchemaField}
+                        value={item.value}
+                        rootValue={value}
+                        onValueChange={(v) => onItemChange(v, i)}
+                        onTranslationsChange={onTranslationsChange}
+                      />
+                    </CardContent>
+                  )}
                 </Collapse>
               </Card>
             );

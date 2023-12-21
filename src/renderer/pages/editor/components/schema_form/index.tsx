@@ -13,6 +13,7 @@ export default function SchemaForm({
   formData,
   schema,
   onValueChange,
+  onTranslationsChange,
   translations,
   currentLang,
 }: {
@@ -20,6 +21,7 @@ export default function SchemaForm({
   schema: SchemaFieldObject | SchemaFieldArray;
   onValueChange: (val: any) => void;
   translations?: Translation;
+  onTranslationsChange?: (termKey: string, val: any) => void;
   currentLang?: string;
 }) {
   const onChange = useCallback(
@@ -47,6 +49,7 @@ export default function SchemaForm({
         translations={translations}
         currentLang={currentLang}
         onValueChange={onChange}
+        onTranslationsChange={onTranslationsChange}
       />
     </Box>
   );

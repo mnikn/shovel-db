@@ -101,6 +101,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
   const updateNodeSchemaSettings = storyService.updateNodeSchemaSettings;
   const updateActorSchemaSettings = storyService.updateActorSchemaSettings;
 
+  const updateTranslateKey = storyService.updateTranslateKey;
   const updateTranslateKeyAll = storyService.updateTranslateKeyAll;
   const getTranslationsForKey = storyService.getTranslationsForKey;
 
@@ -127,6 +128,7 @@ export const [useStoryStore, getStoryStore] = createGlobalStore(() => {
     switchLang,
     translations,
     updateTranslations,
+    updateTranslateKey,
     updateTranslateKeyAll,
     getTranslationsForKey,
   };

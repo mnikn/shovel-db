@@ -64,15 +64,11 @@ export default function ActorSettingsModal({ close }: { close: () => void }) {
     translations,
     currentLang,
     actors,
-    updateTranslations,
+    updateTranslateKey,
     updateActors,
     actorSchemaSettings,
   } = useStoryStore();
   const [formData, setFormData] = useState<any[]>(actors);
-
-  const formTranslations = useMemo(() => {
-    return cloneDeep(translations);
-  }, [translations]);
 
   const settingsSchema = useMemo(() => {
     return buildSchema(JSON.parse(actorSchemaSettings)) as SchemaFieldArray;
@@ -119,12 +115,15 @@ export default function ActorSettingsModal({ close }: { close: () => void }) {
         </DialogTitle>
 
         <SchemaForm
-          translations={formTranslations}
+          translations={translations}
           currentLang={currentLang}
           formData={formData}
           schema={settingsSchema}
           onValueChange={(v) => {
             setFormData(v);
+          }}
+          onTranslationsChange={(termKey, val) => {
+            updateTranslateKey(termKey, val);
           }}
         />
 
@@ -145,7 +144,6 @@ export default function ActorSettingsModal({ close }: { close: () => void }) {
           <Button
             variant='contained'
             onClick={() => {
-              updateTranslations(formTranslations);
               updateActors(formData);
               close();
             }}
