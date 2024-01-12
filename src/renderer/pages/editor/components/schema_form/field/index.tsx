@@ -474,6 +474,9 @@ export function FieldArray({
                 if (word === '___value') {
                   return `<span style="font-weight: bold; margin: 0 4px">${item.value}</span>`;
                 }
+                if (word === '___newline') {
+                  return `<br />`;
+                }
                 const v = get(item.value, word, '');
                 if (v != null && v.includes && v.includes('.png')) {
                   const projectPath = getProjectService().projectPath.value;
@@ -511,7 +514,9 @@ export function FieldArray({
                         fontWeight: 'bold',
                         userSelect: 'none',
                       }}
-                      dangerouslySetInnerHTML={{ __html: summary }}
+                      dangerouslySetInnerHTML={{
+                        __html: `<div>${summary}</div>`,
+                      }}
                     />
                   }
                   action={
