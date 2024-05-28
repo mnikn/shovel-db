@@ -178,13 +178,16 @@ const FilterPanel = ({
     </Container>
   );
   return (
-    <Container>
+    <Container sx={{ zIndex: 1}}>
       {filterExpandBtn}
       {expanded && (
         <Card
           sx={{
             marginTop: '64px',
             boxShadow: 'rgba(0, 0, 0, 0.1) 0px 4px 12px',
+            marginLeft: '64px',
+            marginRight: '64px',
+            background: '#fff',
           }}
         >
           <CardContent sx={{ display: 'flex', alignItems: 'center' }}>

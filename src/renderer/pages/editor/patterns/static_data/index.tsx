@@ -53,11 +53,11 @@ export default function StaticData() {
   } = useStaticDataStore();
   const { currentOpenFile } = useFileStore();
   const [displayData, setDisplayData] = useState<any[]>(currentData);
-  const hasFilter = displayData?.length !== currentData?.length;
   const currentDataRef = useRef<any>(currentData);
   currentDataRef.current = currentData;
   const displayDataRef = useRef<any>(displayData);
-  displayDataRef.current = displayData;
+  const currentFilterValRef = useRef<any>(null);
+  const hasFilter = displayDataRef.current?.length !== currentData?.length;
   /* const schemaConfig = fileData?.[currentOpenFile?.id || '']?.schema; */
   /* const fileDataRef = useRef(fileData);
    * fileDataRef.current = fileData; */
@@ -71,6 +71,50 @@ export default function StaticData() {
    *   }
    *   return buildSchema(JSON.parse(config)) as SchemaFieldArray;
    * }, [schemaConfig]); */
+
+  const getDisplayData = useCallback(() => {
+    const filterVal = currentFilterValRef.current;
+    return currentDataRef.current.filter((item) => {
+      const needFilter = Object.keys(filterVal).reduce((res, prop) => {
+        if (!res) {
+          return res;
+        }
+        if (!filterVal[prop].value) {
+          return res;
+        }
+
+        if (filterVal[prop].schema instanceof SchemaFieldString) {
+          if (filterVal[prop].filterType === 'include') {
+            return get(item, prop).includes(filterVal[prop].value);
+          } else if (filterVal[prop].filterType === 'exclude') {
+            return !get(item, prop).includes(filterVal[prop].value);
+          } else if (filterVal[prop].filterType === 'equal') {
+            return get(item, prop) === filterVal[prop].value;
+          }
+        } else if (filterVal[prop].schema instanceof SchemaFieldNumber) {
+          if (filterVal[prop].filterType === 'less') {
+            return get(item, prop) > filterVal[prop].value;
+          } else if (filterVal[prop].filterType === 'less_equal') {
+            return get(item, prop) >= filterVal[prop].value;
+          } else if (filterVal[prop].filterType === 'bigger') {
+            return get(item, prop) < filterVal[prop].value;
+          } else if (filterVal[prop].filterType === 'bigger_equal') {
+            return get(item, prop) <= filterVal[prop].value;
+          } else if (filterVal[prop].filterType === 'equal') {
+            return get(item, prop) === filterVal[prop].value;
+          }
+        } else if (filterVal[prop].schema instanceof SchemaFieldSelect) {
+          if (filterVal[prop].filterType === 'exists') {
+            return get(item, prop) === filterVal[prop].value;
+          } else if (filterVal[prop].filterType === 'not_exists') {
+            return get(item, prop) !== filterVal[prop].value;
+          }
+        }
+        return res;
+      }, true);
+      return needFilter;
+    });
+  }, []);
 
   const onValueChange = useCallback(
     (val: any) => {
@@ -116,6 +160,7 @@ export default function StaticData() {
           // val change
           const changeItem = difference(val, displayDataRef.current)[0];
           const beforeChangeItem = difference(displayDataRef.current, val)[0];
+
           res = res.map((item) => {
             // hack detect id
             if (hash(item) === hash(beforeChangeItem)) {
@@ -123,69 +168,38 @@ export default function StaticData() {
             }
             return item;
           });
+
+          displayDataRef.current = val;
           // order modify
         }
       }
+
       updateFileData(currentOpenFile, res);
       syncCurrentData(res);
+      if (!hasFilter) {
+        displayDataRef.current = res;
+      }
     },
     [updateTranslations, currentOpenFile, updateFileData, hasFilter]
   );
 
   useLayoutEffect(() => {
     setDisplayData(currentData);
+    displayDataRef.current = currentData;
   }, []);
 
-    /* const filterSettings = [
-     *   {
-     *     label: 'id',
-     *     prop: 'id',
-     *   },
-     * ]; */
+  /* const filterSettings = [
+   *   {
+   *     label: 'id',
+   *     prop: 'id',
+   *   },
+   * ]; */
 
   const onFilterChange = (filterVal: any) => {
-    setDisplayData(
-      currentData.filter((item) => {
-        const needFilter = Object.keys(filterVal).reduce((res, prop) => {
-          if (!res) {
-            return res;
-          }
-          if (!filterVal[prop].value) {
-            return res;
-          }
-
-          if (filterVal[prop].schema instanceof SchemaFieldString) {
-            if (filterVal[prop].filterType === 'include') {
-              return get(item, prop).includes(filterVal[prop].value);
-            } else if (filterVal[prop].filterType === 'exclude') {
-              return !get(item, prop).includes(filterVal[prop].value);
-            } else if (filterVal[prop].filterType === 'equal') {
-              return get(item, prop) === filterVal[prop].value;
-            }
-          } else if (filterVal[prop].schema instanceof SchemaFieldNumber) {
-            if (filterVal[prop].filterType === 'less') {
-              return get(item, prop) > filterVal[prop].value;
-            } else if (filterVal[prop].filterType === 'less_equal') {
-              return get(item, prop) >= filterVal[prop].value;
-            } else if (filterVal[prop].filterType === 'bigger') {
-              return get(item, prop) < filterVal[prop].value;
-            } else if (filterVal[prop].filterType === 'bigger_equal') {
-              return get(item, prop) <= filterVal[prop].value;
-            } else if (filterVal[prop].filterType === 'equal') {
-              return get(item, prop) === filterVal[prop].value;
-            }
-          } else if (filterVal[prop].schema instanceof SchemaFieldSelect) {
-            if (filterVal[prop].filterType === 'exists') {
-              return get(item, prop) === filterVal[prop].value;
-            } else if (filterVal[prop].filterType === 'not_exists') {
-              return get(item, prop) !== filterVal[prop].value;
-            }
-          }
-          return res;
-        }, true);
-        return needFilter;
-      })
-    );
+    currentFilterValRef.current = filterVal;
+    const data = getDisplayData();
+    setDisplayData(data);
+    displayDataRef.current = data;
   };
 
   if (loading) {

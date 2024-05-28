@@ -18,6 +18,7 @@ import path from 'path';
 import React, {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -39,6 +40,7 @@ import {
 import { getProjectService } from '../../../../../services';
 import { Translation } from '../../../../../store/common/translation';
 import { animation, borderRadius } from '../../../../../theme';
+import useLayout from '../../../patterns/story/use_layout';
 import FieldBoolean from './boolean_field';
 import FieldFile from './file_field';
 import FieldNumber from './number_field';
@@ -315,7 +317,7 @@ export function FieldArray({
     );
   }, [schema]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setList(
       (value || []).map((item) => {
         return {
