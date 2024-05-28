@@ -25,13 +25,14 @@ const StaticDataService = (
   projectService: ProjectServiceType
 ) => {
   const translationService = TranslationService(projectService);
-  let staticFileDataTable = ref<{
+  const staticFileDataTable = ref<{
     [key: string]: StaticFileData;
   }>({});
-  let currentStaticFileRawData = ref<StaticFileData | null>(null);
+  const currentStaticFileRawData = ref<StaticFileData | null>(null);
   const currentSchema = ref<SchemaFieldArray | null>(null);
   const currentData = ref<JSONData | null>(null);
   const loading = ref<boolean>(false);
+  const currentFilters = ref<any[]>([]);
 
   const memento = computed(() => {
     return {
@@ -148,7 +149,7 @@ const StaticDataService = (
     () => [
       fileService.files.value,
       fileService.currentOpenFile.value,
-      staticFileDataTable.value,
+      // staticFileDataTable.value,
     ],
     refreshCurrentFileData,
     {
@@ -158,14 +159,15 @@ const StaticDataService = (
 
   watch(
     () => currentStaticFileRawData.value,
-    (fileData) => {
-      if (!fileData) {
+    (rawData) => {
+      if (!rawData) {
         return;
       }
       // const json = toml.parse(fileData.schema);
-      const json = JSON.parse(fileData.schema);
+      const json = JSON.parse(rawData.schema);
+      currentFilters.value = json?.config?.filters || [];
       currentSchema.value = buildSchema(json) as SchemaFieldArray;
-      currentData.value = fileData.data;
+      currentData.value = rawData.data;
     }
   );
 
@@ -193,6 +195,13 @@ const StaticDataService = (
       currentSchema.value
     );
     staticFileDataTable.value = { ...staticFileDataTable.value };
+    // if (fileService.currentOpenFile.value === fileId) {
+    //   currentStaticFileRawData.value = staticFileDataTable.value[fileId];
+    // }
+  };
+
+  const syncCurrentData = (val) => {
+    currentData.value = val;
   };
 
   return {
@@ -207,6 +216,8 @@ const StaticDataService = (
     updateFileData,
     updateFileSchema,
     loading,
+    syncCurrentData,
+    currentFilters,
   };
 };
 

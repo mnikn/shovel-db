@@ -315,6 +315,18 @@ export function FieldArray({
     );
   }, [schema]);
 
+  useEffect(() => {
+    setList(
+      (value || []).map((item) => {
+        return {
+          id: UUID(),
+          expanded: false,
+          value: item,
+        };
+      })
+    );
+  }, [value]);
+
   const addItem = useCallback(() => {
     const prev = listRef.current;
     const res = prev.concat({

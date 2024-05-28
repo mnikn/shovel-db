@@ -20,3 +20,5 @@ export const IPC_API = {
   OPEN_PROJECT: 'open_project',
   LOG: 'log',
 };
+
+export const HIDDEN_ID = '%___id'

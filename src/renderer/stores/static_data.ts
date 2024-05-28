@@ -14,6 +14,7 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
       null
     );
     const [currentData, setCurrentData] = useState<any | null>(null);
+    const [currentFilters, setCurrentFilters] = useState<any[]>([]);
 
     const [currentLang, setCurrentLang] = useState<string>('zh-cn');
     const [translations, setTranslations] = useState<Translation>({});
@@ -34,6 +35,15 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
         () => staticDataService.currentSchema.value,
         (schema) => {
           setCurrentSchema(cloneDeep(schema));
+        },
+        {
+          immediate: true,
+        }
+      );
+      const stopWatchFilters = watch(
+        () => staticDataService.currentFilters.value,
+        (filters) => {
+          setCurrentFilters(filters);
         },
         {
           immediate: true,
@@ -81,11 +91,13 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
         stopWatchCurrentLang();
         stopWatchTranslations();
         stopWatchLoading();
+        stopWatchFilters();
       };
     }, []);
 
     const updateFileData = staticDataService.updateFileData;
     const updateFileSchema = staticDataService.updateFileSchema;
+    const syncCurrentData = staticDataService.syncCurrentData;
     const getStaticFileData = staticDataService.getStaticFileData;
     const getStaticFileDataByPath = staticDataService.getStaticFileDataByPath;
     const tr = staticDataService.tr;
@@ -97,6 +109,7 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
       currentData,
       currentStaticFileRawData,
       updateFileData,
+      syncCurrentData,
       updateFileSchema,
       currentSchema,
       getStaticFileData,
@@ -109,6 +122,8 @@ export const [useStaticDataStore, getStaticDataStore] = createGlobalStore(
       updateTranslations,
       updateTranslateKey,
       loading,
+
+      currentFilters,
     };
   }
 );

@@ -7,6 +7,7 @@ import {
   Box,
   InputLabel,
   FormControl,
+  IconButton,
 } from '@mui/material';
 import { SchemaFieldSelect } from '../../../../../models/schema';
 import { get } from 'lodash';
@@ -15,6 +16,7 @@ import {
   useStoryStore,
   useFileStore,
 } from '../../../../../stores';
+import { Clear } from '@mui/icons-material';
 
 function FieldSelect({
   label,
@@ -116,6 +118,18 @@ function FieldSelect({
             );
           })}
         </Select>
+        {schema.config.clearable && (
+          <IconButton
+            sx={{ position: 'absolute', right: '-32px' }}
+            onClick={() => {
+              if (onValueChange) {
+                onValueChange(undefined);
+              }
+            }}
+          >
+            <Clear />
+          </IconButton>
+        )}
       </FormControl>
       {isGrouping && (
         <FormControl sx={{ flexGrow: 1 }}>
