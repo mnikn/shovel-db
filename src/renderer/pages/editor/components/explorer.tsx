@@ -309,10 +309,6 @@ export default function Explorer({
           openFile(data.id);
         }}
         draggable={!editingItem}
-        onDoubleClick={() => {
-          setEditingName(data.name);
-          setEditingItem(data.id);
-        }}
         onContextMenu={(e) => {
           e.preventDefault();
           const menu = new remote.Menu();
