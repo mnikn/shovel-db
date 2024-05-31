@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "npm-run-all -p dev:react electron:serve",
     "dev:electron": "cross-env NODE_ENV=development webpack --config webpack/electron.webpack.ts --mode=development && npm run start:electron",
-    "dev:react": "cross-env NODE_ENV=development webpack serve --config webpack/react.webpack.ts --mode=development",
+    "dev:react": "concurrently \"npm run tailwind:build:watch\" \"cross-env NODE_ENV=development webpack serve --config webpack/react.webpack.ts --mode=development\"",
     "electron:serve": "wait-on http-get://localhost:4000/ && npm run dev:electron",
     "start:electron": "electron .",
     "build": "npm-run-all build:electron build:react",
@@ -18,7 +18,9 @@
     "build:react": "webpack --config webpack/react.webpack.ts --mode=production",
     "package": "npm-run-all build package:dist",
     "package:dist": "electron-builder --dir",
-    "prettier": "prettier --write ./src"
+    "prettier": "prettier --write ./src",
+    "tailwind:build": "tailwindcss -i ./src/styles/tailwind.css -o ./src/styles/tailwind-output.css",
+    "tailwind:build:watch": "tailwindcss -i ./src/styles/tailwind.css -o ./src/styles/tailwind-output.css --watch"
   },
   "keywords": [],
   "author": "mnikn",
@@ -61,6 +63,7 @@
     "@typescript-eslint/eslint-plugin": "^5.30.7",
     "@typescript-eslint/parser": "^5.30.7",
     "autoprefixer": "^10.4.14",
+    "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
     "css-loader": "^6.7.3",
     "electron": "^18.2.3",
@@ -75,6 +78,7 @@
     "postcss-preset-env": "^8.3.0",
     "prettier": "^2.7.1",
     "style-loader": "^3.3.2",
+    "tailwindcss": "^3.4.3",
     "ts-loader": "^9.3.1",
     "ts-node": "^10.9.1",
     "typescript": "^4.7.4",

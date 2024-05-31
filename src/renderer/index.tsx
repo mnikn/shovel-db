@@ -4,6 +4,7 @@ import App from './pages/app';
 import ipc from './electron/ipc';
 import { initServices } from './services';
 import './style.css';
+import '../styles/tailwind-output.css';
 
 ipc.init();
 initServices();

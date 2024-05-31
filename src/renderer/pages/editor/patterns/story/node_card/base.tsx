@@ -12,6 +12,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 import MonacoEditor from 'react-monaco-editor/lib/editor';
 import {
   iterSchema,
@@ -61,52 +62,61 @@ function CardPopup({ node }: { node: StoryletNode<StoryletNodeData> }) {
       if (!schema.config.showPopup || !get(node.data, path)) {
         return;
       }
+
       if (schema instanceof SchemaFieldString) {
         if (schema.config.type !== 'code') {
           components.push(
-            <Grid2 xs={3} key={schema.config.fieldId}>
-              <Stack spacing={2}>
-                <FormLabel sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>
-                  {label}
-                </FormLabel>
-                <Box sx={{ flexGrow: 1, width: '100%' }}>
-                  {get(node.data, path)}
-                </Box>
-              </Stack>
-            </Grid2>
+            <Stack
+              spacing={2}
+              key={schema.config.fieldId}
+              sx={{
+                flexGrow: 1,
+              }}
+            >
+              <FormLabel sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>
+                {label}
+              </FormLabel>
+              <Box sx={{ flexGrow: 1, width: '100%' }}>
+                {get(node.data, path)}
+              </Box>
+            </Stack>
           );
         } else {
           components.push(
-            <Grid2 xs={12} key={schema.config.fieldId}>
-              <Stack spacing={2}>
-                <FormLabel sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>
-                  {label}
-                </FormLabel>
-                <Box sx={{ flexGrow: 1, height: '350px' }}>
-                  <MonacoEditor
-                    width='100%'
-                    height='100%'
-                    language={schema.config.codeLang || 'python'}
-                    theme='vs-dark'
-                    value={get(node.data, path)}
-                    options={{
-                      insertSpaces: true,
-                      autoIndent: 'full',
-                      readOnly: true,
-                      tabSize: 2,
-                      minimap: {
-                        enabled: false,
-                      },
-                      fontSize: 28,
-                      scrollbar: {
-                        horizontal: 'auto',
-                        vertical: 'auto',
-                      },
-                    }}
-                  />
-                </Box>
-              </Stack>
-            </Grid2>
+            <Stack
+              spacing={2}
+              key={schema.config.fieldId}
+              sx={{
+                flexGrow: 1,
+              }}
+            >
+              <FormLabel sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>
+                {label}
+              </FormLabel>
+              <Box sx={{ flexGrow: 1, height: '350px' }}>
+                <MonacoEditor
+                  width='100%'
+                  height='100%'
+                  language={schema.config.codeLang || 'python'}
+                  theme='vs-dark'
+                  value={get(node.data, path)}
+                  options={{
+                    insertSpaces: true,
+                    autoIndent: 'full',
+                    readOnly: true,
+                    tabSize: 2,
+                    minimap: {
+                      enabled: false,
+                    },
+                    fontSize: 28,
+                    scrollbar: {
+                      horizontal: 'auto',
+                      vertical: 'auto',
+                    },
+                  }}
+                />
+              </Box>
+            </Stack>
           );
         }
       }
@@ -123,35 +133,16 @@ function CardPopup({ node }: { node: StoryletNode<StoryletNodeData> }) {
   }
 
   return (
-    <Grid2
-      container
-      sx={{
-        p: 4,
-        position: 'absolute',
-        top: `${topHeight}px`,
-        minHeight: '500px',
-        background: 'white',
-        width: '1000px',
-        visibility: height ? 'visible' : 'hidden',
-        ...borderRadius.larger,
-        left: '50%',
-        transform: 'translateX(-50%)',
-      }}
-      ref={(dom) => {
-        if (!dom) {
-          return;
-        }
-
-        // const resizeObserver = new ResizeObserver((entries) => {
-        //  setHeight(entries[0].contentRect.height);
-        // });
-        // resizeObserver.observe(dom);
+    <div
+      className='absolute min-h-[500px] bg-[#ffffff] left-1/2 -translate-x-1/2 w-[1000px] top-[32px] p-4 rounded-[24px] flex flex-wrap gap-4'
+      style={{
+        top: topHeight,
       }}
     >
       {components.map((component, i) => {
         return component;
       })}
-    </Grid2>
+    </div>
   );
 }
 
@@ -160,7 +151,7 @@ export default function BaseNodeCard({
   node,
   color,
   children,
-  onDrag,
+  onDrag ,
   onDragEnd,
 }: {
   node: StoryletNode<StoryletNodeData>;
