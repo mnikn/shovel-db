@@ -304,13 +304,14 @@ export function FieldArray({
   listRef.current = list;
   const valueRef = useRef(value);
   valueRef.current = value;
+  const hasInitRef = useRef(false);
 
   useEffect(() => {
     setList(
       (valueRef.current || []).map((item) => {
         return {
           id: UUID(),
-          expanded: false,
+          expanded: schema.config.initialExpand || false,
           value: item,
         };
       })
@@ -318,15 +319,18 @@ export function FieldArray({
   }, [schema]);
 
   useLayoutEffect(() => {
-    setList(
-      (value || []).map((item) => {
-        return {
-          id: UUID(),
-          expanded: false,
-          value: item,
-        };
-      })
-    );
+    if (value && !hasInitRef.current) {
+      hasInitRef.current = true;
+      setList(
+        (value || []).map((item) => {
+          return {
+            id: UUID(),
+            expanded: schema.config.initialExpand || false,
+            value: item,
+          };
+        })
+      );
+    }
   }, [value]);
 
   const addItem = useCallback(() => {

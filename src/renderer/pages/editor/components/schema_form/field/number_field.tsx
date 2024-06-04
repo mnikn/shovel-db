@@ -25,7 +25,7 @@ export default function FieldNumber({
   }, [value, schema]);
 
   const onTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let textValue = e.target.value
+    const textValue = e.target.value
       .replace(schema.config.suffix || '', '')
       .replace(schema.config.prefix || '', '');
 
@@ -83,6 +83,9 @@ export default function FieldNumber({
   return (
     <TextField
       size='small'
+      sx={{
+        width: '100%',
+      }}
       label={label}
       value={valueText}
       onChange={onTextChange}

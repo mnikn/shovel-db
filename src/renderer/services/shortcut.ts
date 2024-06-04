@@ -167,7 +167,7 @@ const init = () => {
     const keyModifiers = {
       alt: event.altKey,
       shift: event.shiftKey,
-      ctrl: event.ctrlKey,
+      ctrl: event.ctrlKey || event.key === 'Meta',
       meta: event.metaKey,
     };
     const key = CODES[event.code];

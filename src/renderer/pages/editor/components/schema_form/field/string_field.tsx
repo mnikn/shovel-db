@@ -116,6 +116,7 @@ function FieldString({
             height: '100%',
           }}
           required={schema.config.required}
+          disabled={schema.config.readonly}
           label={label}
           size='small'
           multiline={schema.config.type === 'multiline'}

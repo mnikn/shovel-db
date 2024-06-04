@@ -1,3 +1,4 @@
+import { isFunction } from 'util';
 import { UUID } from '../../common/utils/uuid';
 
 export const DEFAULT_CONFIG = {
@@ -327,6 +328,13 @@ export class SchemaFieldObject extends SchemaField {
   }
 
   _getConfigDefaultValue(field: SchemaField) {
+    if (field.config.defaultValueFn) {
+      const fn = eval(field.config.defaultValueFn);
+      const val = fn({
+        UUID: UUID,
+      });
+      return val;
+    }
     switch (field.type) {
       case SchemaFieldType.Object: {
         const defaultVal: any = {};
