@@ -151,7 +151,7 @@ export default function BaseNodeCard({
   node,
   color,
   children,
-  onDrag ,
+  onDrag,
   onDragEnd,
 }: {
   node: StoryletNode<StoryletNodeData>;
@@ -221,6 +221,13 @@ export default function BaseNodeCard({
             newNode.data.content,
             getTranslationsForKey(targetNode.data.content)
           );
+
+          if (newNode.data.option) {
+            updateTranslateKeyAll(
+              newNode.data.option.name,
+              getTranslationsForKey(targetNode.data.option?.name as string)
+            );
+          }
         }
         return newNode;
       };

@@ -402,7 +402,7 @@ export function FieldArray({
   );
   const duplicateItem = useCallback(
     (i: number) => {
-      const targetItem = list[i].value;
+      const targetItem = listRef.current[i].value;
       const newVal = processValueWithSchema(
         schema.fieldSchema,
         targetItem,

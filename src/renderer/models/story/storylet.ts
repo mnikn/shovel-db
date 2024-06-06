@@ -33,7 +33,7 @@ export class StoryletNode<D extends StoryletNodeData> extends Node<D> {
 }
 
 // init node
-export interface StoryletRootNodeData extends StoryletNodeData {}
+export type StoryletRootNodeData = StoryletNodeData;
 export class StoryletRootNode extends StoryletNode<StoryletRootNodeData> {
   constructor() {
     super();
@@ -132,6 +132,9 @@ export class StoryletBranchNode extends StoryletNode<StoryletBranchNodeData> {
     const instance = new StoryletBranchNode();
     instance.data = cloneDeep(this.data);
     instance.data.content = `content_${UUID()}`;
+    if (instance.data.option) {
+      instance.data.option.name = `option_${UUID()}`;
+    }
     return instance;
   }
 }
@@ -174,13 +177,16 @@ export class StoryletActionNode extends StoryletNode<StoryletActionNodeData> {
   public clone(): StoryletActionNode {
     const instance = new StoryletActionNode();
     instance.data = cloneDeep(this.data);
+    if (instance.data.option) {
+      instance.data.option.name = `option_${UUID()}`;
+    }
     return instance;
   }
 }
 
 export class Storylet extends Tree<StoryletNodeData> {
   public id: string = 'storylet_' + UUID();
-  public name: string = '';
+  public name = '';
 
   constructor(newRoot = true) {
     super();
