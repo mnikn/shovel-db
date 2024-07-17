@@ -23,6 +23,7 @@ import SchemaForm from '../../components/schema_form';
 import FieldSelect from '../../components/schema_form/field/select_field';
 import { get, difference } from 'lodash';
 import { hash } from '../../../../../utils/hash';
+import { getStaticDataService } from '../../../../services';
 
 const i18nSchema = new SchemaFieldSelect({
   options: [
@@ -184,9 +185,10 @@ export default function StaticData() {
   );
 
   useLayoutEffect(() => {
-    setDisplayData(currentData);
-    displayDataRef.current = currentData;
-  }, []);
+    const staticDataService = getStaticDataService();
+    setDisplayData(staticDataService.currentData.value);
+    displayDataRef.current = staticDataService.currentData.value;
+  }, [currentOpenFile, currentSchema]);
 
   /* const filterSettings = [
    *   {

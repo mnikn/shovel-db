@@ -32,6 +32,18 @@ export default function SchemaForm({
     [onValueChange]
   );
 
+  const [forceRender, setForceRender] = useState(true);
+
+  useEffect(() => {
+    setForceRender(false);
+    setTimeout(() => {
+      setForceRender(true);
+    }, 200);
+  }, [schema]);
+
+  if (!forceRender) {
+    return null;
+  }
   return (
     <Box
       sx={{
