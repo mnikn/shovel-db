@@ -61,8 +61,28 @@ export default function useLayout({
     const root = d3.hierarchy(json) as d3.HierarchyRectangularNode<any>;
     root.x0 = 0;
     root.y0 = 0;
-    const tree = d3.tree().nodeSize([400, 900]);
-    tree(root);
+    // const tree = d3.tree().nodeSize([400, 900]);
+    // const tree = d3.tree().nodeSize([1200, 900]);
+    // const tree = d3.tree().nodeSize([1000, 900]);
+    // const tree = d3.tree().nodeSize([1000, 900]);
+    // const tree: any = d3.tree();
+    // tree(root);
+    const flextree = require('d3-flextree').flextree;
+    const layout = flextree({
+      nodeSize: node => {
+        const nodeData: any = currentStorylet.nodes[node.data.id]
+        let height = 400
+        if (nodeData.data?.enableCheck?.length || 0 > 0) {
+          height += 600
+        }
+        if (nodeData.data?.process?.length || 0 > 0) {
+          height += 600
+        }
+        return [height, 900]
+      },
+      spacing: (nodeA, nodeB) => nodeA.path(nodeB).length,
+    });
+    layout(root);
 
     root.descendants().forEach((d: any) => {
       d.id = d.data.id;

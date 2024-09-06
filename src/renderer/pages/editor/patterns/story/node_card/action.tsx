@@ -27,7 +27,7 @@ export default function ActionNodeCard({
       onDrag={onDrag}
       onDragEnd={onDragEnd}
     >
-      {node.data.actionType}
+      {/* {node.data.actionType} */}
     </BaseNodeCard>
   );
 }

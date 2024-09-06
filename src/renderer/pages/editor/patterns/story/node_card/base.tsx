@@ -62,7 +62,7 @@ function CardPopup({ node }: { node: StoryletNode<StoryletNodeData> }) {
       if (!schema.config.showPopup || !get(node.data, path)) {
         return;
       }
-
+      
       if (schema instanceof SchemaFieldString) {
         if (schema.config.type !== 'code') {
           components.push(
@@ -146,6 +146,23 @@ function CardPopup({ node }: { node: StoryletNode<StoryletNodeData> }) {
   );
 }
 
+
+function CardComponents({ components }: { components: React.ReactNode[] }) {
+  if (components.length <= 0) {
+    return null;
+  }
+
+  return (
+    <div
+      className='flex flex-col gap-4 w-full'
+    >
+      {components.map((component, i) => {
+        return component;
+      })}
+    </div>
+  );
+}
+
 export default function BaseNodeCard({
   pos,
   node,
@@ -153,13 +170,15 @@ export default function BaseNodeCard({
   children,
   onDrag,
   onDragEnd,
+  style,
 }: {
   node: StoryletNode<StoryletNodeData>;
   pos: { x: number; y: number };
   color: { normal: string; hover: string; active?: string };
-  children: React.ReactNode;
+  children?: React.ReactNode;
   onDrag?: (val: any) => void;
   onDragEnd?: (val: any) => void;
+  style?: React.CSSProperties;
 }) {
   const {
     currentStorylet,
@@ -200,6 +219,95 @@ export default function BaseNodeCard({
     }
     selectNode(node.id);
   }, [node.id, editOpen]);
+
+
+  const { nodeSchemaSettings } = useStoryStore();
+  const components: React.ReactNode[] = [];
+  const basicDataSchema = useMemo(() => {
+    const basicsDataMap = {
+      root: buildSchema(JSON.parse(nodeSchemaSettings.root.basicDataSchema)),
+      sentence: buildSchema(
+        JSON.parse(nodeSchemaSettings.sentence.basicDataSchema)
+      ),
+      branch: buildSchema(
+        JSON.parse(nodeSchemaSettings.branch.basicDataSchema)
+      ),
+      action: buildSchema(
+        JSON.parse(nodeSchemaSettings.action.basicDataSchema)
+      ),
+    };
+    const res = basicsDataMap[node.data.type] as SchemaFieldObject;
+    return res;
+  }, [node, nodeSchemaSettings]);
+  iterSchema(
+    basicDataSchema,
+    (schema: SchemaField, path: string, label?: string) => {
+      if (!schema.config.showPopup || !get(node.data, path)) {
+        return;
+      }
+      
+      if (schema instanceof SchemaFieldString) {
+        if (schema.config.type !== 'code') {
+          components.push(
+            <Stack
+              spacing={2}
+              key={schema.config.fieldId}
+              sx={{
+                flexGrow: 1,
+              }}
+            >
+              <FormLabel sx={{ fontWeight: 'bold', fontSize: '2.5rem', textAlign: 'center', pointerEvents: 'none' }}>
+                {label}
+              </FormLabel>
+              <Box sx={{ flexGrow: 1, width: '100%', fontSize: '3rem', fontWeight: 600 }}>
+                {get(node.data, path)}
+              </Box>
+            </Stack>
+          );
+        } else {
+          components.push(
+            <Stack
+              spacing={2}
+              key={schema.config.fieldId}
+              sx={{
+                flexGrow: 1,
+              }}
+            >
+              <FormLabel sx={{ fontWeight: 'bold', fontSize: '2.5rem', textAlign: 'center', pointerEvents: 'none' }}>
+                {label}
+              </FormLabel>
+              <Box sx={{ flexGrow: 1, height: '350px' }}>
+                <MonacoEditor
+                  width='100%'
+                  height='100%'
+                  language={schema.config.codeLang || 'python'}
+                  theme='vs-dark'
+                  value={get(node.data, path)}
+                  options={{
+                    insertSpaces: true,
+                    autoIndent: 'full',
+                    readOnly: true,
+                    tabSize: 2,
+                    wordWrap: 'on',
+                    wordWrapColumn: 100,
+                    wrappingIndent: 'indent',
+                    minimap: {
+                      enabled: false,
+                    },
+                    fontSize: 28,
+                    scrollbar: {
+                      // horizontal: 'auto',
+                      vertical: 'auto',
+                    },
+                  }}
+                />
+              </Box>
+            </Stack>
+          );
+        }
+      }
+    }
+  );
 
   useEffect(() => {
     const onKeyDown = (e) => {
@@ -385,6 +493,11 @@ export default function BaseNodeCard({
         const dragListener = d3
           .drag()
           .on('drag', (d) => {
+            // 检查文档是否有带有focused类的monaco-editor元素
+            const editorFocused = document.querySelector('.monaco-editor.focused');
+            if (editorFocused) {
+              return;
+            }
             setIsDraging(true);
             setIsHover(false);
             if (onDrag) {
@@ -405,6 +518,7 @@ export default function BaseNodeCard({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        flexDirection: 'column',
         cursor: 'pointer',
         userSelect: 'none',
         backgroundColor:
@@ -415,8 +529,8 @@ export default function BaseNodeCard({
         ...borderRadius.larger,
         fontSize: '2rem',
         transform: `translate(${pos.y}px,${pos.x}px)`,
-        height: '220px',
-        width: '500px',
+        height: components.length > 0 ? 'auto' : '220px',
+        width: components.length > 0 ? '700px' : '500px',
         textOverflow: 'ellipsis',
         wordBreak: 'break-all',
         outline: 'none',
@@ -424,6 +538,7 @@ export default function BaseNodeCard({
           backgroundColor: color.hover,
         },
         zIndex: isHover ? 10 : isSelecting ? 2 : 1,
+        ...style,
       }}
       onClick={onSelect}
       onMouseEnter={() => {
@@ -454,24 +569,28 @@ export default function BaseNodeCard({
           {node.data.customNodeId}
         </Container>
       )}
-      {(isSelecting || isHover) && !editOpen && <CardPopup node={node} />}
+      {/* {(isSelecting || isHover) && !editOpen && <CardPopup node={node} />} */}
+      {components.length > 0 && <CardComponents components={components} />}
 
       {currentStorylet.getNodeSingleParent(node.id) instanceof
         StoryletBranchNode && (
         <Container
           sx={{
             position: 'absolute',
-            top: '50%',
-            left: '-170px',
+            // top: '50%',
+            // left: '-170px',
+            // width: '160px',
+            top: '-90px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 'auto',
             p: 1,
             ...borderRadius.larger,
-            width: '160px',
             minHeight: '60px',
             maxHeight: '120px',
             overflow: 'hidden',
             textAlign: 'center',
             backgroundColor: grey[50],
-            transform: 'translateY(-50%)',
           }}
         >
           {tr(node.data.option?.name || '')}

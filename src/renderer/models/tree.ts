@@ -253,7 +253,7 @@ export class Tree<T> {
       id: node.id,
       children: children.sort((a, b) => {
         return this.nodes[a.id].order - this.nodes[b.id].order;
-      }),
+      })
     };
   }
 
